@@ -1,0 +1,17 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB9-8B4A-11D0-8D11-00A0C91BC942}") = "vbsweph.exe", "vbsweph.exe", "{D0C54B68-60C4-41ED-850F-CADEAC0BE2CE}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{D0C54B68-60C4-41ED-850F-CADEAC0BE2CE}.Debug.ActiveCfg = Debug
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

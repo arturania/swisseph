@@ -1,0 +1,30 @@
+Dim tret(20) As Double
+Dim jdx As Double
+Dim ifl, ecltyp, rval, back As Long
+Dim ec, dname As String
+
+back = 0
+ecltyp = 0 'all types incl. central & non-central
+ifl = 0 'swiss eph
+tret(0) = tjd_ut
+
+fMainForm.out.Print ""
+For i = 1 To 3
+jdx = tret(0) + 1
+serr$ = String(255, 0)
+rval = swe_sol_eclipse_when_glob(jdx, ifl, ecltyp, tret(0), back, serr$)
+If rval <= 0 Then
+  serr$ = set_strlen(serr$)
+  fMainForm.out.Print serr$
+End If
+ec = ""
+If rval = 5 Or rval = 6 Then ec = "Total"
+If rval = 9 Or rval = 10 Then ec = "Annular"
+If rval = 18 Then ec = "Partial"
+If rval = 33 Or rval = 34 Then ec = "Annular-Total"
+
+dname = "Solar Eclipse" & " (" & ec & ")"
+
+fMainForm.out.Print dname, tret(2), tret(0), tret(3)
+Next i
+
