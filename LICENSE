@@ -1,0 +1,130 @@
+
+              The License for the Swiss Ephemeris Free Edition
+	      This is a preliminary version subject to change
+
+Included below is draft version 0.2 of the license that we are currently
+using for the Swiss Ephemeris Free Edition. The license
+is called the Swiss Ephemeris Public License (or "SEPL"), and qualifies as
+an Open Source license. It is thus appropriate for people wishing to write
+software under the Open Source model where all source code to the software
+is made available to all users and can be freely modified and redistributed.
+
+To develop software with the Swiss Ephemeris Free Edition, simply meet the
+requirements in the SEPL. Your software can be licensed by any license that
+permits the requirements in section 6.
+
+If you do not meet the requirements in the SEPL, for example if
+- you develop and distribute software which is sold for a fee higher than a
+reasonable copy charge
+- or/and you develop and distribute software which is not published under an
+Open Source or equivalent license
+you must purchase the Swiss Ephemeris Professional Edition under the Swiss
+Ephemeris Professional License.
+
+Comments to the license:
+
+'Legally' developed in §5 means either developed under this license, §6, or
+under a professional license.
+----------------------------------------------------------------------------
+
+                 THE SWISS EPHEMERIS PUBLIC LICENSE (SEPL)
+                                version 0.2
+
+              Copyright (C) 1998 Astrodienst AG, Switzerland.
+                     Everyone is permitted to copy and
+                     distribute this license document.
+
+This license applies to any software containing a notice placed by the
+copyright holder saying that it may be distributed under the terms of the
+SEPL version 0.2. Such software is herein referred to as the Swiss Ephemeris
+Software (SE). This license covers modification and distribution of the SE,
+use of third-party application programs based on the
+SE, and development of free software which uses the SE.
+
+                               Granted Rights
+
+1. You are granted the rights set forth in this license provided you agree
+to any and all conditions in this license. Whole or partial distribution of
+the SE in any form signifies acceptance of this license.   
+
+2. You may copy and distribute the SE provided that
+the entire package is distributed, including this License.
+
+3. You may make modifications to the SE files and distribute your
+modifications in a form distinct from the SE. The following
+restrictions apply to modifications:             
+
+     a. Modifications must not alter or remove any copyright notices in the SE.
+
+     b. If modifications to the SE are released under this
+     license, a non-exclusive right is granted to the holder of the
+     copyright of the unmodified SE to distribute your
+     modification in future versions of the SE provided such
+     versions remain available under these terms in addition to any
+     other license.  
+
+4. You may distribute machine-executable forms of the SE or
+machine-executable forms of modified versions of the SE, provided that
+you meet these restrictions:  
+
+     a. You accompany the SE with this license.
+
+     b. You must ensure that all recipients of the machine-executable
+     forms are also able to receive the complete machine-readable
+     source code to the distributed SE, including all
+     modifications, without any charge beyond the costs of data
+     transfer.
+
+     c. You ensure that all modifications included in the
+     machine-executable forms are available under the terms of this
+     license.                          
+
+5. You may use the original or modified versions of the Swiss Ephemeris
+Software to compile, link and run application programs legally developed by
+you or third parties.
+
+6. You may develop application programs, reusable components and other
+software items that link with the original or modified versions of the Swiss
+Ephemeris Software. These items, when distributed in machine-executable form,
+have the following restrictions:  
+
+     a. You must ensure that all recipients of machine-executable forms
+     of these items are also able to receive and use the complete
+     machine-readable source code to the items without any charge
+     beyond the costs of data transfer.
+
+     b. You must explicitly license all recipients of your items to use
+     and re-distribute original and modified versions of the items in
+     both machine-executable and source code forms under terms
+     identical to those under which they received the items.      
+
+7. The trademarks 'Swiss Ephemeris' and 'Swiss Ephemeris inside' and the
+associated icons may be used for promoting software, products or services
+which use or contain the Swiss Ephemeris.
+The names of the authors of the Swiss Ephemeris Software and of the
+Copyright Holder may not be used to endorse or promote products or services
+derived from or linking to the Swiss Ephemeris Software without specific
+prior written permission.
+This license file and the copyright notices in the source files are the
+onlyplaces where the author's names may legally appear without specific
+prior written permission.
+
+                          Limitations of Liability
+
+In no event shall the authors of the Swiss Ephemeris Software or their
+employers be liable for any lost revenue or profits or other direct,
+indirect, special, incidental or consequential damages, even if they have
+been advised of the possibility of such damages.
+
+                                No Warranty
+
+The Swiss Ephemeris Software is provided AS IS with NO WARRANTY OF ANY KIND,
+INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A
+PARTICULAR PURPOSE.
+
+----------------------------------------------------------------------------
+Copyright © 1998 Astrodienst AG            Questions? Ask swisseph@astro.com
+
+Mailing list: To subscribe to the Swiss Ephemeris mailinglist, please send
+email to majordomo@astro.ch with the following text in the message body:
+subscribe swisseph
