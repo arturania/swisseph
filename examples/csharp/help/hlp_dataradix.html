@@ -1,0 +1,111 @@
+<html>
+<head>
+<title>Data invoer radix</title>
+<style type="text/css" media="all">@import "style.css";</style>
+</head>
+<body id="second">
+  <div id="page" class="one-sidebar two-sidebars">
+    <div id="header">
+      <div id="logo-title">
+            <img src="logo.jpg" alt="Start" id="logo">
+            <span id="site-name">RadixPro Help</span>
+      </div>
+    </div>
+    <div id="primarylinks" class="clear-block">
+      RadixPro Help
+    </div>
+	<div id="container" class="withleftright clear-block">
+      <div id="main-wrapper">
+        <div id="main" class="clear-block">
+			<h1 class="title">Data invoer radix</h1>
+			<div class="node">
+			  <div class="content">
+				<br>
+				Voor het berekenen van een horoscoop moet je de gegevens invoeren in het scherm <i>Data invoer horoscoop</i>
+				Je kunt de verschillende invoervelden bereiken met de TAB-toets of met de muis.<br/><br/>
+				<h2>Controle bij het invoeren</h2>
+				Als je de gegevens van een veld hebt ingevoerd en met de TAB-toets of de muis verder gaat naar het volgende invoerveld controleert RadixPro wat je hebt getikt.
+			    Als er een fout wordt gevonden wordt het invoerveld met de fout geel weergegeven.
+                Je gaat automatisch terug naar het veld met de fout.
+	            Ook als je op de OK-toets klikt controleert RadixPro de invoer.<br/><br/>
+				<h2>De invoervelden</h2>
+				Bij alle velden staat aangegeven wat je in moet voeren en zo nodig ook hoe je dat moet doen.
+				<table>
+				<tr><th>Invoerveld</th><th>Verplicht</th><th>Bijzonderheden</th></tr>
+				<tr><td>Naam of id</td><td>Ja</td><td>Voer de <i>naam</i> van de persoon in of een andere omschrijving.
+					Je mag zelf weten wat je invoert maar er moet wel iets staan.
+					RadixPro gebruikt de naam in het overzicht van berekende horoscopen.</td></tr>
+				<tr><td>Plaats</td><td>Ja</td><td>Naam of omschrijving van de <i>geboorteplaats</i></td></tr>
+				<tr><td>Lengte</td><td>Ja</td><td>De <i>lengte</i> van de geboorteplaats.
+					Formaat ggg.mm.ss, voer voor minuten en seconden altijd twee getallen in,
+					bijvoorbeeld 12.01.09. Tussen de waarden voor graden, minuten en seconden tik je een punt.<br/>
+					Selecteer de knop <i>O</i> voor oosterlengte. <i>W</i> is westerlengte.</td></tr>
+				<tr><td>Breedte</td><td>Ja</td><td>De <i>breedte</i> van de geboorteplaats.
+					Formaat gg.mm.ss, voer voor minuten en seconden altijd twee getallen in,
+					bijvoorbeeld 52.08.10.  Tussen de waarden voor graden, minuten en seconden tik je een punt. <br/>
+					Selecteer de knop <i>N</i> voor noorderbreedte. <i>Z</i> is zuiderbreedte.</td></tr>
+				<tr><td>Datum</td><td>Ja</td><td>De datum, eerst het jaar, dan de maand en de dag.
+					Het formaat is jjjj.mm.dd. Gebruik altijd twee posities voor de maand en de dag en kort jaartallen niet af.
+					Als je 98 intikt berekent RadixPro niet de horoscoop voor 1998 maar voor 98 NC.
+					Tussen de waarden voor jaar, maand en dag tik je een punt.<br/>
+					Met de knoppen <i>Greg.</i> en <i>Jul.</i> kies je voor Gregoriaanse of Juliaanse kalender.
+					De Gregoriaanse kalender is momenteel standaard.</td></tr>
+				<tr><td>Tijd</td><td>Ja</td><td>Voor de tijd moet je achtereenvolgens uren, minuten en seconden invoeren.
+					Plaats tussen uren en minuten en tussen minuten en seconden een dubbele punt.
+					Het formaat is hh:mm:ss, voer voor minuten en seoncden twee waarden, bijvoorbeeld 8:03:05.
+					De seconden mag je weglaten, RadixPro vult dan automatisch 0 seconden in.<br/>
+					De tijd moet je opgeven in 24 uurs notatie (dus geen AM of PM).<br/>
+					Als er zomertijd is plaats je een vinkje bij <i>Zomertijd</i>
+				</td></tr>
+				<tr><td>Tijdzone</td><td>Ja, of <i>afwijkende tijdzone</i></td><td>Selecteer een tijdzone in de lijst.
+					Je krijgt de lijst met alle tijdzones te zien door op het neerwaartse pijltje rechts van het invoerveld te klikken.
+					Als de tijdzone niet voorkomt, bijvoorbeeld omdat het om plaatseljke tijd gaat, kies je voor <i>Afwijkende tijdzone</i>.
+				</td></tr>
+				<tr><td>Afwijkende tijdzone</td><td>Ja, of <i>tijdzone</i></td>
+				    <td>Klik het controlevakje aan als je een eigen tijdzone wilt opgeven.
+				    Dit kan nodig zijn als je een oude horoscoopmwilt berekenen waarvan de tijd nog als plaatselijke tijd is opgegeven.</td></tr>
+				<tr><td>Zone specificatie</td><td>Als afwijkende tijdzone is ingevuld</td>
+				    <td>Geef hier een zelf gedefini&euml;erde tijdzone op. De invoer moet het verschil met de Greenwich tijd aangeven in uren, minuten en seconden. Plaats tussen uren en minuten en tussen minuten en seconden een dubbele punt. Het formaat is hh:mm:ss, voer voor minuten en seoncden twee waarden, bijvoorbeeld 11:13:14.
+					De seconden mag je weglaten, RadixPro vult dan automatisch 0 seconden in.<br/>
+					De tijd moet je opgeven in 24 uurs notatie (dus geen AM of PM).
+					Geef niet ene plus of min-teken maar gerbuik de knoppen 'O' (Oost) en 'W' (West) om aan te geven of de tijdzoneten oosten of ten westen van Greenwich ligt.</td></tr>
+				<tr><td>Soort horoscoop</td><td>Nee</td>
+				    <td>Je kunt aangeven om welk soort horoscoop het gaat. Je kunt kiezen uit:
+				    <ul><li>Vrouw</li>
+				        <li>Man</li>
+				        <li>Gebeurtenis</i>
+				        <li>Uurhoek</li>
+				    </ul></td></tr>
+				<tr><td>Opmerkingen</td><td>Nee</td><td>Opmerkingen die je aan de horoscoop wilt toevoegen.</td></tr>
+				<tr><td>Soort bron</td><td>Nee</td>
+				    <td>Je kunt aangeven hoe betrouwbaar de geboortetijd is door een categorie toe te kennen.
+				        RadixPro gebruikt de standaard aanduidingen:
+				        <ul>
+				        	<li><b>AA</b> - Geboorte akte</li>
+				        	<li><b>A</b> - Herinnering of nieuws rapportage</li>
+				        	<li><b>B</b> - Biografie</li>
+				        	<li><b>C</b> - Onbekend of gerectificeerd</li>
+				        	<li><b>D</b> - Tegenstrijdig of onbevestigd</li>
+				        	<li><b>X</b> - Tijd onbekend</li>
+				        	<li><b>XX</b> - Niet vastgesteld</li>
+				        </ul></td></tr>
+				<tr><td>Beschrijving bron</td><td>Nee</td>
+				    <td>Een omschrijving van de bron.</td></tr>
+				</table>
+				<br/><br/>
+				<h2>Starten berekening</h2>
+				Als je alles hebt ingevoerd start je de berekening door op de knop <i>OK</i> te klikken.
+				Als RadixPro toch nog een fout ontdekt wordt je gewaarschuwd. Als alles goed is gegaan krijg je automatisch de berekende horscoopfiguur.
+	      	  </div>
+            </div>
+        </div>
+    </div>
+    <div id="sidebar-left" class="sidebar"> </div>
+    <div id="sidebar-right" class="sidebar"> </div>
+  </div>
+  <div id="footer"> </div>
+	<!-- div class="copy">
+		<p>Based on a template by <a href="http://rekl.org/">Danger4k</a></p>
+	</div -->
+  </div>
+</body></html>

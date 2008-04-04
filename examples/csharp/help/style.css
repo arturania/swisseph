@@ -1,0 +1,190 @@
+/**
+ * Danger4k theme for Drupal 5.x
+ *
+ * Authors: danger4k, http://drupal.ru/user/3102
+ *          garamond, http://drupal.ru/user/1408
+ *
+ */
+
+
+ .clear-block:after {
+   content: ".";
+   display: block;
+   height: 0;
+   clear: both;
+   visibility: hidden;
+ }
+
+ .clear-block {
+   display: inline-block;
+ }
+ 
+#main-wrapper {
+  float: left;
+  width: 100%;
+}
+
+#main	{
+  margin: 0;
+}
+
+.withleftright #main {
+  margin-left: 124px;
+  margin-right: 2px;
+  border-left: 13px solid #d1dbec;
+  border-right: 1px solid #DDE3ED;  
+}
+
+
+#sidebar-left	{
+  float: left;
+  margin-left: -100%;
+  width: 108px;
+  padding: 5px 8px 20px 8px;
+}
+#sidebar-right	{
+  float: right;
+  margin-left: -100%;
+  width: 8px;
+  padding: 5px 8px 20px 8px;
+}
+
+#sidebar-right {
+  .margin-left: -24px; /* IE7 Fix */
+}
+
+* html #sidebar-right {
+  margin-left: -24px; /* IE6 Fix*/
+}
+
+#footer	{
+  clear: both;
+}
+
+html, body, table th, table td {
+  font-family: Verdana, sans-serif;
+  font-size: 9pt;
+  color: #393939;
+  line-height: 1.7em;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  padding: 0;
+  margin-bottom: .5em;
+  padding-bottom: .35em;
+  border-bottom: 1px dotted #BFC4CF;  
+  font-weight: bold;
+  color: #4270ae;
+}
+
+h1 {
+  font-size: 200%;
+}
+
+h2 {
+  font-size: 170%;
+}
+
+h3 {
+  font-size: 140%;
+}
+
+h4 {
+  font-size: 110%;
+}
+
+
+body, #page, #front, #second {
+  padding: 0;
+  margin: 0 10px;
+  background-color: #FFF;
+}
+
+#container {
+  background-color: #F3F7FB;
+  border-left: 1px solid #d1dbec;
+  border-right: 1px solid #d1dbec;
+}
+
+#main {
+  background-color: #FDFEFF;
+  padding: 10px 20px 20px 20px;
+}
+
+#header {
+  height: 91px;
+  background: url(h1.gif) center left no-repeat;
+  padding: 0;
+  border-left: 1px solid #d1dbec;
+  border-right: 1px solid #d1dbec;
+  margin: 0px;
+}
+
+#logo-title {
+  position: relative;
+  overflow: visible;
+  float: left;
+  height: 91px;
+  padding-left: 8px;
+  z-index: 1;
+}
+
+#header #site-name {
+  position: relative;
+  padding: 0;
+  margin: 0;
+  left: 175px;
+  top: 30px;
+  padding-left: 10px;
+  border: 0;
+  font-size: 30pt;
+  color: #4270ae;  
+}
+
+#header #logo {
+  position: absolute;
+}
+
+#primarylinks{
+  background-color: #ff7713;
+  padding: 0 0 0 160px;
+  margin: 0;
+  color: #fff;
+  font-weight: bold;  
+}
+
+#footer {
+  text-align: center;
+  vertical-align: middle;
+  line-height: 37px;
+  height: 37px;
+  background: url(bg-footer.gif) #d1dbec repeat-x;
+  margin: 0 0 10px 0;
+}
+
+pre {
+  background: #fbfcfe;
+  border: 1px solid #DADCE0;
+  padding: 0.75em 1.5em;
+}
+
+blockquote {
+  border: 1px #DADCE0 solid;
+  margin: 0.5em 1em;
+  padding: 0.3em;
+  font-style: italic;
+}
+
+.node {
+  padding-top: 1px;
+  padding-bottom: 2px;
+  border-bottom: dashed #DADCE0 1px;
+  margin-bottom:15px;
+  padding-bottom:15px;  
+}
+
+td, th {
+  vertical-align: top;
+  text-align: left;
+}
