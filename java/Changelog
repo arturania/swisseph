@@ -1,0 +1,807 @@
+
+   * May 3, 2012
+   - Release of swisseph-1.76.00-java-{src|doc}-05
+
+   * May 2, 2012
+   - Some asteroids could not be calculated depending
+     on planet number and byte ordering fo data file
+
+
+
+   * April 29, 2012
+   - Release of swisseph-1.76.00-java-{src|doc}-04
+
+   * April 29, 2012
+   - Asteroids with number > 99999 were not calculated
+     correctly
+
+
+   * December 27, 2011
+   - Release of swisseph-1.76.00-java-{src|doc}-03
+
+   * December 27, 2011
+   - SweHouse.swe_house_pos() returned values from 0.3 to
+     12.3 on Alcabitius house calculation
+   - Corrected code for SwissLib.swe_deg_midp()
+
+
+   * September 7, 2011
+   - Release of swisseph-1.76.00-java-{src|doc}-02
+
+   * September 7, 2011
+   - Corrected methods getJDfromUTC(), getUTCfromJDET(),
+     and getUTCfromJDUT1() in SweDate class
+
+
+   * April 21, 2011
+   - Release of swisseph-1.76.00-java-{src|doc}-01
+
+   * April 21, 2011
+   - J2ME had to be compiled to java target version
+     1.4 or less
+
+
+   * October 18, 2010
+   - Release of swisseph-1.76.00-java-{src|doc}-00
+
+   * October 10, 2010
+   - Updated to swiss ephemeris version 1.76.00
+
+   * June 9, 2010
+   - Added Precompile option -DSTRICTMATH
+
+   * June 2, 2010
+   - Added support for Google App Engine
+   - Added Serializable interface to all classes
+   - Reworked the Trace class to allow for easier change
+     of the output method
+   - SwephMosh.java: fixed incorrect handling of swi_fopen()
+     errors
+   - SweDate.java: fixed a minor issue with regard to the
+     'check' parameter of the setDate() method
+   - Transits.java: minor enhancements
+
+   * November 11, 2008
+   - Minor bugfix (Transits.java: -pm got wrong output)
+
+
+   * September 17, 2008
+   - Release of swisseph-1.75.00-java-{src|doc}-00
+
+   * September 16, 2008
+   - Updated to swiss ephemeris version 1.75.00
+   - Minor bugfixes
+
+   * September 15, 2008
+   - Reverse geocentric transits of Venus, Mars,
+     Vesta and Juno where very unprecise sometimes
+     
+
+
+   * August 22, 2008
+   - Release of swisseph-1.74.00-java-{src|doc}-00
+
+   * August 17, 2008
+   - Updated to swiss ephemeris version 1.74.00
+   - Minor error corrections
+
+
+
+   * December 19, 2007
+   - Release of swisseph-1.72.00-java-{src|doc}-02
+
+   * December 19, 2007
+   - Final fix for sometimes erronous calculations in JavaME
+
+
+
+   * December 18, 2007
+   - Release of swisseph-1.72.00-java-{src|doc}-01
+
+   * December 18, 2007
+   - Corrected error in calculation for the JavaME
+
+   * December 12, 2007
+   - Corrected compile errors with -DASTROLOGY precompile switch.
+
+
+
+   * December 8, 2007
+   - Release of swisseph-1.72.00-java-{src|doc}-00
+
+   * December 4, 2007
+   - Corrected error on reading some asteroid data files.
+     Thanks to Clement [...]
+
+   * December 3, 2007
+   - Added -c option to Precompile.java to remove empty
+     output files
+
+   - Updated to swiss ephemeris version 1.72.00
+
+   * December 2, 2007
+   - Added support to compile for Java Micro Edition
+     (JavaME, J2ME). Thanks to Chezhian [...] and
+     Sourav [...]
+
+   * October 29, 2007
+   - SweDate.init_dt(): Fixed reading deltat values from
+     sedeltat.txt
+
+
+
+   * October 3, 2007
+   - Release of swisseph-1.71.00-java-{src|doc}-02
+
+   * September 18, 2007
+   - Fixed asteroid calculation.
+
+
+
+   * August 8, 2007
+   - Release of swisseph-1.71.00-java-{src|doc}-01
+
+   * June 26, 2007
+   - Added precompile switch PRELOAD_FIXSTAR to enable the
+     preloadFixstarsFile() method.
+
+   - SwissEph.java: Added method preloadFixstarsFile() to
+     read fixstars.cat into memory.
+
+   * June 25, 2007
+   - FilePtr.java: Major speed up of readLine() method. Thanks
+     to Aaron Hunter
+
+   - Added Precompile switch 'NO_NIO' to remain compatible
+     with Java before version 1.4 if required
+
+   - FilePtr.java: Added java.nio version for reading the
+     the data files as the standard file read method. Based
+     on code from Aaron Hunter.
+
+   * May 25, 2007
+   - Swetest.java: Allowed for fractional seconds on -t / -ut
+
+
+
+   * November 29, 2006
+   - Release of swisseph-1.71.00-java-{src|doc}-00
+
+   - Corrected wrong documentation of the xpin[] parameter
+     to SwissEph.swe_house_pos(). Thanks to Srdjan Krajnalic!
+
+   - Updated to swiss ephemeris version 1.71.00
+
+
+
+   * August 3, 2006
+   - Release of swisseph-1.70.03-java-{src|doc}-00
+
+   * July 10, 2006
+   - Updated to swiss ephemeris version 1.70.03
+
+
+
+   * June 29, 2006
+   - Release of swisseph-1.70.02-java-{src|doc}-01
+
+   * June 19, 2006
+   - Cleaned up some problems with NO_MOSHIER switch
+
+
+
+   * June 15, 2006
+   - Release of swisseph-1.70.02-java-{src|doc}-00
+
+   * June 5, 2006
+   - Added INTP_APOG / INTP_PERG to transit calculations
+
+   * June 1, 2006
+   - Updated to swiss ephemeris version 1.70.02
+
+
+
+   * May 6, 2006
+   - Release of swisseph-1.70.01-java-{src|doc}-00
+
+   * May 2, 2006
+   - Added heliocentric transits
+
+   * May 1, 2006
+   - Added -h / --help option to Precompile.java
+
+   * April 30, 2006
+   - Transits.java: corrected minor issues with input and output
+
+
+
+   * April 29, 2006
+   - Release of swisseph-1.70.00-java-{src|doc}-00
+
+   * April 28, 2006
+   - Updated to swiss ephemeris version 1.70.00
+
+   * February 26, 2006
+   - Transits.java: Added option -cv
+
+   * February 22, 2006
+   - Fixed small output error on Transits.java
+
+   * February 11, 2006
+   - Changed interface of Precompile.java to allow for automatic
+     output directory detection from the package name
+
+   - Cleaned up and corrected the README files.
+
+
+
+   * February 5, 2006
+   - Release of swisseph-1.67.00-java-{src|doc}-04
+
+   * February 4, 2006
+   - Extensive rewrite of the Transits.java test program.
+
+   * February 1, 2006
+   - getNextTransit() methods rarely returned non transits.
+
+   * January 31, 2006
+   - The SwissEph.getTransitUT() methods returned ET instead of UT.
+
+   * January 2, 2006
+   - The SweDate() constructor did not initialize with the current
+     time after noon.
+
+
+
+   * November 7, 2005
+   - Release of swisseph-1.67.00-java-{src|doc}-03
+
+   * November 9, 2005
+   - Fixed a bug in transit calculations sometimes offering non-
+     transits as transits
+
+   * November 7, 2005
+   - Fixed a bug in planet calculations introduced in
+     swisseph-1.67.00-java-{src|doc}-02
+
+
+   * October 7, 2005
+   - Release of swisseph-1.67.00-java-{src|doc}-02
+
+   * August 2005
+   - Added support for newer asteroid files with swapped byte order
+
+
+
+   * July 25, 2005
+   - Release of swisseph-1.67.00-java-{src|doc}-01
+
+   * July 25, 2005
+   - Fixed some problems with file opening on asteroid files especially.
+
+
+
+   * July 24, 2005
+   - Release of swisseph-1.67.00-java-{src|doc}-00
+
+   * July 24, 2005
+   - Complete rewrite of the transit code with basic interface changes
+     to transit calculations. See README for further informations.
+
+   * July 23, 2005
+   - Precompile.java: Added possibility to give multiple input and output
+     directories
+   - Extensions.java, Transits.java: Multiple bug fixes and improvements
+
+   * July 20, 2005
+   - Updated to swiss ephemeris version 1.67.00.
+
+   * July 19, 2005
+   - Transits.java: Added format option 't'
+   - Transits.java: Added option to force 24h time output
+
+
+
+   * July 18, 2005
+   - Release of swisseph-1.66.00-java-{src|doc}-01
+
+   * July 18, 2005
+   - Extensions.java, Transits.java: Added Juno and Vesta as planets
+     for transit calculations
+
+
+
+   * July 18, 2005
+   - Release of swisseph-1.66.00-java-{src|doc}-00
+
+   * July 17, 2005
+   - Extensions.java, Transits.java: Added Chiron, Pholus, Ceres
+     and Pallas as planets for transit calculations
+
+   * July 9, 2005
+   - Transits.java: Added options -f+..., -b... -b...
+   - Transits.java: Changed option -B...
+
+   * July 8, 2005
+   - Extensions.java: Corrected transit calculations for higher precision
+   - Transits.java: Corrections to internationalization, other minor
+     corrections
+
+   * May 31, 2005
+   - Transits.java: Added option -N...
+
+   * May 30, 2005
+   - Transits.java: Updated internationalized input and output
+
+   * May 29, 2005
+   - SweDate.java: Removed constructor 
+       public SweDate(int year, int month, int day)
+     and the methods:
+       public boolean setDate(int newYear, int newMonth, int newDay)
+       public boolean setDate(int newYear, int newMonth, int newDay, boolean check)
+       public static double getJulDay(int year, int month, int day)
+     Use the constructor and methods including the hour, with a value
+     of 0.0 for the hour now.
+
+   * December 1, 2004
+   - Added flag to getRelativeTransit*() methods to calculate
+     Yoga transits ("union" or sum of two planet's positions).
+
+   * November 27, 2004
+   - Transits.java: added output format option 'P'
+
+   * November 26, 2004
+   - Transits.java: Updated options, added internationalized
+     date input and output
+   - Precompile.java: Added option -q to suppress output
+   - Swedate.java, Transits.java: Cleaned up Gregorian- /
+     Julian calendar system issues
+   - Extensions.java: Added mean apogee (Lilith) and osculating
+     apgogee for transit calculations
+
+   * November 22, 2004
+   - Extensions.java: Updated
+
+   * November 16, 2004
+   - Extensions.java: Small bug fix in getRelativeTransit()
+
+   * November 15, 2004
+   - SweDate.java: Changed constructor SweDate() to initialize to
+     current date
+   - SweDate.java: Added method toString()
+   - Transits.java: Added option to output fractions of a second
+
+   * October 25, 2004
+   - Precompile.java: Added option -l to list all used #defines
+     in an any Java files of an input directory.
+
+   * August 28, 2004
+   - Precompile.java: Changed creation of directories to allow
+     for paths with non-existent parent directories.
+
+   * August 27, 2004
+   - Updated to swiss ephemeris version 1.66.00.
+
+   * August 25, 2004
+   - Rewrote Transits.java to new transits interface. Added
+     new options.
+
+   * July 7, 2003
+   - Updated documentation.
+
+   * June 24, 2003
+   - Bug fix to "java Swetest -house..." call.
+
+   * May 4, 2003
+   - Reworked and tested getNextTransit() method.
+
+   * April 26, 2003
+   - Transits.java always showed Fagan/Bradley Ayanamsha value.
+   - Cleaned up UT and ET issues in Transits.java
+   - SwissEph.swe_get_planet_name() did not return a valid name
+     in many cases.
+   - Swetest.java did not handle -nN switch correctly.
+
+   * January 10, 2003
+   - Extensions.getNextTransit() could fail in some rather
+     obscure situations.
+
+
+
+   * January 3, 2003
+   - Release of swisseph-1.64.02-java-{src|doc}-00
+
+   * January 3, 2003
+   - Updated to swiss ephemeris version 1.64.02 (somehow
+     missed the release of it in October 2002).
+
+
+
+   * December 14, 2002
+   - Release of swisseph-1.64.01-java-{src|doc}-02
+
+   * December 14, 2002
+   - Incorrect error handling for http access to planet files resulted
+     in rather frequent 'connection failed' errors.
+
+   * December 10, 2002
+   - Corrected Swetest.java to allow for -ps and -pz switches,
+     which support was corrupted some versions ago in the
+     original package.
+
+
+
+   * August 22, 2002
+   - Test release of swisseph-1.64.01-java-{src|doc}-01-alpha
+     including the unverified option to specify a degree offset
+     for swe_rise_trans() meridian transits, when precompiled
+     with -DMT_TESTS.
+
+
+
+   * June 27, 2002
+   - Release of swisseph-1.64.01-java-{src|doc}-00
+
+   * June 27, 2002
+   - Updated to new swiss ephemeris version 1.64.01.
+
+
+
+   * June 15, 2002
+   - Release of swisseph-1.64.00-java-{src|doc}-01
+
+   * June 14, 2002
+   - Made -DSPEED_TRANSITS functional and documented.
+
+
+
+   * June 3, 2002
+   - Release of swisseph-1.64.00-java-{src|doc}-00
+
+   * June 3, 2002
+   - Updated to new swiss ephemeris version 1.64.00.
+
+
+
+   * April 9, 2002
+   - Release of swisseph-1.63.00-java-{src|doc}-05
+
+   * April 9, 2002
+   - Termination conditions of getRelativeTransits() were still incorrect.
+
+
+
+   * April 3, 2002
+   - Release of swisseph-1.63.00-java-{src|doc}-04
+
+   * April 3, 2002
+   - SwissEph.swe_time_equ() routine was not public.
+
+
+
+   * March 6, 2002
+   - Release of swisseph-1.63.00-java-{src|doc}-03
+
+   * March 6, 2002
+   - Termination conditions of getRelativeTransits() were incorrect
+     resulting in incorrect or inaccurate results.
+
+
+
+   * February 28, 2002
+   - Release of swisseph-1.63.00-java-{src|doc}-02
+
+   * February 25, 2002
+   - Changed getNextTransit() etc. to return UT instead of ET.
+
+   * February 15, 2002
+   - getNextTransit() could fail to find a transit of 0.0 degrees or very
+     near to it.
+
+
+
+   * January 11, 2001
+   - Release of swisseph-1.63.00-java-{src|doc}-01
+
+   * January 11, 2001
+   - Transits.java did not compile if SwissEph.java was not compiled with
+     -DSPEED_TRANSITS.
+
+
+
+   * January 6, 2001
+   - Release of swisseph-1.63.00-java-{src|doc}-00
+
+   * January 6, 2001
+   - Updated to  version 1.63.00 of SwissEphemeris.
+
+   * January 5, 2001
+   - Cleaned up the SwissData.ODEGREE_CHAR issue.
+
+
+
+   * January 4, 2001
+   - Release of swisseph-1.62.01-java-{src|doc}-04
+     (Mispacked version 03, don't use!)
+
+
+
+   * December 31, 2001
+   - Release of swisseph-1.62.01-java-{src|doc}-03
+
+   * December 31, 2001
+   - "Write once, test anywhere:" Http access failed in Windows.
+
+   * December 29, 2001
+   - FilePtr.java: handled unsuccessful http reads more intelligently, so
+     IOExceptions due to failed http access will occur much less.
+
+   * December 8, 2001
+   - Extended and commented Precompile.java.
+
+
+
+   * December 3, 2001
+   - Release of swisseph-1.62.01-java-{src|doc}-02
+
+   * November 26, 2001
+   - Added test program for transit calculations.
+   - Added routines for transit calculations.
+
+   * November 22, 2001
+   - -DASTROLOGY failed in rather rare circumstances.
+
+
+
+   * November 12, 2001
+   - Release of swisseph-1.62.01-java-{src|doc}-01
+
+   * November 3, 2001
+   - Precompile.java: Allowed spaces after -o and -i parameters as a
+     workaround for some funny parameter passing problems.
+
+   * October 17, 2001
+   - Cleaned up and documented FilePtr.java.
+
+
+
+   * October 16, 2001
+   - Release of swisseph-1.62.01-java-{src|doc}-00
+
+   * October 16, 2001
+   - Updated to swisseph bug fix release 1.62.01. There does not seem to be
+     any reason to update if you use version 1.62.00.
+
+   * October 13, 2001
+   - Class FilePtr is now publically accessible.
+   - Added method SweDate.getDate(...) to return a java.util.Date object
+     from the SweDate object. This is useful in the context of
+     internationalisation.
+
+
+
+   * August 30, 2001
+   - Release of swisseph-1.62.00-java-{src|doc}-01
+
+   * August 29, 2001
+   - Sweclips.java: Fixed use of parameter -lat and -ejpl.
+
+   * August 8, 2001
+   - Added default http port (80) for URL-file access when not specified.
+
+
+
+   * August 6, 2001
+   - Release of swisseph-1.62.00-java-{src|doc}-00
+
+   * August 5, 2001
+   - Included seorbel.txt from original swisseph distribution for calculation
+     of fictitious bodies.
+   - Some error corrections regarding reading of asteroid files.
+
+   * August 4, 2001
+   - Updated to SwissEph 1.62.00 version.
+
+
+
+   * July 17, 2001
+   - Release of swisseph-1.61.02-java-{src|doc}-01
+
+   * July 16, 2001
+   - Corrected information in README / LIESMICH; corrected compilability of
+     all test applications.
+
+   * July 14, 2001
+   - Updated Precompile.java to not preserve local #define-s over different
+     files.
+
+   * July 13, 2001
+   - Added switch -DNO_RISE_TRANS for precompilation with -DASTROLOGY, but
+     without calculations of rise times etc..
+
+   * July 12, 2001
+   - FilePtr.java, SwissEph.java: cleaned up a NullPointerException when
+     a fixstar number should be calculated that was beyond the lines in
+     the input file fixstars.cat.
+   - Small corrections and additions to the documentations in the classes.
+
+
+
+   * July 12, 2001
+   - Release of swisseph-1.61.02-java-{src|doc}-00
+
+   * July 11, 2001
+   - Updated to SwissEph 1.61.02 version.
+
+
+
+   * July 8, 2001
+   - Release of swisseph-1.61.01-java-{src|doc}-12
+
+   * July 8, 2001
+   - Added precompilation to Swetest.java and Sweclips.java for
+     compatibility with -DASTROLOGY.
+   - Removed CFmt class from swisseph package, (used only to format
+     error messages). It can be enabled again by -DORIGINAL switch.
+     It is still available outside of the package.
+
+   * July 7, 2001
+   - Reworked //#define ASTROLOGY a little.
+   - renamed SweHouses.swe_houses_ex() to SweHouses.swe_houses() and
+     removed method name SweHouses.swe_houses_ex(). ATTENTION: THIS IS
+     AN INTERFACE CHANGE!
+   - //#define ASTROLOGY did not work (in SwephMosh.java).
+   - Reworked Precompile.java for increase of speed and more complete
+     error handling.
+
+
+
+   * July 6, 2001
+   - Release of swisseph-1.61.01-java-{src|doc}-11 (Bugfix release)
+
+   * July 6, 2001
+   - Swemini.java, Swetest.java: still used swe_get_planet_name(int, String),
+     even though this method is not available since June 27, 2001.
+
+   * July 5, 2001
+   - FilePtr.java: Calculation of fictitious bodies with access to the
+     file seorbel.txt failed.
+   - Changed HTTP requests to include "User-Agent:" header (SHOULD be
+     included due to RFC 2068).
+   - Added server response information on failure to access data files
+     via http.
+
+
+
+   * June 27, 2001
+   - Release of swisseph-1.61.01-java-{src|doc}-10
+   - SwissEph.java: Fixed bug mentioned by Sarah@barnswoodltd.freeserve.co.uk
+     and alois@astro.ch on [SWISSEPH] mailinglist on June 27, 2001 about
+     SE_ECL_NUT with SEFLG_RADIANS returning incorrect values.
+
+   * June 11, 2001
+   - Major clean up of code.
+   - Removed 'public String swe_get_planet_name(int ipl, String s)'
+     without any replacement. Use
+     'public String swe_get_planet_name(int ipl)' instead, as you
+     should have done anyway.
+
+
+
+   * April 26, 2001
+   - Release of swisseph-1.61.01-java-{src|doc}-09 (Bugfix release)
+   - SweHouse.java: On subsequent calls to swe_houses_ex(...) the
+     deltaT value was always calculated for the FIRST given date.
+     Problem had been recognized and removed on February 10, 2001
+     already?
+
+[  * April 25, 2001
+   - Added time info to TRACE0 output.]
+
+
+
+   * April 24, 2001
+   - Release of swisseph-1.61.01-java-{src|doc}-08 (Bugfix release)
+   - Swecl.java: corrections to xpe[] offset-handling in
+     Swecl.swe_nod_aps(...).
+
+   * April 23, 2001
+   - Swecl.java, SwissEph.java: corrections to xp[] offset-handling in
+     Swecl.swe_nod_aps(...).
+
+
+
+   * April 23, 2001
+   - Release of swisseph-1.61.01-java-{src|doc}-07 (Bugfix release)
+   - Swetest.java: No defaults for top_long, top_lat, top_elev.
+   - Swetest.java: -topo without arguments generated an exception.
+   - SwissEph.java: swe_fixstar(...) missed one line of code.
+   - Changed to Java naming scheme (class plan_data to class PlanData etc.).
+   - Sweclips.java: A negative year did not get interpreted correctly.
+
+
+
+   * April 20, 2001
+   - Release of swisseph-1.61.01-java-{src|doc}-06 (Bugfix release)
+   - plan_data.java, SwephMosh.java: atof() of C had to be emulated more
+     strictly. Added method SwissLib.atof(String) for this.
+   - README, LIESMICH: Changed infos about status.
+   - Some minor clean up of code.
+   - One additional (incorrect) line of code removed and added four
+     missing lines of code in Swecl.eclipse_where().
+
+   * April 19, 2001
+   - save_positions.clear_data() did not clear the attributes ipl, tsave,
+     and iflgsave.
+
+   * April 17, 2001
+   - In SwissData.java, ODEGREE_CHAR was erronously defined as &szlig; and not
+     as &deg;, if the charcter encoding could not be found.
+
+
+
+   * April 6, 2001
+   - Release of swisseph-1.61.01-java-{src|doc}-05 (Bugfix release)
+   - SwissEph.java: JPL calculation of chiron (and others?) failed due to
+     access beyond array boundaries of SwephData.pnoint2jpl[]. Was: error
+     in C code.
+
+   * April 4, 2001
+   - Swetest.java: fixed rounding error mentioned by ian.flybywire@ic24.net
+     on April 3, 2001 on [SWISSEPH] mailinglist
+   - README, LIESMICH: Added infos about precompile options
+   - SwissLib.java: Added the choice to define PREC_WILLIAMS_1994,
+     PREC_SIMON_1994 or PREC_LASKAR_1986 for calculation of the precession
+     by Precompile switches as you can do it in the C version.
+   - Precompile.java: added support to handle //#if switches as //#ifdef
+     switches - not compatible to C, but enough for now.
+   - SwephData.java: pnoint2jpl[] was defined incomplete. (JPL calculations
+     of the moon (and others?) incorrect to about one or two degress).
+
+   * March 27, 2001
+   - SwissEph.java: missed to catch SecurityException in method tryFileAsURL()
+
+[  * March 22, 2001
+   - Added Precompiler option TRACE0 to trace method calls.]
+
+   * March 20, 2001
+   - Minor cleanup of code.
+
+
+
+   * March 20, 2001
+   - Release of swisseph-1.61.01-java-{src|doc}-04 (Bugfix release)
+
+   * February 10, 2001
+   - Incorrect date handling in SweHouse.swe_houses_ex() (on subsequent
+     calls, deltaT of the first date is returned instead of that of the
+     specified date)
+
+   * February 1, 2001
+   - Small optimisation on the amount of http requests
+   - Bugfixes for URL handling related to more correct check for
+     http read in:
+     - class FilePtr
+   - Bugfixes for URL handling related to better error handling in
+     trying to open files as URLs:
+     - SwissEph.tryFileAsURL
+
+
+
+   * January 31, 2001
+   - Release of swisseph-1.61.01-java-{src|doc}-03 (Bugfix release)
+
+   * 25th to 31th January 2001
+   - Added URLs as valid ephepath specifiers - needed for the
+     use of data files with applets (test URL:
+     http://www.th-mack.de/datafiles)
+   - Bugfixes PROBABLY only for fictitious bodies:
+     - Fixed some minor bug in SwissLib.swi_cutstr()
+     - Fixed bug in SwissLib.swi_kepler()
+     - Fixed four bugs in SwephMosh.read_elements_file()
+     - Fixed many bugs in SwephMosh.check_t_terms()
+
+
+
+   * January 17, 2001
+   - Release of swisseph-1.61.01-java-{src|doc}-02
