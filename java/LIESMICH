@@ -1,0 +1,940 @@
+Dies ist eine Portierung nach Java der Original Swiss
+Ephemeris Planeten Berechnungsroutinen der Astrodienst AG
+Zìrich. Weitere Informationen und Dokumentationen sind unter
+http://www.astro.ch/swisseph zu finden.
+
+Die Datei LICENSE ist eine Kopie der LICENSE Datei der
+Original Swiss Ephemeris und gilt in vollem Umfang in
+dieser Portierung weiter, auch wenn die Portierung nach
+Java selber fìr jedermann frei ist.
+
+Auch wenn die Portierung korrekt zu funktionieren scheint,
+sollten Sie gelegentlich auf http://th-mack.de/download
+nach Updates schauen.
+
+Falls Sie bei einem Update automatisch (per email)
+benachrichtigt werden m�chten, oder falls Sie irgendwelche
+Fragen oder Kommentare haben, schicken Sie mir einfach eine
+email (an mack@ifis.cs.tu-bs.de).
+
+ACHTUNG: Wenn ich nicht innerhalb von ein paar Tagen auf eine
+Email antworte, bin ich entweder im Urlaub, oder ich habe die
+Email ungesehen als Spam eingeordnet. In letzterem Fall sollte
+es helfen, die Email ein weiteres mal mit einem vernìnftigen
+"Subject:" (== Betreffzeile) und den korrekten Absender- und
+Empfñngeradressen zu versenden.
+
+
+
+Inhalt:
+-------
+
+1 Schnellstart
+2 Was kann man dem swisseph Paket tun?
+3 Konzepte dieser Portierung
+4 Testprogramme
+5. Programmentwicklung
+5.1 Die Klassen
+5.2 Die Methoden
+5.3 Ein Beispiel
+5.4 Verschiedene Berechnungsmodi
+5.5 Precompile Optionen
+6 Applets
+7 JavaME / J2ME
+8 Google App Engine
+9 Dokumentation
+10 Probleme?
+11 Anhang
+11.1 Schnittstellenñnderungen
+11.2 Zusñtzliche Dateien
+11.3 Codegr�ßen bei verschiedenen Precompile Optionen
+11.4 Tests
+11.5 Bekannte Probleme
+
+
+
+
+
+1. Schnellstart
+---------------
+
+Erst einmal das Gesamtpaket auspacken, und dann das
+Paket "vorkompilieren", dann kompilieren und testen
+mit:
+
+javac Precompile.java
+java Precompile -qfc -iswesrc -iprogs -DNO_JPL -DTRANSITS
+javac Swetest.java
+javac Transits.java
+java Swetest -b13.4.1957 -ut17.57
+java Transits -p1 -P0 -lon180/0 -n12 -btoday -ut -loc24 -f+j
+
+Und zur Erstellung der Dokumentation aus den Klassen:
+
+mkdir doc
+javadoc -d doc swisseph .
+
+
+
+2. Was kann man mit dem swisseph Paket tun?
+-------------------------------------------
+
+Dieses Paket ist eine Programmierbibliothek zur Berechnung
+von Planetenpositionen. Zum Testen sind ein paar kleine
+Testprogramme enthalten.
+
+Seit der Version 1.72.00-00 wird die Java Micro Edition
+(JavaME, J2ME) teilweise unterstìtzt.
+
+Die Kernroutinen des Paketes sind:
+
+SwissEph.swe_calc() / SwissEph.swe_calc_ut() sowie
+SwissEph.swe_fixstar() / SwissEph.swe_fixstar_ut().
+
+Sie berechnen Planetenpositionen und ihre Geschwindigkeit
+in vielen Variationen, z.B. heliozentrisch oder geozentrisch
+oder topozentrisch, z.B. mit Prñzession oder ohne, wahre
+oder scheinbare Positionen, im tropischen oder im siderischen
+Tierkreis usw. usf..
+
+(Mit "Planeten" im obigen Satz sind alle normalen Planeten,
+aber auch Fixsterne, Asteroiden usw. gemeint.)
+
+Weiterhin gibt es all die grundlegenden astrologischen
+Berechnungsroutinen wie die Berechnung von Aszendenten,
+MC, Hñusern, Sternzeit usw. usf..
+
+Außerdem lassen sich Sonnen- und Mondfinsternisse, Auf-
+und Untergangszeiten von Planeten, Zeiten von Transiten
+usw. usf. berechnen.
+
+Letztendlich stehen natìrlich auch die Berechnungen im
+Zusammenhang mit Zeit zur Verfìgung, wie z.B. die Berechnung
+"Julianischer Tage" oder des Wertes von DeltaT usw..
+
+
+
+
+
+3. Konzepte dieser Portierung
+-----------------------------
+
+Die Java Quelldateien im swesrc Verzeichnis (und eingeschrñnkt
+auch die Quelldateien im progs Unterverzeichnis) k�nnen NICHT
+direkt kompiliert werden.
+
+Vor ihrer Benutzbarkeit mìssen sie mit Hilfe der Precompile
+Klasse "vorkompiliert" werden. Erst hierdurch werden benutzbare
+Java Dateien erzeugt. Dies hat den Zweck, unterschiedliche
+Varianten dieses Paketes zu erm�glichen.
+
+Der Precompile Klasse wird das Verzeichnis ìbergegeben, in
+der die Ursprungsdateien zu suchen sind. Dazu kommen bestimmte
+Optionen ("-D<...>"), die bestimmen, welche Variante erzeugt
+werden soll.
+
+Wenn die Transitroutinen ben�tigt werden, MUSS mit -DTRANSITS
+vorkompiliert werden. Und normalerweise wìrde man zusñtzlich
+mindestens noch -DNO_JPL angeben, um den Code fìr die JPL
+Berechnungsroutinen auszuschließen, die nur in Ausnahmefñllen
+wirklich ben�tigt werden.
+
+Unter Punkt 5.5 sind die Optionen im Einzelnen aufgefìhrt, die
+benutzt werden k�nnen.
+
+
+
+
+4. Testprogramme
+----------------
+
+Das Paket enthñlt z.Zt. 5 Testprogramme, mit denen die
+Routinen adhoc getestet werden k�nnen. Diese Testprogramme
+sind im Unterverzeichnis progs zu finden, und heißen
+Swetest.java, Sweclips.java, Swemini.java, Swehtest.java
+und Transits.java.
+
+Unter 1) wurden die Klassen Swetest und Transits mit
+kompiliert. Die weiteren Programme k�nnen dann einfach
+mit zusñtzlichen javac Aufrufen kompilert werden:
+
+javac Sweclips.java
+javac Swemini.java
+javac Swehtest.java
+
+Swetest ist ein Programm, um die Positionen / Geschwindigkeiten /
+Entfernungen etc. von Planeten etc. anzuzeigen. Zusñtzlich lassen
+sich Sonnen- und Mondfinsternisse, Mondverschattungen auf andere
+Planeten / Fixsterne etc. sowie Meridian Transite berechnen. Auch
+die Berechnung astrologischer Hñuser ist m�glich. Ein Aufruf mit:
+java Swetest -h zeigt alle Optionen an.
+
+Sweclips berechnet Sonnen- und Mondfinsternisse, Auf- und Untergñnge,
+sowie Meridian Transite von Planeten und Fixsternen. Auch hier gibt
+die Option -h die m�glichen Optionen aus.
+
+Swemini ist ein kleines interaktives Programm, um die Planetenpositionen
+von der Sonne bis zu Chiron auszugeben.
+
+Swehtest ist ein "sehr einfaches" Programm, um aus dem Lñngengrad,
+der Sternzeit und dem astrologischen Hñusersystem die Hñuser
+berechnen zu lassen. Normalerweise berechnet man die Hauspositionen
+mit dem Swetest Programm.
+
+Transits.java erlaubt die Berechnung von Transiten von Planeten
+ìber Lñngengrade, Breitengrade, Distanzen oder Geschwindigkeiten,
+auch relativ zu anderen Planeten oder auch als Summen fìr die
+indischen Yoga-Transite. Dieses Programm ist fast vollstñndig
+internationalisiert. Auch hier gibt es den Parameter '-h', der
+alle Optionen auflistet.
+
+
+
+
+5. Programmentwicklung
+----------------------
+
+5.1 Die Klassen:
+
+Im Prinzip werden fìr die Berechnungen drei Klassen
+ben�tigt:
+
+- SwissEph:  Dies ist die Klasse, die alle Berechnungsroutinen
+             enthñlt.
+- SweDate:   Eine Klasse, um Datumsangaben zu konvertieren
+             (von und nach Julianischen Tagen z.B.) und um
+             ein paar andere Datums-bezogene Dinge zu tun.
+- SweConst:  Diese Klasse enthñlt sehr viele Konstanten, die
+             fìr die Berechnungsroutinen ben�tigt werden. Sie
+             braucht / kann nicht instantiiert zu werden!
+- SweHel:    Heliakische Berechnungen
+
+Manchmal sind noch andere Klassen n�tig oder sinnvoll:
+
+- DblObj:    Naja - dies ist eine sehr direkte Portierung von
+             C nach Java. Manchmal wurden double Werte per
+             via Referenz ìbergeben, sprich, sie dienten sowohl
+             als Eingabe- als auch als Ausgabeparameter. Dies
+             kann in Java nur mit Objekten oder Arrays getan
+             werden. Diese Klasse tut nichts anderes, als einen
+             double in ein Objekt zu packen.
+- IntObj:    Eine Klasse, die einen Integer in ein Objekt einpackt.
+- SwissLib:  Sehr, sehr viele Routinen, die fìr eigene Programme
+             nìtzlich sein k�nnten, wie z.B. Konvertierungen
+             und vieles anderes.
+- SwissData: Noch ein paar mehr Konstanten, die "vielleicht"
+             instantiiert werden mìssen.
+- FilePtr:   Eine Klasse ñhnlich der Klasse RandomAccessFile,
+             die auch Dateizugriffe ìber das http-Protokoll
+             erlaubt.
+
+Außerhalb dieses Paketes gibt es eine weitere Klasse:
+
+- CFmt:      Diese Klasse implementiert die printf Formatierungen
+             von C in Java. Neuere Java Versionen enthalten eine
+             solche Klasse in weit mñchtigerer Ausfìhrung.
+
+
+
+
+5.2 Die Methoden:
+
+Als Berechnungsroutinen gibt es:
+
+Berechnung von Planeten und Fixsternen:
+  SwissEph.swe_calc() / SwissEph.swe_calc_ut()
+  SwissEph.swe_fixstar() / SwissEph.swe_fixstar_ut()
+
+Berechnung von Sonnen- und Mondfinsternissen:
+  SwissEph.swe_lun_eclipse_how()
+  SwissEph.swe_lun_eclipse_when()
+  SwissEph.swe_sol_eclipse_how()
+  SwissEph.swe_sol_eclipse_when_glob()
+  SwissEph.swe_sol_eclipse_when_loc()
+  SwissEph.swe_sol_eclipse_where()
+
+Berechnung von Mondverschattungen:
+  SwissEph.swe_lun_occult_when_loc()
+  SwissEph.swe_lun_occult_where()
+  SwissEph.swe_lun_occult_when_glob()
+
+Berechnung astrologischer Hñuser:
+  SwissEph.swe_houses()
+  SwissEph.swe_houses_armc()
+  SwissEph.swe_house_pos()
+  SwissEph.swe_gauquelin_sector()
+
+Heliakische Berechnungen:
+  SweHel.swe_vis_limit_mag()
+  SweHel.swe_topo_arcus_visionis()
+  SweHel.swe_heliacal_angle()
+  SweHel.swe_heliacal_pheno_ut()
+  SweHel.swe_heliacal_ut()
+
+Berechnung im siderischen Tierkreis:
+  SwissEph.swe_set_sid_mode()
+  SwissEph.swe_get_ayanamsa() / SwissEph.swe_get_ayanamsa_ut()
+
+Berechnung in einem topozentrischen Koordinatensystem:
+  SwissEph.swe_set_topo()
+
+Berechnung von Transiten (nur, wenn mit -DTRANSITS
+vorkompiliert wurde):
+  SwissEph.getTransitET()
+  SwissEph.getTransitUT()
+
+Andere Berechnungen:
+  SwissLib.swe_sid_time()     // Sternzeit
+  SwissLib.swe_sid_time0()    // Sternzeit
+  SwissEph.swe_rise_trans()   // Auf- und Untergangszeiten etc.
+  SwissEph.swe_azalt()
+  SwissEph.swe_azalt_rev()
+  SwissEph.swe_nod_aps() / SwissEph.swe_nod_aps_ut()
+  SwissEph.swe_pheno() / SwissEph.swe_pheno_ut()
+  SwissEph.swe_refrac()
+
+Andere Methoden:
+  SwissEph.swe_get_planet_name()
+  SwissEph.swe_set_ephe_path()
+  SwissEph.swe_set_jpl_file()
+  SwissEph.swe_close()
+  SwissEph.setHttpBufSize()
+
+Nur wenn mit -DPRELOAD_FIXSTARS vorkompiliert wurde:
+  SwissEph.preloadFixstarsFile()
+
+
+Normalerweise werden alle Berechnungen bezogen auf die sog.
+Nummer des Julianischen Tages. Dieses Zahl bekommt man aus
+einem Datum (und Uhrzeit) mit Hilfe der SweDate Klasse und
+der Methode getJulDay().
+
+Manche Methoden ben�tigen ET ("Ephemeris Time"), manche
+Methoden UT ("Universal Time"). Der Unterschied beider Zeiten
+ist das sog. DeltaT, was ebenfalls aus der Klasse SweDate
+bezogen werden kann: UT = ET + sd.getDeltaT(); (sd soll eine
+SweDate Instanz sein).
+
+In SweConst.java sind alle m�glichen Konstanten definiert,
+die Planeten (SE_*), Berechnungs-Flags (SEFLG_*, SE_*),
+Flags zur Berechnung in siderischen Tierkreisen (SE_SID*),
+Flags fìr die Berechnung der Finsternisse (SE_ECL_*) und
+andere Dinge bezeichnen.
+
+
+
+5.3 Ein Beispiel:
+
+Ein kleines Beispielprogramm, um die Position und die
+Geschwindigkeit des Mars zu berechnen, k�nnte z.B. wie folgt
+aussehen:
+
+
+-- schnipp -------------------------------------------------
+import swisseph.*;
+
+public class Sw1 {
+  static final double AU2km=SweConst.AUNIT/1000;
+
+  public static void main(String[] p) {
+    SwissEph sw=new SwissEph();
+    SweDate sd=new SweDate(1957,4,13,18+57./60.);
+
+    // In diesem Array werden die berechneten Werte
+    // zurìckgeliefert:
+    double[] res=new double[6];
+    StringBuffer sbErr=new StringBuffer();
+    int flags = SweConst.SEFLG_SPEED |
+                SweConst.SEFLG_TOPOCTR;
+    // Berechnung fìr einen Ort in Indien:
+    sw.swe_set_topo(88.2,43,200);
+
+    int rc=sw.swe_calc_ut(sd.getJulDay(),
+                          SweConst.SE_MARS,
+                          flags,
+                          res,
+                          sbErr);
+
+    if (sbErr.length()>0) {
+      System.out.println(sbErr.toString());
+    }
+    if (rc==SweConst.ERR) {
+      System.exit(1);
+    }
+    System.out.println(
+        sw.swe_get_planet_name(SweConst.SE_MARS)+":"+
+        "\n\tLaenge:              "+res[0]+
+        "\n\tBreite:              "+res[1]+
+        "\n\tEntfernung:          "+res[2]+" AU"+
+        "\n\t                    ("+(res[2]*AU2km)+" km)"+
+        "\n\tGeschw. i.d. Laenge: "+res[3]+" Grad/Tag");
+  }
+}
+-- schnipp -------------------------------------------------
+
+
+
+
+5.4 Verschiedene Berechnungsmodi:
+
+Das swisseph Paket kommt mit drei verschiedenen
+Berechnungsroutinen: JPL, SwissEph und Moshier.
+
+Sowohl die JPL Routinen als auch die SwissEph Routinen
+stìtzen sich auf externe Datendateien, wñhrend Moshier
+ohne solche auskommt.
+
+Der Nachteil der semi-analytischen Moshier Routinen
+ist die geringere Geschwindigkeit, die geringere
+Genauigkeit und der gr�ßere Code Bedarf (ca. 180kB
+allein fìr Moshier).
+
+Die JPL Routinen (= Jet Propulsion Laboratory) sind die
+genauesten Routinen, haben aber den Nachteil, sehr große
+Datendateien zu ben�tigen, ca. 9,5 MB pro 300 Jahre
+(downloadbar unter http://ssd.jpl.nasa.gov/, DE-406
+ephemeris files (ftp://ssd.jpl.nasa.gov/pub/eph/export/unix)).
+
+Die SwissEphemeris Routinen spiegeln die JPL Genauigkeit
+bis auf 1/1000 einer Bogensekunde wieder, kommen aber mit
+etwa 1/10 der Dateigr�ße aus (Datendateien:
+ftp://ftp.astro.ch/pub/swisseph/ephe).
+
+Datendateien mìssen irgendwo im Pfad von:
+".:./ephe:/users/ephe2/:/users/ephe/" stehen (s.
+SweConst.SE_EPHE_PATH), alternativ kann der Pfad im
+Konstruktor von SwissEph oder explizit mit
+swe_set_ephe_path() gesetzt werden.
+
+
+
+
+5.5 Precompile Optionen:
+
+Sie haben einerseits den Sinn, den Codeumfang zu reduzieren,
+was z.B. bei Applets sehr sinnvoll ist, andererseits steuern
+sie aber auch das Verhalten.
+
+Die wichtigsten Optionen z.Zt. sind:
+
+TRANSITS         Schließt Routinen zur Transitberechnung mit ein.
+
+NO_JPL           Keine Unterstìtzung fìr JPL
+
+NO_MOSHIER       Keine Unterstìtzung fìr Moshier
+
+JAVAME
+J2ME             Compiliert fìr die Java Micro Edition (JavaME, J2ME)
+                 fìr die Benutzung auf Handys oder PDAs oder anderen
+                 mobilen Gerñten wie Drucker o.ñ.. Siehe Abschnitt 7
+                 fìr weitere Erlñuterungen.
+
+STRICTMATH       Anstelle von java.lang.Math wird java.lang.StrictMath
+                 fìr die Berechnungen verwendet. Das resultiert in
+                 konsistenteren Ergebnissen ìber verschiedene
+                 Plattformn hinweg.
+
+USE_MATH         Standardmñßig wird das SMath Package anstelle des
+                 java.lang.Math Packages benutzt, wenn fìr die JavaME
+                 vorkompiliert wird. -DUSE_MATH erzwingt die Nutzung
+                 von java.lang.Math auch in diesem Fall.
+
+ASTROLOGY        (Beta-Status) Nur Berechnung der astrologischen
+                 Planeten, Hñuser sowie der Auf- und Untergangszeiten
+                 der Planeten. Das bedeutet, es stehen ausschließlich
+                 die folgenden Routinen zur Verfìgung:
+                   - SweDate.*
+                   - DblObj()
+                   - SwissEph()
+                   - SwissEph.setHttpBufSize()
+                   - SwissEph.swe_calc()
+                   - SwissEph.swe_close()
+                   - SwissEph.swe_get_ayanamsa()
+                   - SwissEph.swe_get_planet_name()
+                   - SwissEph.swe_houses()
+                   - SwissEph.swe_house_pos()
+                   - SwissEph.swe_rise_trans()
+                   - SwissEph.swe_set_ephe_path()
+                   - SwissEph.swe_set_jpl_file()
+                   - SwissEph.swe_set_sid_mode()
+                   - SwissEph.swe_set_topo()
+                 Und wenn mit -DTRANSITS vorkompiliert wurde:
+                   - SwissEph.getTransitET()
+                   - SwissEph.getTransitUT()
+
+                 Als Planeten k�nnen berechnet werden:
+                   SE_SUN, SE_MOON, SE_MERCURY, SE_VENUS, SE_MARS,
+                   SE_JUPITER, SE_SATURN, SE_MEAN_NODE, SE_TRUE_NODE,
+                   SE_URANUS, SE_NEPTUNE, SE_PLUTO, SE_CHIRON, SE_MEAN_APOG
+                   (==Lilith), SE_ECL_NUT (Ecliptic und Nutation)
+
+                 Die unterstìtzten Flags fìr swe_calc() sind:
+                   SEFLG_TOPOCTR, SEFLG_SIDEREAL und die Flags zur
+                   Auswahl der Berechnungsmethode SEFLG_*EPH
+
+                 Die unterstìtzten Flags fìr swe_rise_trans() sind:
+                   SE_CALC_RISE, SE_CALC_SET, SE_BIT_DISC_CENTER,
+                   SE_BIT_NO_REFRACTION (sowie die Flags zur Auswahl
+                   der Berechnungsmethode SEFLG_*EPH)
+
+
+NO_RISE_TRANS    Setzt automatisch die Option -DASTROLOGY.
+                 Mit dieser Option werden zusñtzlich die Methoden
+                 Swecl.swe_rise_trans() und Swecl.swe_gauquelin_sector()
+                 ausgeschlossen. Letztere Methode ben�tigt
+                 swe_rise_trans().
+
+NO_NIO           Entfernt die Benutzung des java.nio Paketes aus
+                 FilePtr.java, so daß die Bibliothek auch mit der
+                 Google App Engine eingesetzt werden kann.
+                 Ebenso wird damit die Nutzung ñlterer Java Compiler
+                 vor Java 1.4 m�glich.
+                 Das java.nio Paket kann einen Geschwindigkeitsvorteil
+                 bis zu 40% erzielen, wenn man kontinuierlich alle Fixsterne
+                 berechnet, weil das Lesen in der Datei fixstars.cat
+                 sehr viel Zeit ben�tigt. Bei den Planetenberechnungen
+                 ist dieser Effekt nicht oder praktisch nicht sichtbar;
+                 der Gewinn dìrfte dort bei 0% bis 10% liegen.
+
+PRELOAD_FIXSTARS Diese Option erlaubt die Nutzung der preloadFixstarsFile()
+                 Methode aus SwissEph.java, so daß mehrfache Fixstern-
+                 Berechnungen wñhrend EINES(!) Programmlaufes die Fixstern-
+                 Daten nicht jedes Mal neu aus der fixstars.cat Datei
+                 zu lesen brauchen. Die Berechnung aller 1001 Fixsterne
+                 in fixstars.cat vom Juni 2007 ben�tigt bei Verwendung
+                 der preloadFixstarsFile() Methode nur ca. 20% der Zeit,
+                 die n�tig wñre, wenn man die Parameter der Fixsterne
+                 jedes Mal neu aus der fixstars.cat lesen wìrde.
+
+
+
+Die "unwichtigen" Optionen sind vor allem fìr Programmiertests oder
+der Vollstñndigkeit halber eingefìhrt worden waren.
+
+TEST_ITERATIONS  Impliziert -DTRANSITS. Fìgt eine Methode namens
+                 getIterateCount() hinzu, die die Anzahl der ben�tigten
+                 Iterationen fìr eine vorangegangene Transitberechnung
+                 zurìckgibt.
+
+EXTPRECISION     Impliziert -DTRANSITS. Erlaubt es, die Genauigkeit
+                 der Transitberechnungen zu verñndern. Standardmñßig
+                 wird die Berechnung der Planetenpositionen solange
+                 wiederholt, bis die maximal verfìgbare Genauigkeit
+                 der Planetenberechnungsroutinen ìberschritten wurde.
+
+TRACE0           Das gibt fìr jede besuchte Methode einen
+                 Zeitstempel mit dem zugeh�rigen Methodennamen
+                 aus. Falls man wirklich viele Ausgaben auf dem
+                 Bildschirm haben m�chte, ist diese Option ideal ;)
+
+ORIGINAL         Diese Option benutzt weiterhin die CFmt Klasse fìr
+                 die Formatierung von Zahlen in Fehlermeldungen.
+                 Ansonsten kommt das Paket ohne die Klasse CFmt aus.
+
+PREC_WILLIAMS_1994
+PREC_SIMON_1994
+PREC_LASKAR_1986
+PREC_BRETAGNON_2003
+                 Diese vier Optionen bestimmen, mit welchen
+                 Termen die Prñzession berechnet wird. Der
+                 Default (PREC_WILLIAMS_1994) braucht im Regelfall
+                 nicht geñndert zu werden.
+
+NUT_IAU_1980
+NUT_IAU_2000A
+NUT_IAU_2000B    ��hnlich wie die PREC_* Optionen wird mit diesen
+                 Optionen zwischen drei verschiedenen Berechnungs=
+                 verfahren fìr die Nutation umgeschaltet. NUT_IAU_2000A
+                 soll sehr zeitaufwendig sein, dafìr aber ein wenig
+                 genauer als NUT_IAU_2000B. NUT_IAU_2000B ist der Default.
+
+
+
+
+
+
+
+6. Applets
+----------
+
+Fìr Applets ist es sinnvoll, nur mit SwissEphemeris zu
+kompilieren (... -DNO_JPL -DNO_MOSHIER, wegen des Code-
+Umfangs).
+
+Um dann auf die Datendateien zugreifen zu k�nnen, mìssen
+sie auf dem selben WWW Server liegen, auf dem auch das
+Applet liegt. Und sie mìssen ìber das http-Protokoll
+zugreifbar sein.
+
+Ich habe z.B. ein Applet unter
+
+  http://th-mack.de/applets/index.html
+
+liegen, die zugeh�rigen Datendateien unter:
+
+  http://th-mack.de/datafiles
+
+Diese URL des Datenpfades muss im ephepath angegeben
+werden, z.B. im Konstruktor von SwissEph:
+
+SwissEph sw=new SwissEph("http\\://th-mack.de/datafiles");
+
+(":" oder ";" in Pfaden mìssen generell mit einem doppelten
+Backslash geschìtzt sein, da sie ansonsten als Pfadtrenner
+interpretiert werden!)
+
+Wenn ein Pfad wie:
+
+"./ephe;http\\://th-mack.de/datafiles"
+
+angegeben wird, kann das Programm sowohl als normale
+Anwendung mit direktem Dateizugriff (sehr viel schneller) oder
+auch als Applet gestartet werden, das die URL benutzt.
+
+÷brigens: http-URLs lassen sich auch dann verwenden, wenn
+das Programm als normale Anwendung gestartet wird. Um das
+zu testen, gibt es ein paar ausgewñhlte Datendateien auf
+http://th-mack.de/datafiles. Z.Zt. sind dies sepl_18.se1,
+semo_18.se1, seas_18.se1 sowie fixstars.cat und seorbel.txt
+(alle Swiss Ephemeris Datendateien fìr Berechnungen in den
+Jahren 1800 bis 2399). Falls Sie Dateien von dort
+herunterladen laden wollen (was sie eh nicht tun sollten,
+laden Sie sie bitte nur von http://www.astro.ch/swisseph
+herunter!), lesen Sie bitte die im gleichen Verzeichnis
+vorhandenen Dateien README.TXT und LICENSE.TXT.
+
+
+ACHTUNG:
+============================================================
+http://www.astro.ch ODER http://www.astro.com D÷RFEN NIEMALS
+ALS SUCHPFAD F÷R DIE DATENDATEIEN ANGEGEBEN WERDEN!!!
+============================================================
+
+
+
+
+
+
+7. JavaME / J2ME
+----------------
+
+Mit Version 1.72.00-00 k�nnen große Teile dieses Programmpaketes
+in JavaME Umgebungen eingesetzt werden.
+
+Z.Zt. gibt es noch wesentliche Einschrñnkungen, die daraus
+resultieren, daß keine Dateien gelesen werden.
+
+Das bedeutet, daß nur Berechnungen mit den anaytischen Moshier
+Routinen durchgefìhrt werden k�nnen. SwissEph und JPL werden
+z.Zt. noch nicht unterstìtzt.
+
+Ein weitere grundlegende Einschrñnkung, die sich daraus ergibt,
+ist die Unm�glichkeit, Fixsterne und Asteroiden zu berechnen.
+
+Außerdem kann das Transits Testprogramm nicht verwendet werden,
+weil es stark internationalisiert ist, was in der JavaME nicht
+in dieser Form unterstìtzt wird. Die Transitroutinen selber sind
+davon nicht betroffen.
+
+
+Ein Schnellstart:
+
+javac Precompile.java
+java Precompile -qfc -iswesrc -iprogs -DJAVAME -DTRANSITS
+javac -source 1.4 -target 1.4 swisseph/SwissEph.java
+jar cf swissephj2me.jar swisseph/*.class
+
+Das Java Archiv swissephj2me.jar kann dann in JavaME Projekten
+genutzt werden.
+
+JPL Routinen werden mit Sicherheit nie fìr JavaME unterstìtzt
+werden, weil die Genauigkeit den SwissEph Routinen sehr ñhnelt,
+und weil die Datendatei ca. 10MB groß sind, was auf mobilen
+Gerñten noch fìr lange Zeit viel zu viel sein dìrfte.
+
+Wahrscheinlich werden auch die SwissEph Routinen niemals
+unterstìtzt werden, weil ein wahlfreier Zugriff auf Dateiinhalte
+in JavaME nicht m�glich zu sein scheint.
+
+
+
+
+
+8. Google App Engine
+--------------------
+
+Die Google App Engine vertrñgt zwei Dinge nicht, die in der
+Bibliothek verwendet werden:
+
+- java.nio.MappedByteBuffer
+- java.net.Socket
+
+Ersteres lñßt sich umgehen, indem das Paket mit -DNO_NIO
+vorkompiliert wird (java Precompile -DNO_NIO ...), letzteres
+indem man in swe_set_ephe_path() bzw. im Kontruktor der
+SwissEph Klasse keine URL wie "http\\://th-mack.de/datafiles"
+hineinschreibt.
+
+
+
+
+9. Dokumentation
+----------------
+
+Die Dokumentation zu den Klassen kann direkt aus den Java
+Quelldateien gewonnen werden. Man erhñlt mit Hilfe des
+Programms javadoc HTML-Dokumentation zum gesamten Package:
+
+(Es mìssen die "vorkompilierten" Quelldateien benutzt werden,
+siehe weiter oben zum Thema "java Precompile...")
+
+  java Precompile -f -iswesrc -DTRANSITS
+  mkdir doc
+  javadoc -d doc swisseph .
+
+Anschließend kann man sich die Dokumentation mit Hilfe eines
+jeden WWW Browsers anschauen. Als Startseite bietet sich
+doc/tree.html an, wenn das javadoc aus der Java Version 1.1
+benutzt wurde, ansonsten doc/index.html (Java 1.2 und darìber).
+
+Falls umfassendere Informationen ben�tigt werden, sollte
+man auf die Originalseiten der Astrodienst AG schauen, also
+z.B. http://www.astro.ch/swisseph/sweph_e.htm.
+
+
+
+
+
+10. Probleme?
+-------------
+
+Falls Probleme auftreten, k�nnte es z.B. an den folgenden Dingen
+liegen:
+
+- Diese Paket ist NICHT(!) Thread sicher: Wenn man EINE SwissEph
+  Instanz ìber mehrere Threads mit unterschiedlichen Berechnungen
+  verteilt, treten mit Sicherheit Probleme auf wie z.B.: "Ephemeris
+  file '...' is damaged" und / oder falsche Resultate. Wann immer
+  man parallel mit EINER SwissEph Instanz arbeitet, wird das nicht
+  gehen.
+
+- Westliche Lñngengrade haben NEGATIVE Werte, �stliche Lñngengrade
+  positive. Vor allem in den USA wird es oftmals anders gesehen!
+
+- swe_calc() / swe_calc_ut() / swe_fixstar()* / swe_houses*() etc.
+  ben�tigen alle die Uhrzeit in UTC (==GMT). Aus diesem Grunde
+  mìssen alle Zeiten aus einer anderen Zeitzone (und / oder
+  Sommerzeit) erst in UTC umgewandelt werden.
+
+- Wenn Sie die Meldung bekommen, dass die Datei sepl_00.se1 nicht
+  vorhanden ist, haben Sie wahrscheinlich ein falsches Datum gesetzt:
+  sepl_00.se1 ist zustñndig fìr die Jahre 0 bis 600, fìr die
+  aktuellen Jahre (1800 bis 2400) ist die Datei sepl_18.se1 n�tig.
+
+- Probleme in NetBeans:
+  In NetBeans 5 muss die Textkodierung auf UTF-8 gesetzt werden,
+  weil es sich sonst ìber ungìltige Zeichen beklagt. Dies kann
+  dadurch geschehen, dass in:
+      Project properties -> Build -> Compiling -> Additional
+      compiler options
+  der Eintrag:
+      -encoding UTF-8
+  nachgetragen wird.
+
+Falls es andere / weitere Probleme mit dieser Bibliothek gibt,
+k�nnen sie mich gerne (per email an mack@ifis.cs.tu-bs.de) danach
+fragen.
+
+
+
+
+11. Anhang
+----------
+
+11.1 Schnittstellenñnderungen
+
+Ja, ich weiß, so etwas tut man nicht... ;-)
+
+
+Version 1.70.00-01:
+
+- Die bisherige Option EXTENSIONS zum Vorkompilieren der Quellen
+  heißt jetzt TRANSITS.
+
+
+Seit Version 1.67.00-05:
+
+- Schnittstellenñnderungen in Precompile.java, einschließlich der
+  M�glichkeit, das Zielverzeichnis automatisch aus dem Paketnamen
+  der Quelldatei zu generieren.
+
+
+Seit Version 1.67.00-04:
+
+- Grundlegende ��nderungen im Testprogramm Transits.java. Die Option
+  -h listet alle aktuellen Optionen auf.
+
+
+Seit Version 1.67.00-00:
+
+- Die Schnittstellen fìr Transitberechnungen haben sich grundlegend
+  geñndert, um nicht fìr jede Spezialart von Transiten mehrere neue
+  Methoden haben zu mìssen.
+
+  Es wird jetzt ein sog. TransitCalculator ben�tigt, der die
+  eigentlichen Positionsberechnungen durchfìhrt. Die Transite
+  werden werden ñhnlich wie bisher von einer Methode getTransitET() /
+  getTransitUT() vorgenommen, aber er greift zur Berechnung der
+  Positionen eines Planeten auf diesen TransitCalculator zurìck.
+  Auf diese Weise gewinnt man sehr an Flexibilitñt, die es nicht
+  nur erm�glichen wìrde, z.B. Transite ìber den MC oder ìber
+  Hñuserspitzen, sondern auch ìber jede andere Funktion zu
+  berechnen, egal, ob die Funktion nur durch Stìtzpunkte definiert
+  ist, oder ob sie als geschlossene Funktion existiert, wie z.B.
+  eine Sinuskurve.
+
+  Bislang gibt es zwei TransitCalculator Klassen: TCPlanet fìr
+  "normale" Transite und TCPlanetPlanet fìr Transite von Planeten
+  ìber andere Planete. Letztere wurden bislang mit den Methoden
+  getRelativeTransit() angesprochen.
+
+  Bisher hat man direkt die getNextTransit() und getRelativeTransit()
+  Methoden aufgerufen. Jetzt funktioniert es so, daß man zuerst einen
+  TransitCalculator erzeugt, den man anschließend der Transitberechnung
+  ìbergibt, also z.B.:
+
+    TransitCalculator tc = new TCPlanet(...);
+    ...
+    getTransitET(tc, ...);
+
+  Die Transitroutine bleibt jetzt immer gleich, nur der ìbergebene
+  TransitCalculator ist variabel. Das kann den Code im Endeffekt in
+  vielen Fñllen sehr vereinfachen. Wenn man z.B. statt TCPlanet den
+  den TCPlanetPlanet TransitCalculator benutzt, schaltet man damit
+  automatisch auf relative Planetentransite um, d.h., auf Transite
+  eines Planeten relativ zu einem weiteren Planeten.
+
+
+Seit Version 1.66.00-01:
+
+- Der Konstruktor:
+   public SweDate(int year, int month, int day)
+  und die Methoden:
+   public boolean setDate(int newYear, int newMonth, int newDay)
+   public boolean setDate(int newYear, int newMonth, int newDay, boolean check)
+   public static double getJulDay(int year, int month, int day)
+  geh�ren NICHT mehr zu SweDate.java. Stattdessen sollten der
+  Konstruktor und die Methoden benutzt werden, die eine zusñtzliche
+  Variable "hour" (Stunde) enthalten. Der Wert von "hour" muß
+  auf 0.0 gesetzt werden, um das gleiche Verhalten wie vorher
+  zu bekommen.
+
+
+Seit Version 1.63.00-02:
+
+- Die Transitberechungsmethoden (getNextTransit() usw.) geben
+  jetzt UT zurìck anstelle ET, wie es vorher geschah.
+
+
+Seit Version 1.61.01-12:
+
+- Die Klasse CFmt geh�rt jetzt nicht mehr zum Paket 'swisseph',
+  weil sie nur fìr die Formatierung von Fehlermeldungen
+  ben�tigt wurde (unn�tiger Code-Aufwand). Diese Klasse gibt
+  es jetzt separat im Unterverzeichnis 'progs'.
+
+- Auch die Testprogramme (Swetest.java et.al.) sind in das
+  Unterverzeichnis 'progs' gewandert, weil Swetest.java und
+  Sweclips.java jetzt mit der Precompile Option -DASTROLOGY
+  vorkompiliert werden k�nnen.
+
+
+
+11.2 Zusñtzliche Dateien
+
+Es gibt weitere Dateien, die zwar sinnvoll sein k�nnen, aber
+nicht Teil dieses Paketes sind. Sie k�nnen alle vom Server
+http://www.astro.com/swisseph heruntergeladen werden.
+
+  - fixstars.cat    (Ist seit Version 1.70.00 im Paket enthalten)
+                    Eine Liste von Fixsternen mit den Elementen zu
+                    ihrer Berechnung.
+  - sepl*.se1       SwissEphemeris Datendateien zur Berechnung der
+                    Hauptplaneten mit der SwissEph Berechnungsroutine.  
+  - semo*.se1       SwissEphemeris Datendateien zur Berechnung des
+                    Mondes mit der SwissEph Berechnungsroutine.  
+  - seas*.se1       Wird ben�tigt zur Berechnung der Asteroiden
+                    Ceres, Pallas, Vesta, Juno, Chiron and Pholus.
+  - ast*/se*.se1    Fìr die Berechnung von (anderen) Asteroiden. Die
+                    Nummer im Dateinamen bezeichnet die Nummer des
+                    Asteroiden.
+
+  - seorbel.txt     (Ist mit im Paket enthalten) Wird ben�tigt zur
+                    Berechnung fiktiver Planeten.
+
+  - sedeltat.txt    (Optional) Man kann eigene Delta-T Werte verwenden,
+                    indem man diese zusammen mit der Jahreszahl in
+                    diese Datei schreibt. Beispiel:
+                       1927 23.03
+                       1958  33.7
+
+  Fìr die Berechnung mit JPL werden JPL Datendateien von
+  http://ssd.jpl.nasa.gov/, DE-406 ephemeris files ben�tigt.
+
+
+
+
+
+11.3 Codegr�ßen bei verschiedenen Precompile Optionen
+
+Bei der Kompilierung mit:
+jikes -O swisseph/SwissEph.java && jar cf swisseph.jar swisseph/*.class
+ergaben sich je nach Precompile Optionen die folgenden Werte (1.61.02,
+Java Unterversion 00):
+
+278.470 (ohne Optionen)
+272.888 -DNO_JPL
+ 89.218 -DNO_MOSHIER
+ 83.518 -DNO_JPL -DNO_MOSHIER
+ 59.521 -DNO_JPL -DNO_MOSHIER -DASTROLOGY
+ 56.486 -DNO_JPL -DNO_MOSHIER -DASTROLOGY -DNO_RISE_TRANS
+
+Die Option -DASTROLOGY ist noch nicht endgìltig fertig,
+es sind im Laufe der Versionen noch weitere Code Einsparungen
+zu vermuten, falls ich weiter an dieser Option arbeite.
+
+
+
+
+11.4 Tests
+
+Tests sind nie fertig, eine Garantie fìr die korrekte
+Funktionsweise wird es naturgemñß auch nicht geben k�nnen.
+Trotzdem sind mir seit langem keine Fehler mehr untergekommen,
+zumindest keine, die sich auf diese Portierung beziehen. Die
+JPL-Routinen sind am wenigsten vor Fehlern gefeit ("Wer
+benutzt sie ìberhaupt?"), da sie nur sehr selten und wenig
+genutzt werden (nur zu Testzwecken).
+
+Wenn Sie Unterschiede zwischen der C- und der Java-Version
+finden, wìrde ich gerne davon Kenntnis erhalten. Falls es
+geringfìgigere Unterschiede in der Berechnungen gibt, sollten
+Sie sicherstellen, dass Sie mit der Option -DSTRICTMATH
+vorkompiliert hatten.
+
+
+
+11.5 Bekannte Probleme
+
+- Fìr die nñchste Version wird eine komplette Umstellung
+  der Java.Schnittstelle geplant. Dies wird Inkompatibilitñten
+  zu frìhreren / aktuellen Versionen nach sich ziehen.
+
+
+
+
+Thomas Mack, 2. Dezember 2001 - Oktober 2010
+
+mack@ifis.cs.tu-bs.de
+http://th-mack.de/download                (in deutsch)
+http://th-mack.de/international/download  (englisch)
