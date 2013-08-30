@@ -1,32 +1,47 @@
 /* SWISSEPH
-   $Header: swemplan.c,v 1.65 2003/06/14 13:01:59 alois Exp $
+   $Header: /home/dieter/sweph/RCS/swemplan.c,v 1.74 2008/06/16 10:07:20 dieter Exp $
    Moshier planet routines
 
    modified for SWISSEPH by Dieter Koch
 
- */
-/* Copyright (C) 1997, 1998 Astrodienst AG, Switzerland.  All rights reserved.
+**************************************************************/
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
   
-  This file is part of Swiss Ephemeris Free Edition.
-  
+  License conditions
+  ------------------
+
+  This file is part of Swiss Ephemeris.
+
   Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
   or distributor accepts any responsibility for the consequences of using it,
   or for whether it serves any particular purpose or works at all, unless he
-  or she says so in writing.  Refer to the Swiss Ephemeris Public License
-  ("SEPL" or the "License") for full details.
-  
-  Every copy of Swiss Ephemeris must include a copy of the License,
-  normally in a plain ASCII text file named LICENSE.  The License grants you
-  the right to copy, modify and redistribute Swiss Ephemeris, but only
-  under certain conditions described in the License.  Among other things, the
-  License requires that the copyright notices and this notice be preserved on
-  all copies.
+  or she says so in writing.  
 
-  For uses of the Swiss Ephemeris which do not fall under the definitions
-  laid down in the Public License, the Swiss Ephemeris Professional Edition
-  must be purchased by the developer before he/she distributes any of his
-  software or makes available any product or service built upon the use of
-  the Swiss Ephemeris.
+  Swiss Ephemeris is made available by its authors under a dual licensing
+  system. The software developer, who uses any part of Swiss Ephemeris
+  in his or her software, must choose between one of the two license models,
+  which are
+  a) GNU public license version 2 or later
+  b) Swiss Ephemeris Professional License
+
+  The choice must be made before the software developer distributes software
+  containing parts of Swiss Ephemeris to others, and before any public
+  service using the developed software is activated.
+
+  If the developer choses the GNU GPL software license, he or she must fulfill
+  the conditions of that license, which includes the obligation to place his
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+  If the developer choses the Swiss Ephemeris Professional license,
+  he must follow the instructions as found in http://www.astro.com/swisseph/ 
+  and purchase the Swiss Ephemeris Professional Edition from Astrodienst
+  and sign the corresponding license contract.
+
+  The License grants you the right to use, copy, modify and redistribute
+  Swiss Ephemeris, but only under certain conditions described in the License.
+  Among other things, the License requires that the copyright notices and
+  this notice be preserved on all copies.
 
   Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
 
@@ -48,7 +63,6 @@
 #include "swephexp.h"
 #include "sweph.h"
 #include "swephlib.h"
-#ifndef NO_MOSHIER
 #include "swemptab.c"
 
 #define TIMESCALE 3652500.0
@@ -477,7 +491,6 @@ static void embofs_mosh(double tjd, double *xemb)
   for (i = 0; i <= 2; i++)
     xemb[i] -= xyz[i] / (EARTH_MOON_MRAT + 1.0);
 }
-#endif /* NO_MOSHIER */
 
 /* orbital elements of planets that are computed from osculating elements
  *   epoch
@@ -729,7 +742,7 @@ static int read_elements_file(int32 ipl, double tjd,
     sp = s;
     while(*sp == ' ' || *sp == '\t')
       sp++;
-    strcpy(s, sp);
+    swi_strcpy(s, sp);
     if (*s == '#')
       continue;
     if (*s == '\r')
@@ -741,11 +754,11 @@ static int read_elements_file(int32 ipl, double tjd,
     if ((sp = strchr(s, '#')) != NULL)
       *sp = '\0';
     ncpos = swi_cutstr(s, ",", cpos, 20);
-    sprintf(serri, "error in file %s, line %7.0f:",
-              SE_FICTFILE, (double) iline);
+    sprintf(serri, "error in file %s, line %7.0f:", SE_FICTFILE, (double) iline);
     if (ncpos < 9) {
-      if (serr != NULL) 
+      if (serr != NULL) {
         sprintf(serr, "%s nine elements required", serri);
+      }
       return ERR;
     }
     iplan++;
@@ -764,8 +777,9 @@ static int read_elements_file(int32 ipl, double tjd,
       else if (strncmp(sp, "j1900", 5) == OK)
         *tjd0 = J1900;
       else if (*sp == 'j' || *sp == 'b') {
-        if (serr != NULL) 
+        if (serr != NULL) {
           sprintf(serr, "%s invalid epoch", serri);
+	}
         goto return_err;
       } else
         *tjd0 = atof(sp);
@@ -787,8 +801,9 @@ static int read_elements_file(int32 ipl, double tjd,
       else if (strncmp(sp, "jdate", 5) == OK)
         *tequ = tjd;
       else if (*sp == 'j' || *sp == 'b') {
-        if (serr != NULL) 
+        if (serr != NULL) {
           sprintf(serr, "%s invalid equinox", serri);
+	}
         goto return_err;
       } else
         *tequ = atof(sp);
@@ -798,8 +813,9 @@ static int read_elements_file(int32 ipl, double tjd,
       retc = check_t_terms(tt, cpos[2], mano);
 	  *mano = swe_degnorm(*mano);
       if (retc == ERR) {
-        if (serr != NULL)
+        if (serr != NULL) {
           sprintf(serr, "%s mean anomaly value invalid", serri);
+	}
         goto return_err;
       }
       /* if mean anomaly has t terms (which happens with fictitious 
@@ -815,8 +831,9 @@ static int read_elements_file(int32 ipl, double tjd,
     if (sema != NULL) {
       retc = check_t_terms(tt, cpos[3], sema);
       if (*sema <= 0 || retc == ERR) {
-        if (serr != NULL)
+        if (serr != NULL) {
           sprintf(serr, "%s semi-axis value invalid", serri);
+	}
         goto return_err;
       }
     }
@@ -824,8 +841,9 @@ static int read_elements_file(int32 ipl, double tjd,
     if (ecce != NULL) {
       retc = check_t_terms(tt, cpos[4], ecce);
       if (*ecce >= 1 || *ecce < 0 || retc == ERR) {
-        if (serr != NULL)
+        if (serr != NULL) {
           sprintf(serr, "%s eccentricity invalid (no parabolic or hyperbolic orbits allowed)", serri);
+	}
         goto return_err;
       }
     }
@@ -834,8 +852,9 @@ static int read_elements_file(int32 ipl, double tjd,
       retc = check_t_terms(tt, cpos[5], parg);
 	  *parg = swe_degnorm(*parg);
       if (retc == ERR) {
-        if (serr != NULL)
+        if (serr != NULL) {
           sprintf(serr, "%s perihelion argument value invalid", serri);
+	}
         goto return_err;
       }
       *parg *= DEGTORAD;
@@ -845,8 +864,9 @@ static int read_elements_file(int32 ipl, double tjd,
       retc = check_t_terms(tt, cpos[6], node);
 	  *node = swe_degnorm(*node);
       if (retc == ERR) {
-        if (serr != NULL)
+        if (serr != NULL) {
           sprintf(serr, "%s node value invalid", serri);
+	}
         goto return_err;
       }
       *node *= DEGTORAD;
@@ -856,8 +876,9 @@ static int read_elements_file(int32 ipl, double tjd,
       retc = check_t_terms(tt, cpos[7], incl);
 	  *incl = swe_degnorm(*incl);
       if (retc == ERR) {
-        if (serr != NULL)
+        if (serr != NULL) {
           sprintf(serr, "%s inclination value invalid", serri);
+	}
         goto return_err;
       }
       *incl *= DEGTORAD;
@@ -880,8 +901,9 @@ static int read_elements_file(int32 ipl, double tjd,
     break;
   }
   if (!elem_found) {
-    if (serr != NULL)
+    if (serr != NULL) {
       sprintf(serr, "%s elements for planet %7.0f not found", serri, (double) ipl);
+    }
     goto return_err;
   }
   fclose(fp);

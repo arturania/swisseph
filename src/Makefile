@@ -13,11 +13,9 @@
 # send email to swisseph@astro.ch
 #
 
-CFLAGS = -Aa +z -g +DA1.1  	# for HPUX 10.20
-#CFLAGS = -g -O9 -Wall -pedantic 	# for Linux and other gcc systems
+CFLAGS = -g -O9 -Wall -fPIC  	# for Linux and other gcc systems
 OP=$(CFLAGS)  
-CC=cc	# for HPUX 
-#CC=gcc	#for Linux
+CC=cc	#for Linux
 
 # compilation rule for general cases
 .o :
@@ -26,7 +24,7 @@ CC=cc	# for HPUX
 	$(CC) -c $(OP) $<     
 
 SWEOBJ = swedate.o swehouse.o swejpl.o swemmoon.o swemplan.o swepcalc.o sweph.o\
-	swepdate.o swephlib.o swecl.o 
+	swepdate.o swephlib.o swecl.o swehel.o
 
 swetest: swetest.o libswe.a
 	$(CC) $(OP) -o swetest swetest.o -L. -lswe -lm
@@ -40,8 +38,8 @@ swemini: swemini.o libswe.a
 libswe.a: $(SWEOBJ)
 	ar r libswe.a	$(SWEOBJ)
 
-libswe.sl: $(SWEOBJ)
-	ld -b -o libswe.sl	$(SWEOBJ)
+libswe.so: $(SWEOBJ)
+	$(CC) -shared -o libswe.so $(SWEOBJ)
 
 clean:
 	rm -f *.o swetest libswe*
@@ -50,6 +48,7 @@ clean:
 swecl.o: swejpl.h sweodef.h swephexp.h swedll.h sweph.h swephlib.h
 sweclips.o: sweodef.h swephexp.h swedll.h
 swedate.o: swephexp.h sweodef.h swedll.h
+swehel.o: swephexp.h sweodef.h swedll.h
 swehouse.o: swephexp.h sweodef.h swedll.h swephlib.h swehouse.h
 swejpl.o: swephexp.h sweodef.h swedll.h sweph.h swejpl.h
 swemini.o: swephexp.h sweodef.h swedll.h

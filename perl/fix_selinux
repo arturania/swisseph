@@ -1,0 +1,5 @@
+/usr/sbin/semanage fcontext -a -t textrel_shlib_t /usr/lib/perl5/site_perl/5.8.8/i386-linux-thread-multi/auto/SwissEph/SwissEph.so
+/sbin/restorecon -v /usr/lib/perl5/site_perl/5.8.8/i386-linux-thread-multi/auto/SwissEph/SwissEph.so
+/usr/sbin/semanage fcontext -a -t textrel_shlib_t /usr/lib/libswe.so.1.76.00
+/sbin/restorecon -v /usr/lib/libswe.so.1.76.00
+
