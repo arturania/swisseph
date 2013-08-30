@@ -1,0 +1,24 @@
+Revision history for Perl extension SwissEph.
+
+First created on 3 April 2009, with Swiss Ephemeris 1.76.
+
+Updated on 27 January 2011:
+- Function swe_utc_time_zone() added for Swiss Ephemeris 1.77
+- Delta t updated
+- Fixed stars: algorithm in swe_fixstar() was improved, new input file sefstars.txt was created
+
+Updated on 7 September 2012:
+- Precession algorithm was updated
+- Function swe_rise_trans_true_hor() added for Swiss Ephemeris 1.78
+- several minor bug fixes (see documentation swephprg.pdf)
+
+Updated on 23 April 2013, Swiss Ephemeris 1.79
+- Improved precision in eclipse calculations: 2nd and 3rd contact with solar eclipses, penumbral and partial phases with lunar eclipses. 
+- Bug fix in function swe_sol_eclipse_when_loc().If the local maximum eclipse occurs at sunset or sunrise, tret[0] now gives the moment when the lower limb of the Sun touches the horizon. This was not correctly implemented in former versions
+- Bug fix in Perl functions swe_house() etc. These functions had crashed with a segmention violation if called with the house parameter ‘G’.
+- Bug fix in Perl function swe_utc_to_jd(), where gregflag had been read from the 4th instead of the 6th parameter.
+- Bug fix in Perl functions to do with date conversion. The default mechanism for gregflag was buggy.  
+- For Hindu astrologers, some more ayanamshas were added that are related to Suryasiddhanta and Aryabhata and are of historical interest. 
+
+Updated on 31 August 2012
+- Function swe_house_name() added for Swiss Ephemeris 1.80

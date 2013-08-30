@@ -1,0 +1,16 @@
+Changes
+Makefile.PL
+Makefile
+MANIFEST
+ppport.h
+sweodef.h
+swephexp.h
+README
+SwissEph.xs
+t/SwissEph.t
+lib/SwissEph.pm
+blib/arch/auto/SwissEph/SwissEph.so
+fix_selinux
+/usr/lib64/libswe.so.1.79.00
+/usr/lib64/libswe.so.1.80.00
+META.yml                                 Module meta-data (added by MakeMaker)

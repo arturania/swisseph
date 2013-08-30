@@ -1,0 +1,63 @@
+SwissEph version 1.76
+=====================
+
+The README is used to introduce the module and provide instructions on
+how to install the module, any machine dependencies it may have (for
+example C compilers and installed libraries) and any other information
+that should be provided before the module is installed.
+
+INSTALLATION
+
+On Linux:
+=========
+
+  Before installing this module, you have to install a shared library of
+  the Swiss Ephemeris functions. Use the file libswe.so.1.76.00 (or whatever
+  version it is) which is in the Swiss Ephemeris package or on the
+  Swiss Ephemeris web site in the download area. Copy this file to 
+  /usr/lib and run ldconfig(8) in order to generate the symbolic links
+  required.
+
+    cp usr/lib/libswe.so.1.76.00 /usr/lib
+    ldconfig
+
+  Now you can install the Perl module for the Swiss Ephemeris.
+  Type the following:
+
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+On Windows:
+===========
+
+  Before installing this module, you have to install the following things
+  on your computer:
+
+  - the Swiss Ephemeris DLL swedll32.dll. If haven't done this yet,
+    download the Swiss Ephemeris from the download area at 
+    www.astro.com/swisseph and unpack it.
+
+  - Visual C++ Express Edition, which can be downloaded for free from the
+    http://www.microsoft.com/express/download/.
+
+  After that you can install the Perl module. In the current directory 
+  (where you read this README file), open the file Makefile.PL and
+  fix the LIBS parameter. It must contain the directory to the Swiss Ephemeris
+  DLL. After that run:
+
+    perl Makefile.PL
+    nmake
+    nmake test
+    nmake install
+
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2009 Astrodienst, Zurich, Switzerland.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.7 or,
+at your option, any later version of Perl 5 you may have available.
+
