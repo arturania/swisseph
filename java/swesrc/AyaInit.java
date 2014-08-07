@@ -2,7 +2,7 @@
 #define JAVAME
 #endif /* J2ME */
 /*
-   This is a port of the Swiss Ephemeris Free Edition, Version 1.76.00
+   This is a port of the Swiss Ephemeris Free Edition, Version 2.00.00
    of Astrodienst AG, Switzerland from the original C Code to Java. For
    copyright see the original copyright notices below and additional
    copyright notes in the file named LICENSE, or - if this file is not
@@ -98,6 +98,12 @@ package swisseph;
 * <LI> 18: J2000
 * <LI> 19: J1900
 * <LI> 20: B1950
+* <LI> 21: Suryasiddhanta, assuming ingress of mean Sun into Aries at point of mean equinox of date on 21.3.499, noon, Ujjain (75.7684565 E) = 7:30:31.57 UT
+* <LI> 22: Suryasiddhanta, assuming ingress of mean Sun into Aries at true position of mean Sun at same epoch
+* <LI> 23: Aryabhata, same date, but UT 6:56:55.57 analogous 21
+* <LI> 24: Aryabhata, analogous 22
+* <LI> 25: SS, Revati/zePsc at polar long. 359°50'
+* <LI> 26: SS, Citra/Spica at polar long. 180°
 * </UL>
 * <P><I><B>You will find the complete documentation for the original
 * SwissEphemeris package at <A HREF="http://www.astro.ch/swisseph/sweph_g.htm">

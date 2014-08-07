@@ -14,40 +14,40 @@ package swisseph;
 * <pre>
 * SwissEph sw = new SwissEph(...);
 * ...
-* int flags = SweConst.SEFLG_SWIEPH
-*             SweConst.SEFLG_TRANSIT_LATITUDE |
-*             SweConst.SEFLG_TRANSIT_SPEED;
-* boolean backwards = false;
+* int flags = SweConst.SEFLG_SWIEPH |
+*             SweConst.SEFLG_TRANSIT_LONGITUDE;
+* boolean backwards = true;
 * 
 * TransitCalculator tc = new TCPlanetPlanet(
 *                                  sw,
 *                                  SweConst.SE_MERCURY,
 *                                  SweConst.SE_VENUS,
 *                                  flags,
-*                                  0.48);
+*                                  0);
 * ...
 * double nextTransitUT = sw.getTransitUT(tc, jdUT, backwards);
 * </pre>
-* This would calculate the (UT-) date, when Mercury and Venus will
-* have a very different latitudinal speed (and Mercury the higher
-* speed of both...).
+* This would calculate the last (UT-) date, when Mercury and Venus
+* had the same longitudinal position.
 */
 public class TCPlanetPlanet extends TransitCalculator
 #ifndef JAVAME
-		implements java.io.Serializable
+        	implements java.io.Serializable
 #endif /* JAVAME */
-		{
+        	{
 
 
   private int pl1, pl2;
   private int idx = 0; // The index into the xx[] array in swe_calc() to use:
   private int tflags = 0; // The transit flags
   private int flags = 0;  // The calculation flags for swe_calc()
+  private boolean calcPartile = false;
+  private boolean calcNonPartile = false;
+  private boolean calcPartileBoth = false;
+  private boolean isPartile = false;
   private boolean calcYoga = false;
-  private double maxSpeed1;
-  private double minSpeed1;
-  private double maxSpeed2;
-  private double minSpeed2;
+  private double minSpeed1, maxSpeed1;
+  private double minSpeed2, maxSpeed2;
   private double minSpeed, maxSpeed;
   // The y = f(x) value to reach, speaking mathematically...
   private double offset = 0.;
@@ -55,6 +55,7 @@ public class TCPlanetPlanet extends TransitCalculator
   private double extPrecision = 1.;
 //#endif /* EXTPRECISION */
 
+  private double lon1=0, lon2=-1000;	// For partile aspects only
 
 
 double minVal = 0., maxVal = 0.;  // Thinking about it...
@@ -67,6 +68,8 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
   * geocentric or topocentric coordinate system, and in tropical or sidereal
   * zodiac system, both with the sum and difference of both planets positions
   * and speeds.<p>
+  * Calculation of partile transits is possible now, but it's still a
+  * rather slow calculation and not finally tested.<p>
   * @param sw A SwissEph object, if you have one available. Can be null.
   * @param pl1 The first planet. Valid planets are SweConst.SE_SUN up to
   * SweConst.SE_INTP_PERG with the exception of  SweConst.SE_EARTH.
@@ -74,30 +77,46 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
   * @param flags The calculation type flags (SweConst.SEFLG_TRANSIT_LONGITUDE,
   * SweConst.SEFLG_TRANSIT_LATITUDE or SweConst.SEFLG_TRANSIT_DISTANCE in
   * conjunction with SweConst.SEFLG_TRANSIT_SPEED for transits over a speed
-  * value and SweConst.SEFLG_YOGA_TRANSIT to calculate for the SUM of the
-  * two positions or speeds instead of the difference). Also flags modifying
-  * the basic planet calculations, these are SweConst.SEFLG_TOPOCTR,
-  * SweConst.SEFLG_HELCTR and SweConst.SEFLG_SIDEREAL, plus the (optional)
+  * value, and SweConst.SEFLG_YOGA_TRANSIT to calculate for the SUM of the
+  * two positions or speeds instead of the difference plus
+  * SweConst.SEFLG_PARTILE_TRANSIT, SweConst.SEFLG_PARTILE_TRANSIT_START or
+  * SweConst.SEFLG_PARTILE_TRANSIT_END to calculate partile aspects).<br><br>
+  * Also flags modifying the basic planet calculations, these are
+  * SweConst.SEFLG_TOPOCTR, SweConst.SEFLG_EQUATORIAL, SweConst.SEFLG_HELCTR,
+  * SweConst.SEFLG_TRUEPOS and SweConst.SEFLG_SIDEREAL, plus the (optional)
 //#ifdef NO_JPL
   * ephemeris flags SweConst.SEFLG_MOSEPH, SweConst.SEFLG_SWIEPH.
 //#else
-  * ephemeris flags SweConst.SEFLG_MOSEPH, SweConst.SEFLG_SWIEPH
+  * ephemeris flags SweConst.SEFLG_MOSEPH, SweConst.SEFLG_SWIEPH,
   * or SweConst.SEFLG_JPLEPH.
 //#endif /* NO_JPL */
+  * <br><br>For <i>right ascension</i> use <code>SEFLG_TRANSIT_LONGITUDE | SEFLG_EQUATORIAL</code>,
+  * for <i>declination</i> <code>SEFLG_TRANSIT_LATITUDE | SEFLG_EQUATORIAL</code>.<br><br>
+  * SEFLG_PARTILE_TRANSIT will calculate the next time, when the planets will
+  * have a partile aspect to each other, if they don't have a partile aspect
+  * now. If they do have a partile aspect now, it calculates the next time,
+  * when this partile aspect gets lost.
   * @param offset This is an offset to the exact conjunction transit point.
   * E.g., when the offset is 180 for longitude calculations, you will get the
   * dates, when the two planets are opposite to each other. Note: The offset
   * is related to the FIRST planet, so an offset value of 30 degree will find
-  * the transit points, when the FIRST planet will be 30 degrees behind the
-  * the position of the second planet.
+  * the transit points, when the FIRST planet will be 30 degrees after the
+  * position of the second planet.<br>
+  * Specify the desired transit degree or distance in AU or transit speed in
+  * deg/day.
   * @see swisseph.TCPlanet#TCPlanet(SwissEph, int, int, double)
   * @see swisseph.SweConst#SEFLG_TRANSIT_LONGITUDE
   * @see swisseph.SweConst#SEFLG_TRANSIT_LATITUDE
   * @see swisseph.SweConst#SEFLG_TRANSIT_DISTANCE
   * @see swisseph.SweConst#SEFLG_TRANSIT_SPEED
+  * @see swisseph.SweConst#SEFLG_PARTILE_TRANSIT
+  * @see swisseph.SweConst#SEFLG_PARTILE_TRANSIT_START
+  * @see swisseph.SweConst#SEFLG_PARTILE_TRANSIT_END
   * @see swisseph.SweConst#SEFLG_YOGA_TRANSIT
   * @see swisseph.SweConst#SEFLG_TOPOCTR
+  * @see swisseph.SweConst#SEFLG_EQUATORIAL
   * @see swisseph.SweConst#SEFLG_HELCTR
+  * @see swisseph.SweConst#SEFLG_TRUEPOS
   * @see swisseph.SweConst#SEFLG_SIDEREAL
   * @see swisseph.SweConst#SEFLG_MOSEPH
   * @see swisseph.SweConst#SEFLG_SWIEPH
@@ -116,10 +135,15 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
     this.tflags = flags;
     int vFlags = SweConst.SEFLG_EPHMASK |
                  SweConst.SEFLG_TOPOCTR |
+                 SweConst.SEFLG_EQUATORIAL |
                  SweConst.SEFLG_HELCTR |
                  SweConst.SEFLG_NOABERR |
                  SweConst.SEFLG_NOGDEFL |
                  SweConst.SEFLG_SIDEREAL |
+                 SweConst.SEFLG_TRUEPOS |
+                 SweConst.SEFLG_PARTILE_TRANSIT |
+                 SweConst.SEFLG_PARTILE_TRANSIT_START |
+                 SweConst.SEFLG_PARTILE_TRANSIT_END |
                  SweConst.SEFLG_YOGA_TRANSIT |
                  SweConst.SEFLG_TRANSIT_LONGITUDE |
                  SweConst.SEFLG_TRANSIT_LATITUDE |
@@ -142,7 +166,7 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
         type != SweConst.SEFLG_TRANSIT_LATITUDE &&
         type != SweConst.SEFLG_TRANSIT_DISTANCE) {
       throw new IllegalArgumentException("Invalid flag combination '" + flags +
-        "': specify at least exactly one of SEFLG_TRANSIT_LONGITUDE (" +
+        "': specify exactly one of SEFLG_TRANSIT_LONGITUDE (" +
         SweConst.SEFLG_TRANSIT_LONGITUDE + "), SEFLG_TRANSIT_LATITUDE (" +
         SweConst.SEFLG_TRANSIT_LATITUDE + "), SEFLG_TRANSIT_DISTANCE (" +
         SweConst.SEFLG_TRANSIT_DISTANCE + ").");
@@ -166,8 +190,8 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
         pl2==SweConst.SE_EARTH) {
 //#endif /* ASTROLOGY */
       throw new IllegalArgumentException(
-          "Unsupported planet number " + pl1 + " ("+
-              sw.swe_get_planet_name(pl1) + ")");
+          "Unsupported planet number " + pl2 + " ("+
+              sw.swe_get_planet_name(pl2) + ")");
     }
     if ((flags & SweConst.SEFLG_HELCTR) != 0 &&
         (pl1 == SweConst.SE_MEAN_APOG ||
@@ -197,8 +221,10 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
     this.pl1 = pl1;
     this.pl2 = pl2;
 
+    calcPartile = ((flags & SweConst.SEFLG_PARTILE_TRANSIT_START) != 0);	// Included in partileBoth
+    calcNonPartile = ((flags & SweConst.SEFLG_PARTILE_TRANSIT_END) != 0);	// Included in partileBoth
+    calcPartileBoth = (calcPartile && calcNonPartile);
     calcYoga = ((flags & SweConst.SEFLG_YOGA_TRANSIT) != 0);
-
 
     // The index into the xx[] array in swe_calc() to use:
     if ((flags&SweConst.SEFLG_TRANSIT_LATITUDE) != 0) { // Calculate latitudinal transits
@@ -215,6 +241,9 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
     flags &= ~(SweConst.SEFLG_TRANSIT_LONGITUDE |
                SweConst.SEFLG_TRANSIT_LATITUDE |
                SweConst.SEFLG_TRANSIT_DISTANCE |
+               SweConst.SEFLG_PARTILE_TRANSIT |
+               SweConst.SEFLG_PARTILE_TRANSIT_START |
+               SweConst.SEFLG_PARTILE_TRANSIT_END |
                SweConst.SEFLG_YOGA_TRANSIT |
                SweConst.SEFLG_TRANSIT_SPEED);
     this.flags = flags;
@@ -222,6 +251,13 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
     // Calculate basic parameters: ///////////////////////////////////////////
     rollover = (idx == 0);
 
+    if (calcPartile || calcNonPartile) {
+      if ((offset % 30) != 0) {
+        throw new IllegalArgumentException(
+                     "Wrong offset (" + offset + "). Calculation of partile aspect may have offsets of multiples of 30 degrees only.");
+      }
+      rollover = false;
+    }
     this.offset = checkOffset(offset);
 
 
@@ -232,14 +268,22 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
     if (Double.isInfinite(maxSpeed1) || Double.isInfinite(minSpeed1)) {
       throw new IllegalArgumentException(
           ((flags&SweConst.SEFLG_TOPOCTR)!=0?"Topo":((flags&SweConst.SEFLG_HELCTR)!=0?"Helio":"Geo")) +
-          "centric transit calculations with planet number " + pl1 + " ("+
-          sw.swe_get_planet_name(pl1) + ") not possible.");
+          		"centric transit calculations with planet number " + pl1 + " ("+
+          		sw.swe_get_planet_name(pl1) + ") not possible: extreme " +
+			((flags & SweConst.SEFLG_SPEED) != 0 ? "accelerations" : "speeds") +
+			" of the planet " +
+			((flags & SweConst.SEFLG_EQUATORIAL) != 0 ? "in equatorial system " : "") +
+			"not available.");
     }
     if (Double.isInfinite(maxSpeed2) || Double.isInfinite(minSpeed2)) {
       throw new IllegalArgumentException(
           ((flags&SweConst.SEFLG_TOPOCTR)!=0?"Topo":((flags&SweConst.SEFLG_HELCTR)!=0?"Helio":"Geo")) +
-          "centric transit calculations with planet number " + pl2 + " ("+
-          sw.swe_get_planet_name(pl2) + ") not possible.");
+          		"centric transit calculations with planet number " + pl2 + " ("+
+          		sw.swe_get_planet_name(pl2) + ") not possible: extreme " +
+			((flags & SweConst.SEFLG_SPEED) != 0 ? "accelerations" : "speeds") +
+			" of the planet " +
+			((flags & SweConst.SEFLG_EQUATORIAL) != 0 ? "in equatorial system " : "") +
+			"not available.");
     }
 
     if (calcYoga) {
@@ -250,11 +294,50 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
         minSpeed = (maxSpeed1>maxSpeed2)?minSpeed1-maxSpeed2:minSpeed2-maxSpeed1;
         maxSpeed = (maxSpeed1>maxSpeed2)?maxSpeed1-minSpeed2:maxSpeed2-minSpeed1;
       } else {
-        minSpeed = SMath.max(minSpeed1-maxSpeed2, minSpeed2-maxSpeed1);
+        minSpeed = SMath.min(minSpeed1-maxSpeed2, minSpeed2-maxSpeed1);
         maxSpeed = SMath.max(maxSpeed1-minSpeed2, maxSpeed2-minSpeed1);
       }
     }
+  }
 
+  // Looks for next time when the condition (partile / non-partile) is NOT met,
+  // so we have a starting point for partile / non-partile calculation:
+  double preprocessDate(double jdET, boolean back) {
+    if (calcPartile || calcNonPartile) {
+      // Check the current partile status:
+      isPartile = hasPartileAspect(jdET, pl1, pl2, flags, offset);
+
+      if (!calcPartileBoth) {
+        if (isPartile && calcPartile) {
+          // Set next non partile date as starting date
+          int flgs = flags & ~SweConst.SEFLG_PARTILE_TRANSIT_START;
+          flgs |= SweConst.SEFLG_PARTILE_TRANSIT_END | SweConst.SEFLG_TRANSIT_LONGITUDE;
+          TransitCalculator tc = new TCPlanetPlanet(
+              sw,
+              pl1,
+              pl2,
+              flgs,
+              offset);
+
+          jdET = sw.getTransitET(tc, jdET, back);
+          isPartile = !isPartile;
+        } else if (!isPartile && calcNonPartile) {
+          // Set next partile date as starting date
+          int flgs = flags & ~SweConst.SEFLG_PARTILE_TRANSIT_END;
+          flgs |= SweConst.SEFLG_PARTILE_TRANSIT_START | SweConst.SEFLG_TRANSIT_LONGITUDE;
+          TransitCalculator tc = new TCPlanetPlanet(
+              sw,
+              pl1,
+              pl2,
+              flgs,
+              offset);
+
+          jdET = sw.getTransitET(tc, jdET, back);
+          isPartile = !isPartile;
+        }
+      }
+    }
+    return jdET;
   }
 
   /**
@@ -286,9 +369,7 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
     return offset;
   }
   /**
-  * This returns all the &quot;object identifiers s&quot; used in this
-  * TransitCalculator. It may be the planet number or planet numbers,
-  * when calculating planets.
+  * This returns the two planet numbers involved as Strings.
   * @return An array of identifiers identifying the calculated objects.
   */
   public Object[] getObjectIdentifiers() {
@@ -327,6 +408,42 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
   }
 //#endif /* EXTPRECISION */
 
+  /**
+  * Checks if the two planets have a partile aspect.
+  */
+  public boolean hasPartileAspect(double jdET, int p1, int p2, int flgs, double offset) {
+    StringBuffer serr = new StringBuffer();
+    double[] xx1 = new double[6], xx2 = new double[6];
+    offset = (int)offset;
+
+    flgs &= ~(SweConst.SEFLG_TRANSIT_LONGITUDE |
+               SweConst.SEFLG_TRANSIT_LATITUDE |
+               SweConst.SEFLG_TRANSIT_DISTANCE |
+               SweConst.SEFLG_PARTILE_TRANSIT |
+               SweConst.SEFLG_PARTILE_TRANSIT_START |
+               SweConst.SEFLG_PARTILE_TRANSIT_END |
+               SweConst.SEFLG_YOGA_TRANSIT |
+               SweConst.SEFLG_TRANSIT_SPEED);
+
+    int ret = sw.swe_calc(jdET, p1, flgs, xx1, serr);
+    if (ret<0) {
+      throw new SwissephException(jdET, SwissephException.UNDEFINED_ERROR,
+          "Calculation failed with return code " + ret + ":\n" +
+          serr.toString());
+    }
+
+    ret = sw.swe_calc(jdET, p2, flgs, xx2, serr);
+    if (ret<0) {
+      throw new SwissephException(jdET, SwissephException.UNDEFINED_ERROR,
+          "Calculation failed with return code " + ret + ":\n" +
+          serr.toString());
+    }
+
+      return (int)(xx1[0]%30) == (int)(xx2[0]%30) &&
+          ((((int)(xx1[0]) + offset + rolloverVal) % rolloverVal == (int)xx2[0]) ||
+           (((int)(xx1[0]) - offset + rolloverVal) % rolloverVal == (int)xx2[0]));
+  }
+
 
 
 
@@ -357,7 +474,49 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
           serr.toString());
     }
 
-    return xx1[idx] + (calcYoga?xx2[idx]:-xx2[idx]);
+    if (calcPartile || calcNonPartile) {
+      lon1 = xx1[0];
+      lon2 = xx2[0];
+      double delta1, delta2, delta3, delta4;
+      double target1 = ((int)(lon1) + offset + rolloverVal) % rolloverVal;
+      double target2 = ((int)(lon1) - offset + rolloverVal) % rolloverVal;
+      double target3 = ((int)(lon2) + offset + rolloverVal) % rolloverVal;
+      double target4 = ((int)(lon2) - offset + rolloverVal) % rolloverVal;
+      if (lon2 > target1) {
+        delta1 = SMath.abs(lon2 - target1 - 1 + 1E-9);	// Might be better to use a different comparison operator instead of  '+ 1E-9'...?
+      } else {
+        delta1 = target1 - lon2;
+      }
+      if (lon2 > target2) {
+        delta2 = SMath.abs(lon2 - target2 - 1 + 1E-9);
+      } else {
+        delta2 = target2 - lon2;
+      }
+      if (lon1 > target3) {
+        delta3 = SMath.abs(lon1 - target3 - 1 + 1E-9);
+      } else {
+        delta3 = target3 - lon1;
+      }
+      if (lon1 > target4) {
+        delta4 = SMath.abs(lon1 - target4 - 1 + 1E-9);
+      } else {
+        delta4 = target4 - lon1;
+      }
+
+      double diff = SMath.min(SMath.min(SMath.min(delta1, delta2), delta3), delta4) % 1;	// Using '%1', as I don't get the next degree value, where these planets will be partile (on calcPartile?).
+      if ((!isPartile && calcPartile && diff == 0) || (isPartile && calcNonPartile && diff != 0)) {
+        return offset;
+      }
+      if (((int)xx1[idx] - (int)xx2[idx] + rolloverVal) %rolloverVal - offset == 0 ||
+          ((int)xx2[idx] - (int)xx1[idx] + rolloverVal) %rolloverVal - offset == 0) {
+        return Double.POSITIVE_INFINITY;	// Means: found, but don't interpolate with previous values
+      }
+      return ((xx1[idx] % rolloverVal) - (xx2[idx] % rolloverVal) + rolloverVal) % rolloverVal;
+    } else if (calcYoga) {
+System.err.println(xx1[idx] + " + " + xx2[idx] + " = " + (xx1[idx] + xx2[idx]));
+    	return xx1[idx] + xx2[idx];
+    }
+    return xx1[idx] - xx2[idx];
   }
 
 
@@ -492,10 +651,10 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
     // swe_calc() would return latitudinal values beyond -90 and +90 degrees.
 
     if (rollover) {        // Longitude from 0 to 360 degrees:
-      while (val < 0.) { val += 360.; }
-      val %= 360.;
+      while (val < 0.) { val += rolloverVal; }
+      val %= rolloverVal;
       minVal = 0.;
-      maxVal = 360.;
+      maxVal = rolloverVal;
     } else if (idx == 1) { // Latitude from -90 to +90 degrees:
       while (val < -90.) { val += 180.; }
       while (val >  90.) { val -= 180.; }
@@ -512,6 +671,8 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
     boolean speed = ((tflags&SweConst.SEFLG_TRANSIT_SPEED) != 0);
     boolean topo = ((tflags&SweConst.SEFLG_TOPOCTR) != 0);
     boolean helio = ((tflags&SweConst.SEFLG_HELCTR) != 0);
+    boolean rect = ((tflags&SweConst.SEFLG_EQUATORIAL) != 0 && !lat && !dist);
+    boolean decl = ((tflags&SweConst.SEFLG_EQUATORIAL) != 0 && lat);
 
     // Some topocentric speeds are very different to the geocentric
     // speeds, so we use other values than for geocentric calculations:
@@ -530,7 +691,11 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
                                            "altitude of -12000km so far.");
       }
       if (speed) {
-        if (lat) {
+        if (rect) {
+          return (min?SwephData.minTopoRectAccel[planet]:SwephData.maxTopoRectAccel[planet]);
+        } else if (decl) {
+          return (min?SwephData.minTopoDeclAccel[planet]:SwephData.maxTopoDeclAccel[planet]);
+        } else if (lat) {
           return (min?SwephData.minTopoLatAccel[planet]:SwephData.maxTopoLatAccel[planet]);
         } else if (dist) {
           return (min?SwephData.minTopoDistAccel[planet]:SwephData.maxTopoDistAccel[planet]);
@@ -538,7 +703,11 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
           return (min?SwephData.minTopoLonAccel[planet]:SwephData.maxTopoLonAccel[planet]);
         }
       } else {
-        if (lat) {
+        if (rect) {
+          return (min?SwephData.minTopoRectSpeed[planet]:SwephData.maxTopoRectSpeed[planet]);
+        } else if (decl) {
+          return (min?SwephData.minTopoDeclSpeed[planet]:SwephData.maxTopoDeclSpeed[planet]);
+        } else if (lat) {
           return (min?SwephData.minTopoLatSpeed[planet]:SwephData.maxTopoLatSpeed[planet]);
         } else if (dist) {
           return (min?SwephData.minTopoDistSpeed[planet]:SwephData.maxTopoDistSpeed[planet]);
@@ -552,7 +721,11 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
     // we use other values than for geocentric calculations:
     if (helio) {
       if (speed) {
-        if (lat) {
+        if (rect) {
+          return (min?SwephData.minHelioRectAccel[planet]:SwephData.maxHelioRectAccel[planet]);
+        } else if (decl) {
+          return (min?SwephData.minHelioDeclAccel[planet]:SwephData.maxHelioDeclAccel[planet]);
+        } else if (lat) {
           return (min?SwephData.minHelioLatAccel[planet]:SwephData.maxHelioLatAccel[planet]);
         } else if (dist) {
           return (min?SwephData.minHelioDistAccel[planet]:SwephData.maxHelioDistAccel[planet]);
@@ -560,7 +733,11 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
           return (min?SwephData.minHelioLonAccel[planet]:SwephData.maxHelioLonAccel[planet]);
         }
       } else {
-        if (lat) {
+        if (rect) {
+          return (min?SwephData.minHelioRectSpeed[planet]:SwephData.maxHelioRectSpeed[planet]);
+        } else if (decl) {
+          return (min?SwephData.minHelioDeclSpeed[planet]:SwephData.maxHelioDeclSpeed[planet]);
+        } else if (lat) {
           return (min?SwephData.minHelioLatSpeed[planet]:SwephData.maxHelioLatSpeed[planet]);
         } else if (dist) {
           return (min?SwephData.minHelioDistSpeed[planet]:SwephData.maxHelioDistSpeed[planet]);
@@ -572,7 +749,11 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
 
     // Geocentric:
     if (speed) {
-      if (lat) {
+      if (rect) {
+        return (min?SwephData.minRectAccel[planet]:SwephData.maxRectAccel[planet]);
+      } else if (decl) {
+        return (min?SwephData.minDeclAccel[planet]:SwephData.maxDeclAccel[planet]);
+      } else if (lat) {
         return (min?SwephData.minLatAccel[planet]:SwephData.maxLatAccel[planet]);
       } else if (dist) {
         return (min?SwephData.minDistAccel[planet]:SwephData.maxDistAccel[planet]);
@@ -580,7 +761,11 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
         return (min?SwephData.minLonAccel[planet]:SwephData.maxLonAccel[planet]);
       }
     } else {
-      if (lat) {
+      if (rect) {
+        return (min?SwephData.minRectSpeed[planet]:SwephData.maxRectSpeed[planet]);
+      } else if (decl) {
+        return (min?SwephData.minDeclSpeed[planet]:SwephData.maxDeclSpeed[planet]);
+      } else if (lat) {
         return (min?SwephData.minLatSpeed[planet]:SwephData.maxLatSpeed[planet]);
       } else if (dist) {
         return (min?SwephData.minDistSpeed[planet]:SwephData.maxDistSpeed[planet]);
@@ -589,6 +774,95 @@ double minVal = 0., maxVal = 0.;  // Thinking about it...
       }
     }
   }
+
+  protected boolean checkIdenticalResult(double offset, double val) {
+    if (calcPartile) {
+      boolean res = (((lon1 % 1) < 1E-9 || (lon2 % 1) < 1E-9) &&	// leave other values to the interpolation after the checkResult() call otherwise
+            (int)(lon1%30) == (int)(lon2%30) &&
+          ((((int)(lon1) + offset + rolloverVal) % rolloverVal == (int)lon2) ||
+           (((int)(lon1) - offset + rolloverVal) % rolloverVal == (int)lon2)));
+      return res;
+    } else if (calcNonPartile) {
+      boolean res = (((lon1 % 1) < 1E-9 && (lon2 % 1) < 1E-9) ||	// leave other values to the interpolation after the checkResult() call otherwise
+           (int)(lon1%30) != (int)(lon2%30) ||
+          ((((int)(lon1) + offset + rolloverVal) % rolloverVal != (int)lon2) &&
+           (((int)(lon1) - offset + rolloverVal) % rolloverVal != (int)lon2)));
+      return res;
+    }
+    return val == offset;
+  }
+
+  protected boolean checkResult(double offset, double lastVal, double val, boolean above, boolean pxway) {
+    if (calcPartile) {
+      boolean res = ((int)(lon1%30) == (int)(lon2%30) &&
+          ((((int)(lon1) + offset + rolloverVal) % rolloverVal == (int)lon2) ||
+           (((int)(lon1) - offset + rolloverVal) % rolloverVal == (int)lon2)));
+      return res;
+    } else if (calcNonPartile) {
+      boolean res = ((int)(lon1%30) != (int)(lon2%30) ||
+          ((((int)(lon1) + offset + rolloverVal) % rolloverVal != (int)lon2) &&
+           (((int)(lon1) - offset + rolloverVal) % rolloverVal != (int)lon2)));
+      return res;
+    }
+    return super.checkResult(offset, lastVal, val, above, pxway);
+  }
+  protected double getNextJD(double jdET, double val, double offset, double min, double max, boolean back) {
+    if (calcPartile || calcNonPartile) {
+      double delta1, delta2, delta3, delta4;
+      double deltaET;
+
+      // direct and direct motion:
+      if (calcPartile) {
+        // distances in degree to next possible matching (int-)degree
+        double target1 = ((int)(lon1) + offset + rolloverVal) % rolloverVal;
+        double target2 = ((int)(lon1) - offset + rolloverVal) % rolloverVal;
+        double target3 = ((int)(lon2) + offset + rolloverVal) % rolloverVal;
+        double target4 = ((int)(lon2) - offset + rolloverVal) % rolloverVal;
+
+        if (lon2 > target1) {
+          delta1 = SMath.abs(lon2 - target1 - 1 + 1E-9);
+        } else {
+          delta1 = target1 - lon2;
+        }
+        if (lon2 > target2) {
+          delta2 = SMath.abs(lon2 - target2 - 1 + 1E-9);
+        } else {
+          delta2 = target2 - lon2;
+        }
+        if (lon1 > target3) {
+          delta3 = SMath.abs(lon1 - target3 - 1 + 1E-9);
+        } else {
+          delta3 = target3 - lon1;
+        }
+        if (lon1 > target4) {
+          delta4 = SMath.abs(lon1 - target4 - 1 + 1E-9);
+        } else {
+          delta4 = target4 - lon1;
+        }
+      } else {	// partile end
+        // distances in degree to next possible non-matching degrees
+        // ----|->---|-----------------------------------------------|--->-|----------------------
+        delta1 = lon1 - (int)lon1;
+        delta2 = 1 - delta1;
+        delta3 = lon2 - (int)lon2;
+        delta4 = 1 - delta3;
+        delta1 += 1E-9;
+        delta2 += 1E-9;
+        delta3 += 1E-9;
+        delta4 += 1E-9;
+      }
+
+      double maxSpeed = SMath.abs(maxSpeed2 - minSpeed1);
+      maxSpeed = SMath.max(maxSpeed, SMath.abs(maxSpeed1 - minSpeed2));
+      double minDx = SMath.min(SMath.min(SMath.min(delta1, delta2), delta3), delta4)%1;
+      deltaET = SMath.abs(minDx / maxSpeed);
+
+      return jdET + (back ? - deltaET : deltaET);
+    }
+
+    return super.getNextJD(jdET, val, offset, min, max, back);
+  }
+
 
   public String toString() {
     return "[Planets:" + pl1 + "/" + pl2 + "];Offset:" + getOffset();

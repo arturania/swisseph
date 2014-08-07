@@ -5,7 +5,7 @@
 //#define ASTROLOGY
 //#endif /* NO_RISE_TRANS */
 /*
-   This is a port of the Swiss Ephemeris Free Edition, Version 1.75.00
+   This is a port of the Swiss Ephemeris Free Edition, Version 1.80.00
    of Astrodienst AG, Switzerland from the original C Code to Java. For
    copyright see the original copyright notices below and additional
    copyright notes in the file named LICENSE, or - if this file is not

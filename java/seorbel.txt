@@ -66,10 +66,9 @@ J1900,JDATE, 170.73, 79.225630, 0, 0, 0, 0, Proserpina #18
 # Neither Swisseph nor Solar fire elements agree with Delphine Jay's ephemeris,
 # which is obviously wrong.
 2414290.95827875,2414290.95827875, 70.3407215 + 109023.2634989 * T, 0.0068400705250028, 0.1587, 8.14049594 + 2393.47417444 * T, 136.24878256 - 1131.71719709 * T, 2.5, Waldemath, geo # 19
-##############################################
+#
 # The following elements are for test only
 # (Selena without T)
-2454000.5,J2000,268.05505,57.3693459,0.1104221,284.48762,252.36907,46.75377,2004XR190
 J2000,JDATE, 242.2205555, 0.05279142865925, 0.0, 0.0, 0.0, 0.0, Selena/White Moon, geo # 17
 # (Selena with T, gives exactly the same position) 
 J2000,JDATE, 242.2205555 + 5143.5418158 * T, 0.05279142865925, 0.0, 0.0, 0.0, 0.0, Selena/White Moon with T Terms, geo # 17

@@ -1,11 +1,11 @@
-//#ifdef J2ME
-//#define JAVAME
-//#endif /* J2ME */
-//#ifdef NO_RISE_TRANS
-//#define ASTROLOGY
-//#endif /* NO_RISE_TRANS */
+#ifdef J2ME
+#define JAVAME
+#endif /* J2ME */
+#ifdef NO_RISE_TRANS
+#define ASTROLOGY
+#endif /* NO_RISE_TRANS */
 /*
-   This is a port of the Swiss Ephemeris Free Edition, Version 1.76.00
+   This is a port of the Swiss Ephemeris Free Edition, Version 2.00.00
    of Astrodienst AG, Switzerland from the original C Code to Java. For
    copyright see the original copyright notices below and additional
    copyright notes in the file named LICENSE, or - if this file is not
@@ -86,9 +86,9 @@ class SwephMosh
   Swemmoon sm=null;
   SweDate sd=null;
 
-//#ifdef ORIGINAL
+#ifdef ORIGINAL
   CFmt cv=new CFmt();
-//#endif /* ORIGINAL */
+#endif /* ORIGINAL */
 
   private static final double TIMESCALE=3652500.0;
   private static final int FICT_GEO=1;
@@ -127,13 +127,13 @@ class SwephMosh
 
 
   SwephMosh(SwissLib sl, SwissEph sw, SwissData swed) {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.level++;
     Trace.log("SwephMosh(SwissLib, SwissEph, SwissData)");
-//#ifdef TRACE1
+#ifdef TRACE1
     Trace.log("    sl: " + sl + "\n    sw: " + sw + "\n    swed: " + swed);
-//#endif /* TRACE1 */
-//#endif /* TRACE0 */
+#endif /* TRACE1 */
+#endif /* TRACE0 */
     this.sl    = sl;
     this.sw    = sw;
     this.swed  = swed;
@@ -141,18 +141,18 @@ class SwephMosh
     if (this.sl   ==null) { this.sl   =new SwissLib(); }
     if (this.sw   ==null) { this.sw   =new SwissEph(); }
     if (this.swed ==null) { this.swed =new SwissData(); }
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.level--;
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
   }
 
 
-//#ifndef NO_MOSHIER
+#ifndef NO_MOSHIER
 
   private int swi_moshplan2 (double J, int iplm, double[] pobj) {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephMosh.swi_moshplan2(double, int, double[])");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     int i, j, k, m, k1, ip, np, nt;
     byte p[]; int pOff=0;
     double pl[], pb[], pr[]; int plOff=0, pbOff=0, prOff=0;
@@ -293,9 +293,9 @@ class SwephMosh
    */
   int swi_moshplan(double tjd, int ipli, boolean do_save, double[] xpret,
                    double[] xeret, StringBuffer serr) {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephMosh.swi_moshplan(double, int, boolean, double[], double[], StringBuffer)");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     int i;
     boolean do_earth = false;
     double dx[]=new double[3], x2[]=new double[3],
@@ -323,15 +323,15 @@ class SwephMosh
         tjd > SwephData.MOSHPLEPH_END + 0.3) {
       if (serr != null) {
         serr.setLength(0);
-//#ifdef ORIGINAL
+#ifdef ORIGINAL
         s="jd "+cv.fmt("%f",tjd)+" outside Moshier planet range "+
           cv.fmt("%.2f",SwephData.MOSHPLEPH_START)+" .. "+
           cv.fmt("%.2f",SwephData.MOSHPLEPH_END)+" ";
-//#else
+#else
         s="jd "+tjd+" outside Moshier planet range "+
           SwephData.MOSHPLEPH_START+" .. "+
           SwephData.MOSHPLEPH_END+" ";
-//#endif /* ORIGINAL */
+#endif /* ORIGINAL */
         if (serr.length() + s.length() < SwissData.AS_MAXCH) {
           serr.append(s);
         }
@@ -391,11 +391,11 @@ class SwephMosh
         /* one more position for speed.
          * the following dt gives good speed for light-time correction
          */
-//#if 0
+#if 0
 //        for (i = 0; i <= 2; i++)
 //          dx[i] = xp[i] - pedp.x[i];
 //        dt = LIGHTTIME_AUNIT * sqrt(square_sum(dx));
-//#endif /* 0 */
+#endif /* 0 */
         dt = SwephData.PLAN_SPEED_INTV;
         swi_moshplan2(tjd - dt, iplm, x2);
         sl.swi_polcart(x2, x2);
@@ -421,9 +421,9 @@ class SwephMosh
    * for required multiple angles
    */
   private void sscc (int k, double arg, int n) {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephMosh.sscc(int, double, int)");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     double cu, su, cv, sv, s;
     int i;
 
@@ -452,9 +452,9 @@ class SwephMosh
    * xemb = rectangular equatorial coordinates of Earth
    */
   private void embofs_mosh(double tjd, double xemb[]) {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephMosh.embofs_mosh(double, double[])");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     double T, M, a, L, B, p;
     double smp, cmp, s2mp, c2mp, s2d, c2d, sf, cf;
     double s2f, sx, cx, xyz[]=new double[6];
@@ -525,12 +525,12 @@ class SwephMosh
     /* Convert to equatorial */
     sl.swi_coortrf2(xyz, xyz, -seps, ceps);
     /* Precess to equinox of J2000.0 */
-    sl.swi_precess(xyz, tjd, SwephData.J_TO_J2000);/**/
+    sl.swi_precess(xyz, tjd, 0, SwephData.J_TO_J2000);/**/
     /* now emb -> earth */
     for (i = 0; i <= 2; i++)
       xemb[i] -= xyz[i] / (SwephData.EARTH_MOON_MRAT + 1.0);
   }
-//#endif /* NO_MOSHIER */
+#endif /* NO_MOSHIER */
 
   /* orbital elements of planets that are computed from osculating elements
    *   epoch
@@ -542,10 +542,10 @@ class SwephMosh
    *   ascending node
    *   inclination
    */
-//#define SE_NEELY
+#define SE_NEELY
                                   /* use James Neely's revised elements
                                    *      of Uranian planets*/
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
   static final String plan_fict_nam[] =
     {"Cupido", "Hades", "Zeus", "Kronos",
      "Apollon", "Admetos", "Vulkanus", "Poseidon",
@@ -554,9 +554,9 @@ class SwephMosh
      "Lowell", "Pickering",};
 
   String swi_get_fict_name(int ipl, String snam) {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephMosh.swi_get_fict_name(int, String)");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     if (snam==null) { snam=""; }
     StringBuffer sbnam=new StringBuffer(snam);
     if (read_elements_file(ipl, 0, null, null,
@@ -566,10 +566,10 @@ class SwephMosh
     }
     return sbnam.toString();
   }
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
 
   private static final double plan_oscu_elem[][]=new double[][] {
-//#ifdef SE_NEELY
+#ifdef SE_NEELY
     {SwephData.J1900, SwephData.J1900, 163.7409, 40.99837, 0.00460, 171.4333, 129.8325, 1.0833},/* Cupido Neely */
     {SwephData.J1900, SwephData.J1900,  27.6496, 50.66744, 0.00245, 148.1796, 161.3339, 1.0500},/* Hades Neely */
     {SwephData.J1900, SwephData.J1900, 165.1232, 59.21436, 0.00120, 299.0440,   0.0000, 0.0000},/* Zeus Neely */
@@ -578,7 +578,7 @@ class SwephMosh
     {SwephData.J1900, SwephData.J1900, 351.3350, 73.62765, 0.00000,   0.0000,   0.0000, 0.0000},/* Admetos Neely */
     {SwephData.J1900, SwephData.J1900,  55.8983, 77.25568, 0.00000,   0.0000,   0.0000, 0.0000},/* Vulcanus Neely */
     {SwephData.J1900, SwephData.J1900, 165.5163, 83.66907, 0.00000,   0.0000,   0.0000, 0.0000},/* Poseidon Neely */
-//#else
+#else
   {SwephData.J1900, SwephData.J1900, 104.5959, 40.99837,  0, 0, 0, 0}, /* Cupido   */
   {SwephData.J1900, SwephData.J1900, 337.4517, 50.667443, 0, 0, 0, 0}, /* Hades    */
   {SwephData.J1900, SwephData.J1900, 104.0904, 59.214362, 0, 0, 0, 0}, /* Zeus     */
@@ -587,7 +587,7 @@ class SwephMosh
   {SwephData.J1900, SwephData.J1900,  -8.678,  73.736476, 0, 0, 0, 0}, /* Admetos  */
   {SwephData.J1900, SwephData.J1900,  55.9826, 77.445895, 0, 0, 0, 0}, /* Vulkanus */
   {SwephData.J1900, SwephData.J1900, 165.3595, 83.493733, 0, 0, 0, 0}, /* Poseidon */
-//#endif /* SE_NEELY */
+#endif /* SE_NEELY */
     /* Isis-Transpluto; elements from "Die Sterne" 3/1952, p. 70ff.
      * Strubell does not give an equinox. 1945 is taken to best reproduce
      * ASTRON ephemeris. (This is a strange choice, though.)
@@ -607,7 +607,7 @@ class SwephMosh
     {2425977.5, 2425977.5, 281, 43.0, 0.202, 204.9, 0, 0},
     /* Pickering's Pluto */
     {2425977.5, 2425977.5, 48.95, 55.1, 0.31, 280.1, 100, 15}, /**/
-//#if 0   /* Ceres JPL 1600, without perturbations from other minor planets,
+#if 0   /* Ceres JPL 1600, without perturbations from other minor planets,
 //         * from following initial elements:
 //         * 2450600.5 2000 0 1 164.7073602 73.0340746 80.5995101
 //         * 10.5840296 0.07652422 0.0 2.770176095 */
@@ -617,10 +617,10 @@ class SwephMosh
 //  /* Chiron, Bowell database 18-mar-1997 */
 //  {2450500.5, SwephData.J2000, 7.258191, 13.67387471, 0.38174778, 339.558345, 209.379239,
 // 6.933360}, /**/
-//#endif /* 0 */
+#endif /* 0 */
   };
 
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
   /* computes a planet from osculating elements *
    * tjd          julian day
    * ipl          body number
@@ -629,9 +629,9 @@ class SwephMosh
    */
   int swi_osc_el_plan(double tjd, double xp[], int ipl, int ipli,
                       double[] xearth, double[] xsun, StringBuffer serr) {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephMosh.swi_osc_el_plan(double, double[], int, int, StringBuffer)");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     double pqr[]=new double[9], x[]=new double[6];
     double eps, K, fac, rho, cose, sine;
     double alpha, beta, zeta, sigma, M2, Msgn, M_180_or_0;
@@ -733,13 +733,13 @@ class SwephMosh
     xp[4] = pqr[3] * x[3] + pqr[4] * x[4];
     xp[5] = pqr[6] * x[3] + pqr[7] * x[4];
     /* transformation to equator */
-    eps = sl.swi_epsiln(tequ.val);
+    eps = sl.swi_epsiln(tequ.val, 0);
     sl.swi_coortrf(xp, xp, -eps);
     sl.swi_coortrf(xp, 3, xp, 3, -eps);
     /* precess to J2000 */
     if (tequ.val != SwephData.J2000) {
-      sl.swi_precess(xp, tequ.val, SwephData.J_TO_J2000);
-      sl.swi_precess(xp, 3, tequ.val, SwephData.J_TO_J2000);
+      sl.swi_precess(xp, tequ.val, 0, SwephData.J_TO_J2000);
+      sl.swi_precess(xp, 3, tequ.val, 0, SwephData.J_TO_J2000);
     }
     /* to solar system barycentre */
     if ((fict_ifl.val & FICT_GEO) != 0) {
@@ -758,7 +758,7 @@ class SwephMosh
     return SweConst.OK;
   }
 
-//#if 1
+#if 1
   /* note: input parameter tjd is required for T terms in elements */
   private int read_elements_file(int ipl, double tjd,
                                  DblObj tjd0, DblObj tequ,
@@ -766,32 +766,33 @@ class SwephMosh
                                  DblObj parg, DblObj node, DblObj incl,
                                  StringBuffer pname, IntObj fict_ifl,
                                  StringBuffer serr) {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephMosh.read_elements_file(int, double, DblObj, DblObj, DblObj, DblObj, DblObj, DblObj, DblObj, DblObj, StringBuffer, StringBuffer)");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     int i, iline, iplan, retc, ncpos;
-//#ifndef JAVAME
+#ifndef JAVAME
     FilePtr fp = null;
-//#endif /* JAVAME */
+#endif /* JAVAME */
     String s, sp;
     int spIdx=0;
     String cpos[]=new String[20], serri="";
     boolean elem_found = false;
     double tt = 0;
-//#ifndef JAVAME
+#ifndef JAVAME
     /* -1, because file information is not saved, file is always closed */
     try {
       fp = sw.swi_fopen(-1, SweConst.SE_FICTFILE, swed.ephepath, serr);
     } catch (SwissephException se) {
-//#endif /* JAVAME */
+#endif /* JAVAME */
       /* file does not exist, use built-in bodies */
       if (ipl >= SweConst.SE_NFICT_ELEM) {
         if (serr != null) {
-//#ifdef ORIGINAL
+          serr.setLength(0);
+#ifdef ORIGINAL
           serr.append("error no elements for fictitious body no ").append(cv.fmt("%7.0f", (double) ipl));
-//#else
+#else
           serr.append("error no elements for fictitious body no ").append(ipl);
-//#endif /* ORIGINAL */
+#endif /* ORIGINAL */
         }
         return SweConst.ERR;
       }
@@ -824,7 +825,7 @@ class SwephMosh
         pname.append(plan_fict_nam[ipl]);
       }
       return SweConst.OK;
-//#ifndef JAVAME
+#ifndef JAVAME
     }
     /*
      * find elements in file
@@ -855,11 +856,11 @@ class SwephMosh
         }
         ncpos = sl.swi_cutstr(s, ",", cpos, 20);
         serri="error in file "+SweConst.SE_FICTFILE+", line "+
-//#ifdef ORIGINAL
+#ifdef ORIGINAL
               cv.fmt("%7.0f",(double) iline)+":";
-//#else
+#else
               iline+":";
-//#endif /* ORIGINAL */
+#endif /* ORIGINAL */
         if (ncpos < 9) {
           if (serr != null) {
             serr.setLength(0);
@@ -1039,12 +1040,12 @@ class SwephMosh
       }
       if (!elem_found) {
         if (serr != null) {
-//#ifdef ORIGINAL
+#ifdef ORIGINAL
           serr.append(serri).append(" elements for planet ").append(
                                     cv.fmt("%7.0f",(double)ipl)).append(" not found");
-//#else
+#else
           serr.append(serri).append(" elements for planet ").append(ipl).append(" not found");
-//#endif /* ORIGINAL */
+#endif /* ORIGINAL */
         }
 //      goto return_err;
         fp.close(); return SweConst.ERR;
@@ -1053,20 +1054,20 @@ class SwephMosh
       return SweConst.OK;
     } catch (java.io.IOException e) {
       if (fp!=null) { try { fp.close(); } catch (java.io.IOException ie) { } }
-//#ifndef NO_NIO
+#ifdef NIO
     } catch (java.nio.BufferUnderflowException e) {
       if (fp!=null) { try { fp.close(); } catch (java.io.IOException ie) { } }
-//#endif /* NO_NIO */
+#endif /* NIO */
     }
     return SweConst.ERR;
-//#endif /* JAVAME */
+#endif /* JAVAME */
   }
-//#endif /* 1 */
+#endif /* 1 */
 
   private int check_t_terms(double t, String sinp, DblObj doutp) {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephMosh.check_t_terms(double, String, DblObj)");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     int i, isgn = 1, z;
     int retc = 0;
     int spidx;
@@ -1134,9 +1135,9 @@ class SwephMosh
       z++;
     }
   }
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
 
-//#ifndef NO_MOSHIER
+#ifndef NO_MOSHIER
   private Plantbl planets[] = {
     SwemptabMer.mer404,
     SwemptabVen.ven404,
@@ -1148,5 +1149,5 @@ class SwephMosh
     SwemptabNep.nep404,
     SwemptabPlu.plu404,
   };
-//#endif /* NO_MOSHIER */
+#endif /* NO_MOSHIER */
 }

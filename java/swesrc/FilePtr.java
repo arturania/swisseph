@@ -3,7 +3,7 @@
 #endif /* J2ME */
 #ifndef JAVAME
 /*
-   This is a port of the Swiss Ephemeris Free Edition, Version 1.76.00
+   This is a port of the Swiss Ephemeris Free Edition, Version 2.00.00
    of Astrodienst AG, Switzerland from the original C Code to Java. For
    copyright see the original copyright notices below and additional
    copyright notes in the file named LICENSE, or - if this file is not
@@ -78,13 +78,13 @@ package swisseph;
 
 import java.io.*;
 import java.net.*;
-#ifndef NO_NIO
+#ifdef NIO
 import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.BufferOverflowException;
 import java.nio.channels.FileChannel;
-#endif /* NO_NIO */
+#endif /* NIO */
 
 
 /**
@@ -103,7 +103,7 @@ public class FilePtr
 		implements java.io.Serializable
 #endif /* JAVAME */
 		{
-  public static final String useragent = "swisseph-java-1.76.00(05)";
+  public static final String useragent = "swisseph-java-" + SwephData.SE_JAVA_VERSION;
 
   //Allocate a 1K buffer for line reading
   private static final int STRING_BUFFER_SIZE = 200;
@@ -111,11 +111,11 @@ public class FilePtr
   private static final int MAX_FAILURES = 100;
 
   transient RandomAccessFile fp;
-#ifndef NO_NIO
+#ifdef NIO
   transient FileChannel fc;
   private transient MappedByteBuffer mbb = null;
   private transient CharBuffer cb = null;
-#endif /* NO_NIO */
+#endif /* NIO */
   transient Socket sk;
   transient InputStream is;
   transient BufferedOutputStream os;
@@ -162,9 +162,9 @@ public class FilePtr
     data = new byte[BUFSIZE];
     inbuf = new byte[BUFSIZE];
     if (useHTTP && fp == null) { // RandomAccessFile, try file access via http:
-#ifndef NO_NIO
+#ifdef NIO
       fc = null;
-#endif /* NO_NIO */
+#endif /* NIO */
       try {
         URL u = new URL(fnamp);
         host = u.getHost();
@@ -173,18 +173,18 @@ public class FilePtr
       } catch ( MalformedURLException me) {
         throw new IOException("Malformed URL '"+fnamp+"'");
       }
-#ifndef NO_NIO
+#ifdef NIO
     } else {
       fc = fp.getChannel();
       mbb = fc.map(FileChannel.MapMode.READ_ONLY, 0, length());
       cb = CharBuffer.allocate( STRING_BUFFER_SIZE );
-#endif /* NO_NIO */
+#endif /* NIO */
     }
   }
 
 
   public void setBigendian(boolean bigendian) {
-#ifndef NO_NIO
+#ifdef NIO
     if (fc != null) {
       mbb.order(bigendian?ByteOrder.BIG_ENDIAN:ByteOrder.LITTLE_ENDIAN);
     } else {
@@ -192,7 +192,7 @@ public class FilePtr
     }
 #else
     this.bigendian = bigendian;
-#endif /* NO_NIO */
+#endif /* NIO */
   }
 
 
@@ -204,12 +204,12 @@ public class FilePtr
   * byte could be read.
   */
   public byte readByte() throws IOException, EOFException {
-#ifndef NO_NIO
+#ifdef NIO
     if (fc != null) {
       return mbb.get();
     }
 
-#endif /* NO_NIO */
+#endif /* NIO */
     if (startIdx<0 || fpos<startIdx || fpos>endIdx) {
       readToBuffer();
     }
@@ -238,12 +238,12 @@ public class FilePtr
   * 2 bytes could be read completely.
   */
   public short readShort() throws IOException, EOFException {
-#ifndef NO_NIO
+#ifdef NIO
     if (fc != null) {
       return mbb.getShort();
     }
 
-#endif /* NO_NIO */
+#endif /* NIO */
     if (bigendian) {
       return (short)((readByte()<<8)+readUnsignedByte());
     }
@@ -259,12 +259,12 @@ public class FilePtr
   * 4 bytes could be read completely.
   */
   public int readInt() throws IOException, EOFException {
-#ifndef NO_NIO
+#ifdef NIO
     if (fc != null) {
       return mbb.getInt();
     }
 
-#endif /* NO_NIO */
+#endif /* NIO */
     if (bigendian) {
       return (((int)readByte())<<24)+
              (((int)readUnsignedByte())<<16)+
@@ -286,12 +286,12 @@ public class FilePtr
   * 8 bytes could be read completely.
   */
   public double readDouble() throws IOException, EOFException {
-#ifndef NO_NIO
+#ifdef NIO
     if (fc != null) {
       return mbb.getDouble();
     }
 
-#endif /* NO_NIO */
+#endif /* NIO */
     long ldb = (bigendian?
                    (
                        (((long)readUnsignedByte())<<56)+
@@ -330,7 +330,7 @@ public class FilePtr
   * character (byte) could be read.
   */
   public String readLine() throws IOException, EOFException {
-#ifndef NO_NIO
+#ifdef NIO
     if (fc != null) {
       cb.clear();
 
@@ -355,7 +355,7 @@ System.err.println("Re-allocating CharBuffer to size of " + (2 * cb.capacity()) 
       return cb.toString();
     }
 
-#endif /* NO_NIO */
+#endif /* NIO */
     StringBuffer sout = new StringBuffer(200);
     try {
       char ch;
@@ -404,12 +404,12 @@ System.err.println("Re-allocating CharBuffer to size of " + (2 * cb.capacity()) 
   * @return the current position of the file pointer.
   */
   public long getFilePointer() {
-#ifndef NO_NIO
+#ifdef NIO
     if (fc != null) {
       return mbb.position();
     }
 
-#endif /* NO_NIO */
+#endif /* NIO */
     return fpos;
   }
 
@@ -419,12 +419,12 @@ System.err.println("Re-allocating CharBuffer to size of " + (2 * cb.capacity()) 
   * @throws IOException if an I/O error occurs.
   */
   public long length() throws IOException {
-#ifndef NO_NIO
+#ifdef NIO
     if (fc != null) {
       return fc.size();
     }
 
-#endif /* NO_NIO */
+#endif /* NIO */
     if (fp != null && savedLength < 0) { savedLength = fp.length(); }
     if (fp != null || savedLength >= 0 || !useHTTP) {
       return savedLength;
@@ -475,12 +475,12 @@ System.err.println("Re-allocating CharBuffer to size of " + (2 * cb.capacity()) 
   * @param pos the new position in the file. The position is seen zero based.
   */
   public void seek(long pos) {
-#ifndef NO_NIO
+#ifdef NIO
     if (fc != null) {
       mbb.position((int)pos);
     }
 
-#endif /* NO_NIO */
+#endif /* NIO */
     fpos = pos;
   }
 
@@ -541,7 +541,7 @@ System.err.println("Re-allocating CharBuffer to size of " + (2 * cb.capacity()) 
 
   // Reads a chunk of data to the buffer data[]
   private void readToBuffer() throws IOException, EOFException {
-#ifdef NO_NIO
+#ifndef NIO
     // Directly reading a file:
     if (fp != null) {
       fp.seek(fpos);
@@ -559,7 +559,7 @@ System.err.println("Re-allocating CharBuffer to size of " + (2 * cb.capacity()) 
       return;
     }
 
-#endif /* NO_NIO */
+#endif /* NIO */
     if (fpos >= length()) {
       throw new EOFException("Filepointer position " + fpos + " exceeds file " +
                              "length by " + (fpos-length()+1) + " byte(s).");

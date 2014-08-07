@@ -20,6 +20,14 @@ public abstract class TransitCalculator
   */
   public abstract boolean getRollover();
   /**
+  * @return Returns the value, which is identical to zero on the other
+  * end of a linear scale.
+  * @see #rolloverVal
+  */
+  public double getRolloverVal() {
+    return rolloverVal;
+  }
+  /**
   * This sets the degree or other value for the position or speed of
   * the planet to transit. It will be used on the next call to getTransit().
   * @param value The desired offset value.
@@ -34,7 +42,7 @@ public abstract class TransitCalculator
   */
   public abstract double getOffset();
   /**
-  * This returns all the &quot;object identifiers s&quot; used in this
+  * This returns all the &quot;object identifiers&quot; used in this
   * TransitCalculator. It may be the planet number or planet numbers,
   * when calculating planets.
   * @return An array of identifiers identifying the calculated objects.
@@ -102,6 +110,77 @@ public abstract class TransitCalculator
 
   // This is the main routine, mathematically speaking: returning f(x):
   protected abstract double calc(double jdET);
+
+
+  // This routine allows for changing jdET before starting calculations.
+  double preprocessDate(double jdET, boolean back) {
+    return jdET;
+  }
+  // These routines check the result if it meets the stop condition
+  protected boolean checkIdenticalResult(double offset, double val) {
+    return val == offset;
+  }
+  protected boolean checkResult(double offset, double lastVal, double val, boolean above, boolean pxway) {
+      return (// transits from higher deg. to lower deg.:
+               ( above && val<=offset && !pxway) ||
+               // transits from lower deg. to higher deg.:
+               (!above && val>=offset &&  pxway)) ||
+              (rollover && (
+               // transits from above the transit degree via rollover over
+               // 0 degrees to a higher degree:
+               (offset<lastVal && val>.9*rolloverVal && lastVal<20. && !pxway) ||
+               // transits from below the transit degree via rollover over
+               // 360 degrees to a lower degree:
+               (offset>lastVal && val<20. && lastVal>.9*rolloverVal &&  pxway) ||
+               // transits from below the transit degree via rollover over
+               // 0 degrees to a higher degree:
+               (offset>val && val>.9*rolloverVal && lastVal<20. && !pxway) ||
+               // transits from above the transit degree via rollover over
+               // 360 degrees to a lower degree:
+               (offset<val && val<20. && lastVal>.9*rolloverVal &&  pxway))
+              );
+  }
+
+  // Find next reasonable point to probe.
+  protected double getNextJD(double jdET, double val, double offset, double min, double max, boolean back) {
+    double jdPlus  = 0;
+    double jdMinus = 0;
+    if (rollover) {
+      // In most cases here we cannot find out for sure if the distance
+      // is decreasing or increasing. We take the smaller one of these:
+      jdPlus  = SMath.min(val-offset,rolloverVal-val+offset)/SMath.abs(max);
+      jdMinus = SMath.min(val-offset,rolloverVal-val+offset)/SMath.abs(min);
+      if (back) {
+        jdET -= SMath.min(jdPlus,jdMinus);
+      } else {
+        jdET += SMath.min(jdPlus,jdMinus);
+      }
+    } else { // Latitude, distance and speed calculations...
+      //jdPlus = (back?(val-offset):(offset-val))/max;
+      //jdMinus = (back?(val-offset):(offset-val))/min;
+      jdPlus = (offset-val)/max;
+      jdMinus = (offset-val)/min;
+      if (back) {
+        if (jdPlus >= 0 && jdMinus >= 0) {
+          throw new SwissephException(jdET, SwissephException.OUT_OF_TIME_RANGE,
+              -1, "No transit in ephemeris time range."); // I mean: No transits possible...
+        } else if (jdPlus >= 0) {
+          jdET += jdMinus;
+        } else { // if (jdMinus >= 0)
+          jdET += jdPlus;
+        }
+      } else {
+        if (jdPlus <= 0 && jdMinus <= 0) {
+          throw new SwissephException(jdET, SwissephException.OUT_OF_TIME_RANGE,
+              -1, "No transit in ephemeris time range."); // I mean: No transits possible...
+        } else if (jdPlus <= 0) {
+          jdET += jdMinus;
+        } else { // if (jdMinus <= 0)
+          jdET += jdPlus;
+        }
+      }
+    }
+    return jdET;
+  }
 }
 #endif /* TRANSITS */
-

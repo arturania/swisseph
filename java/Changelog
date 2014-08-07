@@ -1,4 +1,88 @@
 
+   * August 7, 2014
+   - Release of swisseph-2.00.00-java-{src|doc}-01
+
+   * August 7, 2014
+   - Added transit calculations for right ascension
+     and declination positions
+
+   * August 5, 2014
+   - Made swe_rise_trans_true_hor() publically
+     accessible
+
+   * August 1, 2014
+   - Updated SwissEph.getJPLRange() to work with
+     de431.eph
+
+   * June 24, 2014
+   - Swetest.java was updated to 2.00.00 only
+     partially. Fixed
+
+   * June 23, 2014
+   - Fixed minor text error in SwephMosh.java
+
+
+   * June 22, 2014
+   - Release of swisseph-2.00.00-java-{src|doc}-00
+
+   * June 22, 2014
+   - Updated to version 2.00.00
+
+   * June 22, 2014
+   - Fixed some minor issues in context with error
+     conditions
+
+
+   * February 7, 2014
+   - Release of swisseph-1.80.00-java-{src|doc}-02
+
+   * February 7, 2014
+   - Changed for JPL calculations with DE431
+
+
+   * January 16, 2014
+   - Release of swisseph-1.80.00-java-{src|doc}-01
+
+   * January 16, 2014
+   - Transits.java: fixed small internationalization
+     error
+
+
+   * October 17, 2013
+   - Release of swisseph-1.80.00-java-{src|doc}-00
+
+   * October 16, 2013
+   - Updated to version 1.80.00
+
+
+   * October 8, 2013
+   - Release of swisseph-1.79.00-java-{src|doc}-00
+
+   * August 12, 2013
+   - Updated to version 1.79.00
+
+
+   * May 18, 2013
+   - Release of swisseph-1.76.00-java-{src|doc}-07
+
+   * March 18, 2013
+   - Added transit calculation for house cusps,
+     ascendants, mc
+
+
+   * March 25, 2013
+   - Release of swisseph-1.76.00-java-{src|doc}-06
+
+   * March 25, 2013
+   - Fixed bug in Transits.java
+   - Added switch -true (SEFLG_TRUEPOS) to Transits.java
+
+   * December 15, 2012
+   - Added partile aspect calculation (rather slow
+     calculation, beta status)
+
+
+
    * May 3, 2012
    - Release of swisseph-1.76.00-java-{src|doc}-05
 
