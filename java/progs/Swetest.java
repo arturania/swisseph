@@ -2,7 +2,7 @@
 #define JAVAME
 #endif /* J2ME */
 #ifdef JAVAME
-#define NO_JPL
+#define ORIGINAL
 #endif /* JAVAME */
 #ifdef NO_RISE_TRANS
 #define ASTROLOGY
@@ -92,13 +92,15 @@ import java.util.StringTokenizer;
 /**
 * A class to test (probably) all of the swiss ephemeris routines with
 * (probably) all possible options. See parameter -h for infos about
-* all the parameter switches.<P>
+* all the parameter switches.
 */
 public class Swetest
 #ifndef JAVAME
 		implements java.io.Serializable
 #endif /* JAVAME */
 		{
+
+  static String progcall = "java Swetest ";
 
   static final String infocmd0 = "\n"+
   "  Swetest computes a complete set of geocentric planetary positions,\n"+
@@ -187,6 +189,8 @@ public class Swetest
   "        -hsy[hsys]	\n"+
   "		house system to be used (for house positions of planets)\n"+
   "		for long, lat, hsys, see -house\n"+
+  "";
+  static final String infocmd3 = ""+
   "        -geopos[long,lat,elev]	\n"+
   "		Geographic position. Can be used for azimuth and altitude\n"+
   "                or topocentric or house cups calculations.\n"+
@@ -195,20 +199,48 @@ public class Swetest
   "		commas separated, + for east and north. If none are given,\n"+
   "		Greenwich is used: 0,51.5,0\n"+
   "     sidereal astrology:\n"+
-  "	-ay..   ayanamsa, with number of method, e.g. ay0 for Fagan/Bradley\n"+
-  "	-sid..    sidereal, with number of method; 'sid0' for Fagan/Bradley\n"+
-  "	                                           'sid1' for Lahiri\n"+
+  "	-ay..   ayanamsha, with number of method, e.g. ay0 for Fagan/Bradley\n"+
+  "	-sid..    sidereal, with number of method (see below)\n"+
   "	-sidt0..  sidereal, projection on ecliptic of t0 \n"+
   "	-sidsp..  sidereal, projection on solar system plane \n"+
-  "";
-  static final String infocmd3 = ""+
+  "           number of ayanamsha method:\n"+
+  "	   0 for Fagan/Bradley\n"+
+  "	   1 for Lahiri\n"+
+  "	   2 for De Luce\n"+
+  "	   3 for Raman\n"+
+  "	   4 for Ushashashi\n"+
+  "	   5 for Krishnamurti\n"+
+  "	   6 for Djwhal Khul\n"+
+  "	   7 for Yukteshwar\n"+
+  "	   8 for J.N. Bhasin\n"+
+  "	   9 for Babylonian/Kugler 1\n"+
+  "	   10 for Babylonian/Kugler 2\n"+
+  "	   11 for Babylonian/Kugler 3\n"+
+  "	   12 for Babylonian/Huber\n"+
+  "	   13 for Babylonian/Eta Piscium\n"+
+  "	   14 for Babylonian/Aldebaran = 15 Tau\n"+
+  "	   15 for Hipparchos\n"+
+  "	   16 for Sassanian\n"+
+  "	   17 for Galact. Center = 0 Sag\n"+
+  "	   18 for J2000\n"+
+  "	   19 for J1900\n"+
+  "	   20 for B1950\n"+
+  "	   21 for Suryasiddhanta\n"+
+  "	   22 for Suryasiddhanta, mean Sun\n"+
+  "	   23 for Aryabhata\n"+
+  "	   24 for Aryabhata, mean Sun\n"+
+  "	   25 for SS Citra\n"+
+  "	   26 for SS Revati\n"+
+  "	   27 for True Citra\n"+
+  "	   28 for True Revati\n"+
+  "	   29 for True Pushya\n"+
   "     ephemeris specifications:\n"+
   "        -edirPATH change the directory of the ephemeris files \n"+
   "        -eswe   swiss ephemeris\n"+
-#ifndef NO_JPL
+#ifndef JAVAME
   "        -ejpl   jpl ephemeris (DE431), or with ephemeris file name\n"+
   "                -ejplde200.eph \n"+
-#endif /* NO_JPL */
+#endif /* JAVAME */
   "        -emos   moshier ephemeris\n"+
   "        -true             true positions\n"+
   "        -noaberr          no aberration\n"+
@@ -217,23 +249,23 @@ public class Swetest
   "        -j2000            no precession (i.e. J2000 positions)\n"+
   "        -icrs             ICRS (use Internat. Celestial Reference System)\n"+
   "        -nonut            no nutation \n"+
+  "";
+  static final String infocmd4 = ""+
   "        -speed            calculate high precision speed \n"+
   "        -speed3           'low' precision speed from 3 positions \n"+
   "                          do not use this option. -speed parameter\n"+
   "			  is faster and preciser \n"+
   "	-iXX	          force iflag to value XX\n"+
-#ifndef NO_JPL
+#ifndef JAVAME
   "        -testaa96         test example in AA 96, B37,\n"+
   "                          i.e. venus, j2450442.5, DE200.\n"+
   "                          attention: use precession IAU1976\n"+
   "                          and nutation 1980 (s. swephlib.h)\n"+
   "        -testaa95\n"+
   "        -testaa97\n"+
-#endif /* NO_JPL */
+#endif /* JAVAME */
   "        -roundsec         round to seconds\n"+
   "        -roundmin         round to minutes\n"+
-  "";
-  static final String infocmd4 = ""+
   "     observer position:\n"+
   "        -hel    compute heliocentric positions\n"+
   "        -bary   compute barycentric positions (bar. earth instead of node) \n"+
@@ -261,6 +293,8 @@ public class Swetest
   "        -occult occultation of planet or star by the moon. Use -p to \n"+
   "                specify planet (-pf -xfAldebaran for stars) \n"+
   "                output format same as with -solecl\n"+
+  "";
+  static final String infocmd5 = ""+
   "        -lunecl lunar eclipse\n"+
   "                output 1st line:\n"+
   "                  eclipse date,\n"+
@@ -270,8 +304,6 @@ public class Swetest
   "                  6 contacts for start and end of penumbral, partial, and\n"+
   "                  total phase\n"+
 #endif /* ASTROLOGY */
-  "";
-static final String infocmd5 = ""+
   "        -local  only with -solecl or -occult, if the next event of this\n"+
   "                kind is wanted for a given geogr. position.\n"+
   "                Use -geopos[long,lat,elev] to specify that position.\n"+
@@ -308,13 +340,14 @@ static final String infocmd5 = ""+
   "        -penumbral penumbral lunar eclipse (only with -lunecl)\n"+
   "        -central central eclipse (only with -solecl, nonlocal)\n"+
   "        -noncentral non-central eclipse (only with -solecl, nonlocal)\n"+
+  "";
+static final String infocmd6 = ""+
 #endif /* ASTROLOGY */
   "     specifications for risings and settings:\n"+
   "        -norefrac   neglect refraction (with option -rise)\n"+
   "        -disccenter find rise of disc center (with option -rise)\n"+
+  "        -discbottom find rise of disc center (with option -rise)\n"+
   "	-hindu      hindu version of sunrise (with option -rise)\n"+
-  "";
-static final String infocmd6 = ""+
   "     specifications for heliacal events:\n"+
   "        -at[press,temp,rhum,visr]:\n"+
   "	            pressure in hPa\n"+
@@ -497,35 +530,35 @@ static final String infocmd6 = ""+
   "        +20             advance the date by 20 days\n"+
   "\n"+
   "        -10             go back in time 10 days\n";
-  static final String infoexamp = "\n"+
+  String infoexamp = "\n"+
   "\n"+
   "  Examples:\n"+
   "\n"+
-  "    java Swetest -p2 -b1.12.1900 -n15 -s2\n"+
+  "    " + progcall + "-p2 -b1.12.1900 -n15 -s2\n"+
   "	ephemeris of Mercury (-p2) starting on 1 Dec 1900,\n"+
   "	15 positions (-n15) in two-day steps (-s2)\n"+
   "\n"+
-  "    java Swetest -p2 -b1.12.1900 -n15 -s2 -fTZ -roundsec -g, -head\n"+
+  "    " + progcall + "-p2 -b1.12.1900 -n15 -s2 -fTZ -roundsec -g, -head\n"+
   "	same, but output format =  date and zodiacal position (-fTZ),\n"+
   "	separated by comma (-g,) and rounded to seconds (-roundsec),\n"+
   "	without header (-head).\n"+
   "\n"+
-  "    java Swetest -ps -xs433 -b1.12.1900\n"+
+  "    " + progcall + "-ps -xs433 -b1.12.1900\n"+
   "	position of asteroid 433 Eros (-ps -xs433)\n"+
   "\n"+
-  "    java Swetest -pf -xfAldebaran -b1.1.2000\n"+
+  "    " + progcall + "-pf -xfAldebaran -b1.1.2000\n"+
   "	position of fixed star Aldebaran \n"+
   "\n"+
-  "    java Swetest -p1 -d0 -b1.12.1900 -n10 -fPTl -head\n"+
+  "    " + progcall + "-p1 -d0 -b1.12.1900 -n10 -fPTl -head\n"+
   "	angular distance of moon (-p1) from sun (-d0) for 10\n"+
   "	consecutive days (-n10).\n"+
   "\n"+
-  "    java Swetest -p6 -DD -b1.12.1900 -n100 -s5 -fPTZ -head -roundmin\n"+
+  "    " + progcall + "-p6 -DD -b1.12.1900 -n100 -s5 -fPTZ -head -roundmin\n"+
   "      Midpoints between Saturn (-p6) and Chiron (-DD) for 100\n"+
   "      consecutive steps (-n100) with 5-day steps (-s5) with\n"+
   "      longitude in degree-sign format (-f..Z) rounded to minutes (-roundmin)\n"+
   "\n"+
-  "    java Swetest -b5.1.2002 -p -house12.05,49.50,k -ut12:30\n"+
+  "    " + progcall + "-b5.1.2002 -p -house12.05,49.50,k -ut12:30\n"+
   "	Koch houses for a location in Germany at a given date and time\n";
   /**************************************************************/
 
@@ -538,7 +571,9 @@ static final String infocmd6 = ""+
   SweHel    sh   = new SweHel(sw, sl, null, swed);
 #endif /* ASTROLOGY */
 #endif /* JAVAME */
+#ifdef JAVAME
   CFmt      f    = new CFmt();
+#endif /* JAVAME */
 
   static final double J2000=2451545.0;  /* 2000 January 1.5 */
   public double square_sum(double x[]) { return x[0]*x[0]+x[1]*x[1]+x[2]*x[2]; }
@@ -569,6 +604,10 @@ static final String infocmd6 = ""+
   static final char DIFF_MIDP='D';
   static final int MODE_HOUSE=1;
   static final int MODE_LABEL=2;
+
+  static final int SEARCH_RANGE_LUNAR_CYCLES=20000;
+
+  static final int OUTPUT_EXTRA_PRECISION=0;
 
   String se_pname;
   static final String[] zod_nam = new String[]
@@ -626,6 +665,10 @@ static final String infocmd6 = ""+
   private int p=0; // Index for psp
   private boolean norefrac = false;
   private boolean disccenter = false;
+  private boolean discbottom = false;
+  /* for test of old models only */
+  private int astro_models[] = new int[]{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  private boolean do_set_astro_models = false;
 
   static final int SP_LUNAR_ECLIPSE    = 1;
   static final int SP_SOLAR_ECLIPSE    = 2;
@@ -653,18 +696,45 @@ static final String infocmd6 = ""+
 
 
   String SE_EPHE_PATH="";
+  private String mode = "standalone"; // standalone or dependent_android
 
   /**
   * This class is not to be instantiated, it is to be run via the main method.
   */
-  private Swetest() { }
+  // private Swetest() { }
+  public Swetest() { }
 
   /**
-  * Use the parameter -h to get infos about the available options.
+  * Test program for the swisseph library.
+  * @param argv Use the parameter -h to get infos about available options.
   */
   public static void main(String argv[]) {
     Swetest swt=new Swetest();
     System.exit(swt.main_start(argv));
+  }
+
+  // Set mode of operation.
+  // Allowed values: standalone|dependent_android
+  // Default: standalone
+  public void setMode(String mode) {
+    if ("standalone".equals(mode) ||
+        "dependent_android".equals(mode)) {
+      this.mode = mode;
+      progcall = (mode == "dependent_android" ? "" : "java Swetest ");
+    } else {
+      throw new IllegalArgumentException("Mode must be one of 'standalone' or 'dependent_android'");
+    }
+  }
+
+  public String runSwetest(String[] args) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    PrintStream ps = new PrintStream(baos);
+    PrintStream psOld = System.out;
+    System.setOut(ps);
+    main_start(args);
+    System.out.flush();
+    System.setOut(psOld);
+    return baos.toString();
   }
 
   private int main_start(String[] argv) {
@@ -683,9 +753,9 @@ static final String infocmd6 = ""+
     int ihsy = (int)'p';
     boolean do_houses = false;
     String ephepath;
-#ifndef NO_JPL
+#ifndef JAVAME
     String fname;
-#endif /* NO_JPL */
+#endif /* JAVAME */
     String sdate;
     String begindate = null;
     long iflgret;
@@ -698,16 +768,15 @@ static final String infocmd6 = ""+
     datm[0] = 0; datm[1] = 0; datm[2] = 0; datm[3] = 0;
     dobs[0] = 0; dobs[1] = 0;
     dobs[2] = 0; dobs[3] = 0; dobs[4] = 0; dobs[5] = 0;
-/*  swe_set_tid_acc(-25.858); * to test delta t output */
     serr.setLength(0); serr_save.setLength(0); serr_warn.setLength(0);
     sdate_save = "";
 
     sd=new SweDate(tjd,gregflag);
 
     ephepath="";
-#ifndef NO_JPL
+#ifndef JAVAME
     fname=SweConst.SE_FNAME_DFT;
-#endif /* NO_JPL */
+#endif /* JAVAME */
     for (i = 0; i < argv.length; i++) {
       if (argv[i].startsWith("-DSE_EPHE_PATH")) {
         if (++i<argv.length) {
@@ -763,7 +832,7 @@ static final String infocmd6 = ""+
         if (argv[i].length()>3) {
           sid_mode=Integer.parseInt(argv[i].substring(3));
         }
-        sw.swe_set_sid_mode(sid_mode, 0, 0);
+        /*sw.swe_set_sid_mode(sid_mode, 0, 0);*/
 #ifndef ASTROLOGY
       } else if (argv[i].startsWith("-sidt0")) {
         iflag |= SweConst.SEFLG_SIDEREAL;
@@ -775,7 +844,7 @@ static final String infocmd6 = ""+
         if (sid_mode == 0)
           sid_mode = SweConst.SE_SIDM_FAGAN_BRADLEY;
         sid_mode |= SweConst.SE_SIDBIT_ECL_T0;
-        sw.swe_set_sid_mode(sid_mode, 0, 0);
+        /*sw.swe_set_sid_mode(sid_mode, 0, 0);*/
       } else if (argv[i].startsWith("-sidsp")) {
         iflag |= SweConst.SEFLG_SIDEREAL;
 //      sid_mode = atol(argv[i]+6);
@@ -786,7 +855,7 @@ static final String infocmd6 = ""+
         if (sid_mode == 0)
           sid_mode = SweConst.SE_SIDM_FAGAN_BRADLEY;
         sid_mode |= SweConst.SE_SIDBIT_SSY_PLANE;
-        sw.swe_set_sid_mode(sid_mode, 0, 0);
+        /*sw.swe_set_sid_mode(sid_mode, 0, 0);*/
 #endif /* ASTROLOGY */
       } else if (argv[i].startsWith("-sid")) {
         iflag |= SweConst.SEFLG_SIDEREAL;
@@ -799,22 +868,22 @@ static final String infocmd6 = ""+
             // Anything not being a number will be considered '0'
           }
         }
-        if (sid_mode > 0)
-          sw.swe_set_sid_mode(sid_mode, 0, 0);
+        /*if (sid_mode > 0)
+          sw.swe_set_sid_mode(sid_mode, 0, 0);*/
       } else if (argv[i].equals("-jplhora")) {
         iflag |= SweConst.SEFLG_JPLHOR_APPROX;
       } else if (argv[i].equals("-jplhor")) {
         iflag |= SweConst.SEFLG_JPLHOR;
       } else if (argv[i].startsWith("-j")) {
         begindate = argv[i].substring(1);
-#ifndef NO_JPL
+#ifndef JAVAME
       } else if (argv[i].startsWith("-ejpl")) {
         whicheph = SweConst.SEFLG_JPLEPH;
         if (argv[i].length()>5) {
           fname=argv[i].substring(5);
           fname=fname.substring(0, SMath.min(fname.length(), AS_MAXCH - 1));
         }
-#endif /* NO_JPL */
+#endif /* JAVAME */
       } else if (argv[i].startsWith("-edir")) {
         if (argv[i].length() > 5) {
           ephepath=argv[i].substring(5);
@@ -875,11 +944,19 @@ static final String infocmd6 = ""+
 //      sscanf(argv[i] + 5, "%lf,%lf,%lf", &top_long, &top_lat, &top_elev);
         if (argv[i].length()>plen) {
           String fl=argv[i].substring(plen);
-          top_long=Double.parseDouble(fl.substring(0,fl.indexOf(',')));
+          // Emulate atof() behaviour:
+          top_long = top_lat = top_elev = 0;
+          try {
+            top_long=Double.parseDouble(fl.substring(0,fl.indexOf(',')));
+          } catch (NumberFormatException ne) { }
           fl=fl.substring(fl.indexOf(',')+1);
-          top_lat=Double.parseDouble(fl.substring(0,fl.indexOf(',')));
+          try {
+            top_lat=Double.parseDouble(fl.substring(0,fl.indexOf(',')));
+          } catch (NumberFormatException ne) { }
           fl=fl.substring(fl.indexOf(',')+1);
-          top_elev=Double.parseDouble(fl);
+          try {
+            top_elev=Double.parseDouble(fl);
+          } catch (NumberFormatException ne) { }
         }
         have_geopos = true;
       } else if (argv[i].equals("-true")) {
@@ -894,7 +971,7 @@ static final String infocmd6 = ""+
         iflag |= SweConst.SEFLG_SPEED3;
       } else if (argv[i].equals("-speed")) {
         iflag |= SweConst.SEFLG_SPEED;
-#ifndef NO_JPL
+#ifndef JAVAME
       } else if (argv[i].startsWith("-testaa")) {
         whicheph = SweConst.SEFLG_JPLEPH;
         fname=SweConst.SE_FNAME_DE200;
@@ -907,7 +984,7 @@ static final String infocmd6 = ""+
         fmt = "PADRu";
         universal_time = false;
         plsel="3";
-#endif /* NO_JPL */
+#endif /* JAVAME */
       } else if (argv[i].equals("-lmt")) {
         universal_time = true;
         time_flag |= BIT_TIME_LMT;
@@ -958,9 +1035,26 @@ static final String infocmd6 = ""+
       } else if (argv[i].equals("-hindu")) {
         norefrac = true;
         disccenter = true;
+      } else if (argv[i].equals("-discbottom")) {
+        discbottom = true;
       } else if (argv[i].equals("-metr")) {
     	special_event = SP_MERIDIAN_TRANSIT;
         have_geopos = true;
+      /* secret test feature for dieter */
+      } else if (argv[i].startsWith("-prec")) {
+        String[] s_astro_models = argv[i].substring(5).split(",");
+        for(int x = 0; x < s_astro_models.length; x++) {
+          astro_models[x] = SwissLib.atoi(s_astro_models[x]);
+        }
+//        j = 0;
+//        astro_models[j] = SwissLib.atoi(argv[i].substring(5));
+//        sp = argv[i];
+//        while((sp2 = strchr(sp, ',')) != NULL) {
+//          sp = sp2 + 1;
+//	  j++;
+//	  astro_models[j] = atoi(sp);
+//        }
+        do_set_astro_models = true;
       } else if (argv[i].startsWith("-hev")) {
         special_event = SP_HELIACAL;
         search_flag = 0;
@@ -971,32 +1065,38 @@ static final String infocmd6 = ""+
       } else if (argv[i].startsWith("-at")) {
 //        sscanf(argv[i]+3, "%lf,%lf,%lf,%lf", &(datm[0]), &(datm[1]), &(datm[2]), &(datm[3]));
     	StringTokenizer d = new StringTokenizer(argv[i].substring(3),",");
+    	datm[0] = datm[1] = datm[2] = datm[3] = 0;
     	try {
     	  datm[0] = Double.parseDouble(d.nextToken());
+    	} catch (NumberFormatException ne) { }
+    	try {
     	  datm[1] = Double.parseDouble(d.nextToken());
+    	} catch (NumberFormatException ne) { }
+    	try {
     	  datm[2] = Double.parseDouble(d.nextToken());
+    	} catch (NumberFormatException ne) { }
+    	try {
     	  datm[3] = Double.parseDouble(d.nextToken());
-    	} catch (NumberFormatException ne) {
-    	}
+    	} catch (NumberFormatException ne) { }
       } else if (argv[i].startsWith("-obs")) {
 //        sscanf(argv[i]+4, "%lf,%lf", &(dobs[0]), &(dobs[1]));
       	StringTokenizer d = new StringTokenizer(argv[i].substring(4),",");
+    	dobs[0] = dobs[1] = 0;
     	try {
     	  dobs[0] = Double.parseDouble(d.nextToken());
+    	} catch (NumberFormatException ne) { }
+    	try {
     	  dobs[1] = Double.parseDouble(d.nextToken());
-    	} catch (NumberFormatException ne) {
-    	}
+    	} catch (NumberFormatException ne) { }
       } else if (argv[i].startsWith("-opt")) {
 //        sscanf(argv[i]+4, "%lf,%lf,%lf,%lf,%lf,%lf", &(dobs[0]), &(dobs[1]), &(dobs[2]), &(dobs[3]), &(dobs[4]), &(dobs[5]));
        	StringTokenizer d = new StringTokenizer(argv[i].substring(4),",");
-      	try {
-      	  dobs[0] = Double.parseDouble(d.nextToken());
-      	  dobs[1] = Double.parseDouble(d.nextToken());
-      	  dobs[2] = Double.parseDouble(d.nextToken());
-      	  dobs[3] = Double.parseDouble(d.nextToken());
-      	  dobs[4] = Double.parseDouble(d.nextToken());
-      	  dobs[5] = Double.parseDouble(d.nextToken());
-      	} catch (NumberFormatException ne) {
+      	dobs[0] = dobs[1] = dobs[2] = dobs[3] = dobs[4] = dobs[5] = 0;
+        for(int f = 0; f < 6; f++) {
+      	  try {
+      	    dobs[f] = Double.parseDouble(d.nextToken());
+      	  } catch (NumberFormatException ne) {
+      	  }
       	}
 #endif /* ASTROLOGY */
       } else if (argv[i].equals("-bwd")) {
@@ -1066,7 +1166,10 @@ static final String infocmd6 = ""+
       } else if (argv[i].startsWith("-s")) {
         tstep=0;
         if (argv[i].length()>2) {
-          tstep = Double.parseDouble(argv[i].substring(2));
+          try {
+            tstep = Double.parseDouble(argv[i].substring(2));
+      	  } catch (NumberFormatException ne) {
+          }
         }
       } else if (argv[i].startsWith("-b")) {
         begindate="";
@@ -1097,6 +1200,8 @@ static final String infocmd6 = ""+
         round_flag |= BIT_ROUND_SEC;
       } else if (argv[i].equals("-roundmin")) {
         round_flag |= BIT_ROUND_MIN;
+      /*} else if (argv[i].startsWith("-timeout")) {
+        swe_set_timeout(atoi(argv[i]) + 8);*/
       } else if (argv[i].startsWith("-t")) {
         if (argv[i].length() > 2) {
           s1=argv[i].substring(2);
@@ -1160,7 +1265,7 @@ static final String infocmd6 = ""+
       } else {
         sout="illegal option "+argv[i].substring(0, SMath.min(argv[i].length(), AS_MAXCH-50))+"\n";
         System.out.print(sout);
-        System.exit(1);
+        return exitProgram(1);
       }
     }
 #ifndef ASTROLOGY
@@ -1186,10 +1291,6 @@ static final String infocmd6 = ""+
       sw.preloadFixstarsFile(serr);
     }
 #endif /* PRELOAD_FIXSTARS */
-    geopos[0] = top_long;
-    geopos[1] = top_lat;
-    geopos[2] = top_elev;
-    sw.swe_set_topo(top_long, top_lat, top_elev);
     if (with_header) {
 System.out.print("swetest ");
       for (i = 0; i < argv.length; i++) {
@@ -1206,7 +1307,7 @@ System.out.print("swetest ");
 //ephepath="./ephe";
     if (ephepath.length() == 0) {
       StringBuffer sbEphepath = new StringBuffer();
-      if (make_ephemeris_path(iflag, argv[0], sbEphepath) == SweConst.ERR) {
+      if (make_ephemeris_path(iflag, argv.length>0?argv[0]:"", sbEphepath) == SweConst.ERR) {
         iflag = (iflag & ~SweConst.SEFLG_EPHMASK) | SweConst.SEFLG_MOSEPH;
         whicheph = SweConst.SEFLG_MOSEPH;
       } else {
@@ -1214,12 +1315,25 @@ System.out.print("swetest ");
       }
     }
     sw.swe_set_ephe_path(ephepath);
-#ifndef NO_JPL
+#ifndef JAVAME
     if ((whicheph & SweConst.SEFLG_JPLEPH)!=0)
       sw.swe_set_jpl_file(fname);
-#endif /* NO_JPL */
+#endif /* JAVAME */
+    /* the following is only a test feature */
+    if (do_set_astro_models)
+      sl.swe_set_astro_models(astro_models); /* secret test feature for dieter */
+    if ((iflag & SweConst.SEFLG_SIDEREAL) != 0 || do_ayanamsa) 
+      sw.swe_set_sid_mode(sid_mode, 0, 0);
+    geopos[0] = top_long;
+    geopos[1] = top_lat;
+    geopos[2] = top_elev;
+    sw.swe_set_topo(top_long, top_lat, top_elev);
+    /*swe_set_tid_acc(-25.82);  * to test delta t output */
     while (true) {
       serr.setLength(0); serr_save.setLength(0); serr_warn.setLength(0);
+      if (begindate == null && mode.equals("dependent_android")) {
+        return exitProgram(0);
+      }
       if (begindate == null) {
         System.out.print("\nDate ?");
         sdate = "";
@@ -1251,12 +1365,12 @@ System.out.print("swetest ");
         iflag = iflag & ~SweConst.SEFLG_BARYCTR;
         iflag = iflag & ~SweConst.SEFLG_HELCTR;
         sdate = "";
-#ifndef NO_JPL
+#ifndef JAVAME
       } else if (sdate.equals("-ejpl")) {
         iflag &= ~SweConst.SEFLG_EPHMASK;
         iflag |= SweConst.SEFLG_JPLEPH;
         sdate = "";
-#endif /* NO_JPL */
+#endif /* JAVAME */
 #ifndef JAVAME
       } else if (sdate.equals("-eswe")) {
         iflag &= ~SweConst.SEFLG_EPHMASK;
@@ -1291,7 +1405,11 @@ System.out.print("swetest ");
         if (sp.indexOf(',') >= 0)
           sp=sp.substring(0,sp.indexOf(','))+'.'+sp.substring(sp.indexOf(',')+1);
 //      sscanf(sp+1,"%lf", &tjd);
-        tjd = Double.parseDouble(sp.substring(1));
+        try {
+          tjd = Double.parseDouble(sp.substring(1));
+      	} catch (NumberFormatException ne) {
+          tjd = 0;
+      	}
         if (tjd < 2299160.5)
           gregflag = SweDate.SE_JUL_CAL;
         else
@@ -1361,7 +1479,7 @@ System.out.print("swetest ");
           }
           if (neg) { jyear=-jyear; }
         } catch (StringIndexOutOfBoundsException sob) {
-          System.exit(1);
+          return exitProgram(1);
         }
         if (jyear * 10000 + jmon * 100 + jday < 15821015)
           gregflag = SweDate.SE_JUL_CAL;
@@ -1410,11 +1528,23 @@ System.out.print("swetest ");
           else
             System.out.print(" jul.");
           t2 = jut;
+#ifdef JAVAME
           System.out.print("  "+f.fmt("% 2d",(int) t2)+":");
+#else
+          System.out.print(String.format(Locale.US, "  % 2d:",(int) t2));
+#endif /* JAVAME */
           t2 = (t2 - (int) t2) * 60;
+#ifdef JAVAME
           System.out.print(f.fmt("%02d",(int)t2)+":");
+#else
+          System.out.print(String.format(Locale.US, "%02d:",(int)t2));
+#endif /* JAVAME */
           t2 = (t2 - (int) t2) * 60;
+#ifdef JAVAME
           System.out.print(f.fmt("%02d",(int) t2));
+#else
+          System.out.print(String.format(Locale.US, "%02d",(int) t2));
+#endif /* JAVAME */
           if (universal_time)
             System.out.print(" UT");
           else
@@ -1424,10 +1554,18 @@ System.out.print("swetest ");
         delt = SweDate.getDeltaT(t);
         if (universal_time) {
           if (with_header) {
+#ifdef JAVAME
             System.out.print("\nUT: "+f.fmt("%.11f",t));
+#else
+            System.out.print(String.format(Locale.US, "\nUT: %.11f",t));
+#endif /* JAVAME */
           }
           if (with_header) {
+#ifdef JAVAME
             System.out.print("     delta t: "+f.fmt("%f",delt * 86400.0)+" sec");
+#else
+            System.out.print(String.format(Locale.US, "     delta t: %f sec",delt * 86400.0));
+#endif /* JAVAME */
           }
           te = t + delt;
           tut = t;
@@ -1437,21 +1575,33 @@ System.out.print("swetest ");
         }
         iflgret = sw.swe_calc(te, SweConst.SE_ECL_NUT, iflag, xobl, serr);
         if (with_header) {
+#ifdef JAVAME
           System.out.print("\nET: "+f.fmt("%.11f",te));
+#else
+          System.out.print(String.format(Locale.US, "\nET: %.11f",te));
+#endif /* JAVAME */
           if ((iflag & SweConst.SEFLG_SIDEREAL)!=0) {
             daya = sw.swe_get_ayanamsa(te);
-            System.out.print("   ayanamsa = "+dms(daya, round_flag));
+            System.out.print("   ayanamsa = "+dms(daya, round_flag) + " (" + sw.swe_get_ayanamsa_name(sid_mode) + ")");
           }
 	  if (have_geopos) {
+#ifdef JAVAME
 	    System.out.print("\ngeo. long "+f.fmt("%f",geopos[0])+
                              ", lat "+f.fmt("%f",geopos[1])+
                              ", alt "+f.fmt("%f",geopos[2]));
+#else
+	    System.out.print(String.format(Locale.US, "\ngeo. long %f, lat %f, alt %f",geopos[0], geopos[1], geopos[2]));
+#endif /* JAVAME */
 	  }
           if (iflag_f >=0) {
             iflag = iflag_f;
           }
           if (plsel.indexOf('o') < 0) {
+#ifdef JAVAME
             System.out.print("\n"+f.fmt("%-15s","Epsilon (true)")+" "+dms(xobl[0],round_flag));
+#else
+            System.out.print(String.format(Locale.US, "\n%-15s "+dms(xobl[0],round_flag), "Epsilon (true)"));
+#endif /* JAVAME */
           }
           if (plsel.indexOf('n') < 0) {
             System.out.print("\nNutation        ");
@@ -1512,7 +1662,7 @@ System.out.print("swetest ");
           }
           if (ipl == -2) {
             System.out.print("illegal parameter -p"+plsel+"\n");
-            System.exit(1);
+            return exitProgram(1);
           }
 #endif /* ASTROLOGY */
           if ((iflag & SweConst.SEFLG_HELCTR)!=0) {
@@ -1849,7 +1999,7 @@ System.out.print("swetest ");
           if (Character.toLowerCase((char)ihsy) == 'g')
             nhouses = 36;
           iofs = nhouses + 1;
-          iflgret = sw.swe_houses(t,iflag, top_lat, top_long, ihsy, cusp, cusp, iofs);
+          iflgret = sw.swe_houses(t, iflag, top_lat, top_long, ihsy, cusp, cusp, iofs);
           if (iflgret < 0) {
             if (!serr.toString().equals(serr_save.toString())) {
               System.out.print("error: ");
@@ -1869,8 +2019,9 @@ System.out.print("swetest ");
                 sl.swe_cotrans(x, 0, xequ, 0, -xobl[0]);
               }
               print_line(MODE_HOUSE);
-              line_count++;
             }
+// TM:
+              line_count++;
           }
         }   
         if (line_count >= line_limit)
@@ -1917,7 +2068,11 @@ System.out.print("swetest ");
           if (is_label) { System.out.println("year"); break; }
           t2 = sd.getJulDay(jyear,1,1,ju2,gregflag);
           y_frac = (t - t2) / 365.0;
+#ifdef JAVAME
           System.out.print(f.fmt("%.2f",jyear + y_frac));
+#else
+          System.out.print(String.format(Locale.US, "%.2f",jyear + y_frac));
+#endif /* JAVAME */
           break;
       case 'p':
           if (is_label) { System.out.println("obj.nr"); break; }
@@ -1933,47 +2088,86 @@ System.out.print("swetest ");
           if (is_label) { System.out.println("name           "); break; }
           if (is_house) {
 	    if (ipl <= nhouses) {
+#ifdef JAVAME
 	      System.out.print("house " + f.fmt("%2d", ipl) + "       ");
+#else
+	      System.out.print(String.format(Locale.US, "house %2d       ", ipl));
+#endif /* JAVAME */
 	    } else {
+#ifdef JAVAME
 	      System.out.print(f.fmt("%-15s", hs_nam[ipl - nhouses]));
+#else
+	      System.out.print(String.format(Locale.US, "%-15s", hs_nam[ipl - nhouses]));
+#endif /* JAVAME */
 	    }
 	  } else if (diff_mode == DIFF_DIFF) {
+#ifdef JAVAME
 	    System.out.print(f.fmt("%.3s", spnam) + "-" + f.fmt("%.3s", spnam2));
+#else
+	    System.out.print(String.format(Locale.US, "%.3s-%.3s", spnam, spnam2));
+#endif /* JAVAME */
 	  } else if (diff_mode == DIFF_MIDP) {
+#ifdef JAVAME
 	    System.out.print(f.fmt("%.3s", spnam) + "/" + f.fmt("%.3s", spnam2));
+#else
+	    System.out.print(String.format(Locale.US, "%.3s/%.3s", spnam, spnam2));
+#endif /* JAVAME */
 	  } else {
+#ifdef JAVAME
 	    System.out.print(f.fmt("%-15s", spnam));
+#else
+	    System.out.print(String.format(Locale.US, "%-15s", spnam));
+#endif /* JAVAME */
 	  }
           break;
       case 'J':
           if (is_label) { System.out.println("julday"); break; }
           y_frac = (t - (int)(t)) * 100;
 	  if (SMath.floor(y_frac) != y_frac) {
+#ifdef JAVAME
 	    System.out.print(f.fmt("%.5f", t));
+#else
+	    System.out.print(String.format(Locale.US, "%.5f", t));
+#endif /* JAVAME */
 	  } else {
+#ifdef JAVAME
 	    System.out.print(f.fmt("%.2f", t));
+#else
+	    System.out.print(String.format(Locale.US, "%.2f", t));
+#endif /* JAVAME */
 	  }
           break;
       case 'T':
           if (is_label) { System.out.println("date"); break; }
+#ifdef JAVAME
           System.out.print(f.fmt("%02d",jday)+"."+f.fmt("%02d",jmon)+"."+jyear);
+#else
+          System.out.print(String.format(Locale.US, "%02d.%02d.%d", jday, jmon, jyear));
+#endif /* JAVAME */
           if (jut != 0) {
             int h, m, s;
             s = (int) (jut * 3600 + 0.5);
             h = (int) (s / 3600.0);
             m = (int) ((s % 3600) / 60.0);
             s %= 60;
+#ifdef JAVAME
 	    System.out.print(" " + h + ":" + f.fmt("%02d", m) + ":" + f.fmt("%02d", s));
+#else
+	    System.out.print(String.format(Locale.US, " %d:%02d:%02d", h, m, s));
+#endif /* JAVAME */
             if (universal_time)
               System.out.print(" UT");
             else
               System.out.print(" ET");
           }
-          System.out.print(sout);
           break;
       case 't':
           if (is_label) { System.out.println("date"); break; }
+#ifdef JAVAME
           System.out.print(f.fmt("%02d",jyear % 100)+f.fmt("%02d",jmon)+f.fmt("%02d",jday));
+#else
+          System.out.print(String.format(Locale.US, "%02d%02d%02d",jyear % 100,jmon,jday));
+#endif /* JAVAME */
           break;
       case 'L':
           if (is_label) { System.out.println("long."); break; }
@@ -1984,7 +2178,19 @@ System.out.print("swetest ");
           // Fall through else...
       case 'l':
           if (is_label && sp.charAt(c) == 'l') { System.out.println("long"); break; }
+#if OUTPUT_EXTRA_PRECISION 
+#ifdef JAVAME
+          System.out.print(f.fmt("%# 11.9f", x[0]));
+#else
+          System.out.print(String.format(Locale.US, "%# 11.9f", x[0]));
+#endif /* JAVAME */
+#else
+#ifdef JAVAME
           System.out.print(f.fmt("%# 11.7f", x[0]));
+#else
+          System.out.print(String.format(Locale.US, "%# 11.7f", x[0]));
+#endif /* JAVAME */
+#endif /* OUTPUT_EXTRA_PRECISION */
           break;
       case 'G':
           if (is_label) { System.out.println("housPos"); break; }
@@ -1992,11 +2198,19 @@ System.out.print("swetest ");
           break;
       case 'g':
           if (is_label) { System.out.println("housPos"); break; }
+#ifdef JAVAME
           System.out.print(f.fmt("%# 11.7f", hpos));
+#else
+          System.out.print(String.format(Locale.US, "%# 11.7f", hpos));
+#endif /* JAVAME */
           break;
       case 'j':
           if (is_label) { System.out.println("houseNr"); break; }
+#ifdef JAVAME
           System.out.print(f.fmt("%# 11.7f", hposj.val));
+#else
+          System.out.print(String.format(Locale.US, "%# 11.7f", hposj.val));
+#endif /* JAVAME */
           break;
       case 'Z':
           if (is_label) { System.out.println("long"); break; }
@@ -2020,7 +2234,11 @@ System.out.print("swetest ");
                   break;
                 case 'l':   /* speed! */
                   if (is_label) { System.out.println("lon/day"); break; }
+#ifdef JAVAME
                   System.out.print(f.fmt("%11.7f", x[3]));
+#else
+                  System.out.print(String.format(Locale.US, "%11.7f", x[3]));
+#endif /* JAVAME */
                   break;
                 case 'B':   /* speed! */
                   if (is_label) { System.out.println("lat/day"); break; }
@@ -2028,7 +2246,11 @@ System.out.print("swetest ");
                   break;
                 case 'b':   /* speed! */
                   if (is_label) { System.out.println("lat/day"); break; }
+#ifdef JAVAME
                   System.out.print(f.fmt("%11.7f", x[4]));
+#else
+                  System.out.print(String.format(Locale.US, "%11.7f", x[4]));
+#endif /* JAVAME */
                   break;
                 case 'A':   /* speed! */
                   if (is_label) { System.out.println("RA/day"); break; }
@@ -2037,7 +2259,11 @@ System.out.print("swetest ");
                   break;
                 case 'a':   /* speed! */
                   if (is_label) { System.out.println("RA/day"); break; }
+#ifdef JAVAME
                   System.out.print(f.fmt("%11.7f", xequ[3]));
+#else
+                  System.out.print(String.format(Locale.US, "%11.7f", xequ[3]));
+#endif /* JAVAME */
                   break;
                 case 'D':   /* speed! */
                   if (is_label) { System.out.println("dcl/day"); break; }
@@ -2045,12 +2271,20 @@ System.out.print("swetest ");
                   break;
                 case 'd':   /* speed! */
                   if (is_label) { System.out.println("dcl/day"); break; }
+#ifdef JAVAME
                   System.out.print(f.fmt("%11.7f", xequ[4]));
+#else
+                  System.out.print(String.format(Locale.US, "%11.7f", xequ[4]));
+#endif /* JAVAME */
                   break;
                 case 'R':   /* speed! */
                 case 'r':   /* speed! */
                   if (is_label) { System.out.println("AU/day"); break; }
+#ifdef JAVAME
                   System.out.print(f.fmt("%# 14.9f", x[5]));
+#else
+                  System.out.print(String.format(Locale.US, "%# 14.9f", x[5]));
+#endif /* JAVAME */
                   break;
                 case 'U':   /* speed! */
                 case 'X':   /* speed! */
@@ -2066,11 +2300,23 @@ System.out.print("swetest ");
                     ar = SMath.sqrt(square_sum(xcart));
                   else
                     ar = 1;
+#ifdef JAVAME
                   System.out.print(f.fmt("%# 14.9f", xcart[3]/ar));
+#else
+                  System.out.print(String.format(Locale.US, "%# 14.9f", xcart[3]/ar));
+#endif /* JAVAME */
 		  System.out.print(gap);
+#ifdef JAVAME
                   System.out.print(f.fmt("%# 14.9f", xcart[4]/ar));
+#else
+                  System.out.print(String.format(Locale.US, "%# 14.9f", xcart[4]/ar));
+#endif /* JAVAME */
 		  System.out.print(gap);
+#ifdef JAVAME
                   System.out.print(f.fmt("%# 14.9f", xcart[5]/ar));
+#else
+                  System.out.print(String.format(Locale.US, "%# 14.9f", xcart[5]/ar));
+#endif /* JAVAME */
                   break;
                 case 'u':   /* speed! */
                 case 'x':   /* speed! */
@@ -2086,11 +2332,23 @@ System.out.print("swetest ");
                     ar = SMath.sqrt(square_sum(xcartq));
                   else
                     ar = 1;
+#ifdef JAVAME
                   System.out.print(f.fmt("%# 14.9f", xcartq[3]/ar));
+#else
+                  System.out.print(String.format(Locale.US, "%# 14.9f", xcartq[3]/ar));
+#endif /* JAVAME */
 		  System.out.print(gap);
+#ifdef JAVAME
                   System.out.print(f.fmt("%# 14.9f", xcartq[4]/ar));
+#else
+                  System.out.print(String.format(Locale.US, "%# 14.9f", xcartq[4]/ar));
+#endif /* JAVAME */
 		  System.out.print(gap);
+#ifdef JAVAME
                   System.out.print(f.fmt("%# 14.9f", xcartq[5]/ar));
+#else
+                  System.out.print(String.format(Locale.US, "%# 14.9f", xcartq[5]/ar));
+#endif /* JAVAME */
                   break;
                 default:
                   break;
@@ -2103,7 +2361,11 @@ System.out.print("swetest ");
             System.out.print(dms(x[3], round_flag));
           } else {
             if (is_label) { System.out.println("deg/day"); break; }
+#ifdef JAVAME
             System.out.print(f.fmt("%# 11.7f", x[3]));
+#else
+            System.out.print(String.format(Locale.US, "%# 11.7f", x[3]));
+#endif /* JAVAME */
           }
           break;
       case 'B':
@@ -2112,7 +2374,19 @@ System.out.print("swetest ");
           break;
       case 'b':
           if (is_label) { System.out.println("lat"); break; }
+#if OUTPUT_EXTRA_PRECISION 
+#ifdef JAVAME
+          System.out.print(f.fmt("%# 11.9f", x[1]));
+#else
+          System.out.print(String.format(Locale.US, "%# 11.9f", x[1]));
+#endif /* JAVAME */
+#else
+#ifdef JAVAME
           System.out.print(f.fmt("%# 11.7f", x[1]));
+#else
+          System.out.print(String.format(Locale.US, "%# 11.7f", x[1]));
+#endif /* JAVAME */
+#endif /* OUTPUT_EXTRA_PRECISION */
           break;
       case 'A':     /* right ascension */
           if (is_label) { System.out.println("RA"); break; }
@@ -2121,7 +2395,19 @@ System.out.print("swetest ");
           break;
       case 'a':     /* right ascension */
           if (is_label) { System.out.println("RA"); break; }
+#if OUTPUT_EXTRA_PRECISION 
+#ifdef JAVAME
+          System.out.print(f.fmt("%# 11.9f", xequ[0]));
+#else
+          System.out.print(String.format(Locale.US, "%# 11.9f", xequ[0]));
+#endif /* JAVAME */
+#else
+#ifdef JAVAME
           System.out.print(f.fmt("%# 11.7f", xequ[0]));
+#else
+          System.out.print(String.format(Locale.US, "%# 11.7f", xequ[0]));
+#endif /* JAVAME */
+#endif /* OUTPUT_EXTRA_PRECISION */
           break;
       case 'D':     /* declination */
           if (is_label) { System.out.println("decl"); break; }
@@ -2129,7 +2415,19 @@ System.out.print("swetest ");
           break;
       case 'd':     /* declination */
           if (is_label) { System.out.println("decl"); break; }
+#if OUTPUT_EXTRA_PRECISION 
+#ifdef JAVAME
+          System.out.print(f.fmt("%# 11.9f", xequ[1]));
+#else
+          System.out.print(String.format(Locale.US, "%# 11.9f", xequ[1]));
+#endif /* JAVAME */
+#else
+#ifdef JAVAME
           System.out.print(f.fmt("%# 11.7f", xequ[1]));
+#else
+          System.out.print(String.format(Locale.US, "%# 11.7f", xequ[1]));
+#endif /* JAVAME */
+#endif /* OUTPUT_EXTRA_PRECISION */
           break;
       case 'I':     /* azimuth */
           if (is_label) { System.out.println("azimuth"); break; }
@@ -2137,7 +2435,11 @@ System.out.print("swetest ");
           break;
       case 'i':     /* azimuth */
           if (is_label) { System.out.println("azimuth"); break; }
+#ifdef JAVAME
           System.out.print(f.fmt("%# 11.7f", xaz[0]));
+#else
+          System.out.print(String.format(Locale.US, "%# 11.7f", xaz[0]));
+#endif /* JAVAME */
           break;
       case 'H':     /* height */
           if (is_label) { System.out.println("height"); break; }
@@ -2145,7 +2447,11 @@ System.out.print("swetest ");
           break;
       case 'h':     /* height */
           if (is_label) { System.out.println("height"); break; }
+#ifdef JAVAME
           System.out.print(f.fmt("%# 11.7f", xaz[1]));
+#else
+          System.out.print(String.format(Locale.US, "%# 11.7f", xaz[1]));
+#endif /* JAVAME */
           break;
       case 'K':     /* height (apparent) */
           if (is_label) { System.out.println("hgtApp"); break; }
@@ -2153,11 +2459,19 @@ System.out.print("swetest ");
           break;
       case 'k':     /* height (apparent) */
           if (is_label) { System.out.println("hgtApp"); break; }
+#ifdef JAVAME
           System.out.print(f.fmt("%# 11.7f", xaz[2]));
+#else
+          System.out.print(String.format(Locale.US, "%# 11.7f", xaz[2]));
+#endif /* JAVAME */
           break;
       case 'R':
           if (is_label) { System.out.println("distAU"); break; }
+#ifdef JAVAME
           System.out.print(f.fmt("%# 14.9f", x[2]));
+#else
+          System.out.print(String.format(Locale.US, "%# 14.9f", x[2]));
+#endif /* JAVAME */
           break;
 #ifndef ASTROLOGY
       case 'r':
@@ -2171,9 +2485,17 @@ System.out.print("swetest ");
 //	        printf("%# 13.5f\" %# 13.5f'", ar, ar/60.0);
 //            }
             sw.swe_pheno(te, ipl, iflag, dret, serr);
+#ifdef JAVAME
             System.out.print(f.fmt("%# 13.5f", dret[5] * 3600) + "\"");
+#else
+            System.out.print(String.format(Locale.US, "%# 13.5f\"", dret[5] * 3600));
+#endif /* JAVAME */
           } else {
+#ifdef JAVAME
             System.out.print(f.fmt("%# 14.9f", x[2]));
+#else
+            System.out.print(String.format(Locale.US, "%# 14.9f", x[2]));
+#endif /* JAVAME */
           }
           break;
 #endif /* ASTROLOGY */
@@ -2183,11 +2505,23 @@ System.out.print("swetest ");
             ar = SMath.sqrt(square_sum(xcart));
           else
             ar = 1;
+#ifdef JAVAME
 	  System.out.print(f.fmt("%# 14.9f", xcart[0]/ar));
+#else
+	  System.out.print(String.format(Locale.US, "%# 14.9f", xcart[0]/ar));
+#endif /* JAVAME */
 	  System.out.print(gap);
+#ifdef JAVAME
 	  System.out.print(f.fmt("%# 14.9f", xcart[1]/ar));
+#else
+	  System.out.print(String.format(Locale.US, "%# 14.9f", xcart[1]/ar));
+#endif /* JAVAME */
 	  System.out.print(gap);
+#ifdef JAVAME
 	  System.out.print(f.fmt("%# 14.9f", xcart[2]/ar));
+#else
+	  System.out.print(String.format(Locale.US, "%# 14.9f", xcart[2]/ar));
+#endif /* JAVAME */
           break;
       case 'u':
       case 'x':
@@ -2203,21 +2537,45 @@ System.out.print("swetest ");
             ar = SMath.sqrt(square_sum(xcartq));
           else
             ar = 1;
+#ifdef JAVAME
 	  System.out.print(f.fmt("%# 14.9f", xcartq[0]/ar));
+#else
+	  System.out.print(String.format(Locale.US, "%# 14.9f", xcartq[0]/ar));
+#endif /* JAVAME */
 	  System.out.print(gap);
+#ifdef JAVAME
 	  System.out.print(f.fmt("%# 14.9f", xcartq[1]/ar));
+#else
+	  System.out.print(String.format(Locale.US, "%# 14.9f", xcartq[1]/ar));
+#endif /* JAVAME */
 	  System.out.print(gap);
+#ifdef JAVAME
 	  System.out.print(f.fmt("%# 14.9f", xcartq[2]/ar));
+#else
+	  System.out.print(String.format(Locale.US, "%# 14.9f", xcartq[2]/ar));
+#endif /* JAVAME */
           break;
       case 'Q':
 	  if (is_label) { System.out.println("Q"); break; }
+#ifdef JAVAME
 	  System.out.print(f.fmt("%-15s", spnam));
+#else
+	  System.out.print(String.format(Locale.US, "%-15s", spnam));
+#endif /* JAVAME */
 	  System.out.print(dms(x[0], round_flag));
 	  System.out.print(dms(x[1], round_flag));
+#ifdef JAVAME
 	  System.out.print("  " + f.fmt("%# 14.9f", x[2]));
+#else
+	  System.out.print(String.format(Locale.US, "  " + "%# 14.9f", x[2]));
+#endif /* JAVAME */
 	  System.out.print(dms(x[3], round_flag));
 	  System.out.print(dms(x[4], round_flag));
+#ifdef JAVAME
 	  System.out.print("  " + f.fmt("%# 14.9f\n", x[5]));
+#else
+	  System.out.print(String.format(Locale.US, "  " + "%# 14.9f\n", x[5]));
+#endif /* JAVAME */
 	  System.out.print("               " + dms(xequ[0], round_flag));
 	  System.out.print(dms(xequ[1], round_flag));
 	  System.out.print("                " + dms(xequ[3], round_flag));
@@ -2239,9 +2597,17 @@ System.out.print("swetest ");
 	      System.out.print("nodDesc");
 	      break; 
 	    }
+#ifdef JAVAME
             System.out.print(f.fmt("%# 11.7f",xasc[0]));
+#else
+            System.out.print(String.format(Locale.US, "%# 11.7f",xasc[0]));
+#endif /* JAVAME */
             System.out.print(gap);
+#ifdef JAVAME
             System.out.print(f.fmt("%# 11.7f",xdsc[0]));
+#else
+            System.out.print(String.format(Locale.US, "%# 11.7f",xdsc[0]));
+#endif /* JAVAME */
           }
         };
         break;
@@ -2262,9 +2628,17 @@ System.out.print("swetest ");
 	      System.out.print("apo");
 	      break; 
 	    }
+#ifdef JAVAME
             System.out.print(f.fmt("%# 11.7f", xper[0]));
+#else
+            System.out.print(String.format(Locale.US, "%# 11.7f", xper[0]));
+#endif /* JAVAME */
             System.out.print(gap);
+#ifdef JAVAME
             System.out.print(f.fmt("%# 11.7f", xaph[0]));
+#else
+            System.out.print(String.format(Locale.US, "%# 11.7f", xaph[0]));
+#endif /* JAVAME */
           }
           imeth |= SweConst.SE_NODBIT_FOPOINT;
           iflgret = sw.swe_nod_aps(te, ipl, iflag, imeth, null, null,
@@ -2277,7 +2651,11 @@ System.out.print("swetest ");
 	      break; 
 	    }
 	    System.out.print(gap);
+#ifdef JAVAME
             System.out.print(f.fmt("%# 11.7f", xfoc[0]));
+#else
+            System.out.print(String.format(Locale.US, "%# 11.7f", xfoc[0]));
+#endif /* JAVAME */
           }
         };
         break;
@@ -2290,7 +2668,11 @@ System.out.print("swetest ");
       case '-':
           if (is_label) { System.out.println("phase"); break; }
           if (is_house) break;
+#ifdef JAVAME
           System.out.print("  "+f.fmt("%# 14.9f", attr[1]));
+#else
+          System.out.print(String.format(Locale.US, "  "+"%# 14.9f", attr[1]));
+#endif /* JAVAME */
           break;
       case '*':
           if (is_label) { System.out.println("elong"); break; }
@@ -2305,7 +2687,11 @@ System.out.print("swetest ");
       case '=':
           if (is_label) { System.out.println("magn"); break; }
           if (is_house) break;
+#ifdef JAVAME
           System.out.print("  "+f.fmt("%# 6.1f", attr[4])+"m");
+#else
+          System.out.print(String.format(Locale.US, "  %# 6.1fm", attr[4]));
+#endif /* JAVAME */
           break;
       case 'V': /* human design gates */
       case 'v': {
@@ -2318,9 +2704,17 @@ System.out.print("swetest ");
           ihex = (int) SMath.floor(xhds / 5.625);
           iline = ((int) (SMath.floor(xhds / 0.9375))) % 6 + 1 ;
           igate = hexa[ihex];
+#ifdef JAVAME
           System.out.print(f.fmt("%2d", igate) + "." + f.fmt("%d", iline));
+#else
+          System.out.print(String.format(Locale.US, "%2d.%d", igate, iline));
+#endif /* JAVAME */
 	  if (sp.charAt(c) == 'V')
+#ifdef JAVAME
 	    System.out.print(" " + f.fmt("%2d", sl.swe_d2l(100 * ((xhds / 0.9375) % 1))) + "%");
+#else
+	    System.out.print(String.format(Locale.US, " %2d%", sl.swe_d2l(100 * ((xhds / 0.9375) % 1))));
+#endif /* JAVAME */
           break;
         }
       }     /* switch */
@@ -2329,7 +2723,6 @@ System.out.print("swetest ");
     return SweConst.OK;
   }
 
-#undef OUTPUT_EXTRA_PRECISION
   private String dms(double xv, int iflg) {
     int izod;
     int k, kdeg, kmin, ksec;
@@ -2337,6 +2730,12 @@ System.out.print("swetest ");
     String s1;
     String s;
     int sgn;
+  /* rounding 0.9999999999 to 1 */
+#if OUTPUT_EXTRA_PRECISION
+    xv += 0.000000005 / 3600.0;
+#else
+    xv += 0.00005 / 3600.0;
+#endif /* OUTPUT_EXTRA_PRECISION */
     if (Double.isNaN(xv))
       return "nan";
     s = "";
@@ -2345,28 +2744,45 @@ System.out.print("swetest ");
     if (xv < 0) {
       xv = -xv;
       sgn = -1;
-    } else
+    } else {
       sgn = 1;
+    }
     if ((iflg & BIT_ROUND_MIN)!=0)
       xv = sl.swe_degnorm(xv + 0.5/60);
-    if ((iflg & BIT_ROUND_SEC)!=0)
+    else if ((iflg & BIT_ROUND_SEC)!=0)
       xv = sl.swe_degnorm(xv + 0.5/3600);
     if ((iflg & BIT_ZODIAC)!=0) {
       izod = (int) (xv / 30)%12;
       xv%=30.;
       kdeg = (int) xv;
-      s=f.fmt("%2ld",kdeg)+" "+zod_nam[izod]+" ";
+#ifdef JAVAME
+      s=f.fmt("%2d",kdeg)+" "+zod_nam[izod]+" ";
+#else
+      s=String.format(Locale.US, "%2d "+zod_nam[izod]+" ",kdeg);
+#endif /* JAVAME */
     } else {
       kdeg = (int) xv;
-      s=" "+f.fmt("%3ld", kdeg)+c;
+#ifdef JAVAME
+      s=" "+f.fmt("%3d", kdeg)+c;
+#else
+      s=String.format(Locale.US, " %3d" + c, kdeg);
+#endif /* JAVAME */
     }
     xv -= kdeg;
     xv *= 60;
     kmin = (int) xv;
     if ((iflg & BIT_ZODIAC)!=0 && (iflg & BIT_ROUND_MIN)!=0) {
-      s1=f.fmt("%2ld", kmin);
+#ifdef JAVAME
+      s1=f.fmt("%2d", kmin);
+#else
+      s1=String.format(Locale.US, "%2d", kmin);
+#endif /* JAVAME */
     } else {
-      s1=f.fmt("%2ld", kmin)+"'";
+#ifdef JAVAME
+      s1=f.fmt("%2d", kmin)+"'";
+#else
+      s1=String.format(Locale.US, "%2d'", kmin);
+#endif /* JAVAME */
     }
     s+=s1;
     if ((iflg & BIT_ROUND_MIN)!=0)
@@ -2375,20 +2791,36 @@ System.out.print("swetest ");
     xv *= 60;
     ksec = (int) xv;
     if ((iflg & BIT_ROUND_SEC)!=0) {
-      s1=f.fmt("%2ld", ksec)+"\"";
+#ifdef JAVAME
+      s1=f.fmt("%2d", ksec)+"\"";
+#else
+      s1=String.format(Locale.US, "%2d\"", ksec);
+#endif /* JAVAME */
     } else {
-      s1=f.fmt("%2ld", ksec);
+#ifdef JAVAME
+      s1=f.fmt("%2d", ksec);
+#else
+      s1=String.format(Locale.US, "%2d", ksec);
+#endif /* JAVAME */
     }
     s+=s1;
     if ((iflg & BIT_ROUND_SEC)!=0)
       return dms_label_return_dms(sgn,s,iflg);
     xv -= ksec;
 #if OUTPUT_EXTRA_PRECISION
-    k = (int) (xv * 100000 + 0.5);
-    s1="."+f.fmt("%05ld", k);
+    k = (int) (xv * 100000000);
+#ifdef JAVAME
+    s1="."+f.fmt("%08d", k);
 #else
-    k = (int) (xv * 10000 + 0.5);
-    s1="."+f.fmt("%04ld", k);
+    s1=String.format(Locale.US, ".%08d", k);
+#endif /* JAVAME */
+#else
+    k = (int) (xv * 10000);
+#ifdef JAVAME
+    s1="."+f.fmt("%04d", k);
+#else
+    s1=String.format(Locale.US, ".%04d", k);
+#endif /* JAVAME */
 #endif /* OUTPUT_EXTRA_PRECISION */
     s+=s1;
     return dms_label_return_dms(sgn,s,iflg);
@@ -2482,20 +2914,22 @@ System.out.print("swetest ");
         rsmi = SweConst.SE_CALC_RISE;
         if (norefrac) rsmi |= SweConst.SE_BIT_NO_REFRACTION;
         if (disccenter) rsmi |= SweConst.SE_BIT_DISC_CENTER;
+        if (discbottom) rsmi |= SweConst.SE_BIT_DISC_BOTTOM;
 	tret_out.val = tret[0];
         if (sw.swe_rise_trans(t_ut, ipl, star, whicheph, rsmi, geopos, 1013.25, 10, tret_out, serr) != SweConst.OK) {
           do_printf(serr);
-          System.exit(0);
+          return exitProgram(0);
         } 
 	tret[0] = tret_out.val;
         /* setting */
         rsmi = SweConst.SE_CALC_SET;
         if (norefrac) rsmi |= SweConst.SE_BIT_NO_REFRACTION;
         if (disccenter) rsmi |= SweConst.SE_BIT_DISC_CENTER;
+        if (discbottom) rsmi |= SweConst.SE_BIT_DISC_BOTTOM;
         tret_out.val = tret[1]; // temporary assignment to have an output variable
         if (sw.swe_rise_trans(t_ut, ipl, star, whicheph, rsmi, geopos, 1013.25, 10, tret_out, serr) != SweConst.OK) {
           do_printf(serr);
-          System.exit(0);
+          return exitProgram(0);
         }
         tret[1] = tret_out.val;
         if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
@@ -2804,19 +3238,20 @@ System.out.print("swetest ");
         /* short output: 
          * date, time of day, umbral magnitude, umbral duration, saros series, member number */
 //        sprintf(sout_short, "%s\t%2d.%2d.%4d\t%s\t%.3f\t%s\t%d\t%d\n", sout, jday, jmon, jyear, hms(jut,0), attr[8],s1, (int) attr[9], (int) attr[10]);
-//        sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s\t%.4f/%.4f\tsaros %d/%d\t%.6f\n", jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[0],attr[1], (int) attr[9], (int) attr[10], t_ut);
+//        sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s\t%.4f/%.4f\tsaros %d/%d\t%.6f\tdt=%.2f\n", jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[0],attr[1], (int) attr[9], (int) attr[10], t_ut, swe_deltat(t_ut) * 86400);
 #ifdef JAVAME
           sout_short = sout + "\t" + f.fmt("%2d", jday) + "." + f.fmt("%2d", jmon) + "." + f.fmt("%4d", jyear) + "\t" +
               hms(jut,0) + "\t" + f.fmt("%.3f", attr[8]) + "\t" + s1 + "\t" +
               f.fmt("%d", (int)attr[9]) + "\t" + f.fmt("%d", (int)attr[10]) + "\n";
           sout += f.fmt("%2d", jday) + "." + f.fmt("%02d", jmon) + "." + f.fmt("%04d", jyear) + "\t" +
               hms(jut,BIT_LZEROES) + "\t" + f.fmt("%.4f", attr[0]) + "/" + f.fmt("%.4f", attr[1]) +
-              "\tsaros " + f.fmt("%d", (int) attr[9]) + "/" + f.fmt("%d", (int) attr[10]) + "\t" + f.fmt("%.6f", t_ut) + "\n";
+              "\tsaros " + f.fmt("%d", (int) attr[9]) + "/" + f.fmt("%d", (int) attr[10]) + "\t" + f.fmt("%.6f", t_ut) +
+              "\tdt=" + f.fmt("%.2f", SweDate.getDeltaT(t_ut) * 86400) + "\n";
 #else
           sout_short = String.format(Locale.US, "%s\t%2d.%2d.%4d\t%s\t%.3f\t%s\t%d\t%d\n",
               sout, jday, jmon, jyear, hms(jut,0), attr[8],s1, (int) attr[9], (int) attr[10]);
-          sout += String.format(Locale.US, "%2d.%02d.%04d\t%s\t%.4f/%.4f\tsaros %d/%d\t%.6f\n",
-              jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[0],attr[1], (int) attr[9], (int) attr[10], t_ut);
+          sout += String.format(Locale.US, "%2d.%02d.%04d\t%s\t%.4f/%.4f\tsaros %d/%d\t%.6f\tdt=%.2f\n",
+              jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[0],attr[1], (int) attr[9], (int) attr[10], t_ut, SweDate.getDeltaT(t_ut) * 86400);
 #endif /* JAVAME */
         /* second line:
          * eclipse times, penumbral, partial, total begin and end */
@@ -2842,7 +3277,11 @@ System.out.print("swetest ");
           IntObj ihou=new IntObj(), imin=new IntObj(), isec=new IntObj(), isgn=new IntObj();
           DblObj dfrc=new DblObj();
           sl.swe_split_deg(jut, SweConst.SE_SPLIT_DEG_ROUND_MIN, ihou, imin, isec, dfrc, isgn);
+#ifdef JAVAME
           sout="\""+f.fmt("%04d",jyear)+" "+f.fmt("%02d",jmon)+" "+f.fmt("%02d",jday)+" "+f.fmt("%02d",ihou.val)+"."+f.fmt("%02d",imin.val)+" "+f.fmt("%d",ecl_type)+"\",\n";
+#else
+          sout=String.format(Locale.US, "\"%04d %02d %02d %02d.%02d %d\",\n", jyear, jmon, jday, ihou.val, imin.val, ecl_type);
+#endif /* JAVAME */
         } 
       }
 #endif /* ASTROLOGY */
@@ -3055,7 +3494,11 @@ System.out.print("swetest ");
           IntObj ihou=new IntObj(), imin=new IntObj(), isec=new IntObj(), isgn=new IntObj();
           DblObj dfrc=new DblObj();
           sl.swe_split_deg(jut, SweConst.SE_SPLIT_DEG_ROUND_MIN, ihou, imin, isec, dfrc, isgn);
+#ifdef JAVAME
           sout="\""+f.fmt("%04d",jyear)+" "+f.fmt("%02d",jmon)+" "+f.fmt("%02d",jday)+" "+f.fmt("%02d",ihou.val)+"."+f.fmt("%02d",imin.val)+" "+f.fmt("%d",ecl_type)+"\",\n";
+#else
+          sout=String.format(Locale.US, "\"%04d %02d %02d %02d.%02d %d\",\n", jyear, jmon, jday, ihou.val, imin.val, ecl_type);
+#endif /* JAVAME */
         } 
         /*printf("len=%ld\n", strlen(sout));*/
         if (short_output)
@@ -3072,6 +3515,7 @@ System.out.print("swetest ");
     double dt, tret[] = new double[30], attr[] = new double[30], geopos_max[] = new double[3];
     String s1, s2;
     boolean has_found = false;
+    int nloops = 0;
     /* no selective eclipse type set, set all */
     if ((search_flag & SweConst.SE_ECL_ALLTYPES_SOLAR) == 0)
       search_flag |= SweConst.SE_ECL_ALLTYPES_SOLAR;
@@ -3081,10 +3525,25 @@ System.out.print("swetest ");
     do_printf("\n");
     for (ii = 0; ii < nstep; ii++) {
       sout = "";
+      nloops++;
+      if (nloops > SEARCH_RANGE_LUNAR_CYCLES) {
+        serr.setLength(0);
+#ifdef JAVAME
+        serr.append("event search ended after " + SEARCH_RANGE_LUNAR_CYCLES + " lunar cycles at jd=" + f.fmt("%f", t_ut) + "\n");
+#else
+        serr.append(String.format(Locale.US, "event search ended after %d lunar cycles at jd=%f\n", SEARCH_RANGE_LUNAR_CYCLES, t_ut));
+#endif /* JAVAME */
+        do_printf(serr);
+        return SweConst.ERR;
+      }
       if ((special_mode & SP_MODE_LOCAL) != 0) {
-        if ((eclflag = sw.swe_lun_occult_when_loc(t_ut, ipl, star, whicheph, geopos, tret, attr, direction_flag?1:0, serr)) == SweConst.ERR) {
+        /* * local search for occultation, test one lunar cycle only (SE_ECL_ONE_TRY) */
+        if ((eclflag = sw.swe_lun_occult_when_loc(t_ut, ipl, star, whicheph, geopos, tret, attr, (direction_flag?1:0)|SweConst.SE_ECL_ONE_TRY, serr)) == SweConst.ERR) {
           do_printf(serr);
           return SweConst.ERR;
+        } else if (eclflag == 0) {  /* event not found, try next conjunction */
+          t_ut = tret[0] + direction * 10;  /* try again with start date increased by 10 */
+	  ii--;
         } else { 
           t_ut = tret[0];
 	  if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
@@ -3172,11 +3631,16 @@ System.out.print("swetest ");
         }
       }   /* endif search_local */
       if ((special_mode & SP_MODE_LOCAL) == 0) {
-      /* * global search for occultations */
-        if ((eclflag = sw.swe_lun_occult_when_glob(t_ut, ipl, star, whicheph, search_flag, tret, direction_flag?1:0, serr)) == SweConst.ERR) {
+      /* * global search for occultations, test one lunar cycle only (SE_ECL_ONE_TRY) */
+        if ((eclflag = sw.swe_lun_occult_when_glob(t_ut, ipl, star, whicheph, search_flag, tret, (direction_flag?1:0)|SweConst.SE_ECL_ONE_TRY, serr)) == SweConst.ERR) {
           do_printf(serr);
           return SweConst.ERR;
         } 
+        if (eclflag == 0) { /* no occltation was found at next conjunction, try next conjunction */
+	  t_ut = tret[0] + direction;
+	  ii--;
+	  continue;
+        }
         if ((eclflag & SweConst.SE_ECL_TOTAL)!=0) {
           sout="total   ";
           ecl_type = ECL_SOL_TOTAL;
@@ -3213,7 +3677,11 @@ System.out.print("swetest ");
         jmon=sd.getMonth();
         jday=sd.getDay();
         jut=sd.getHour();
+#ifdef JAVAME
         sout += f.fmt("%2d",jday)+"."+f.fmt("%02d",jmon)+"."+f.fmt("%04d",jyear)+"\t"+hms(jut,BIT_LZEROES)+"\t"+f.fmt("%f",attr[3])+" km\t"+f.fmt("%f",attr[0])+" o/o\n";
+#else
+        sout += String.format(Locale.US, "%2d.%02d.%04d\t"+hms(jut,BIT_LZEROES)+"\t%f km\t%f o/o\n", jday, jmon, jyear, attr[3], attr[0]);
+#endif /* JAVAME */
         sout += "\t" + hms_from_tjd(tret[2]) + " "; 
         if (tret[4] != 0)
           sout += hms_from_tjd(tret[4]) + " "; 
@@ -3235,14 +3703,22 @@ System.out.print("swetest ");
           if (SMath.abs(tret[0] - t_ut) > 2) 
             do_printf("when_loc returns wrong date\n");
           dt = (tret[3] - tret[2]) * 24 * 60;
+#ifdef JAVAME
           sout += "\t"+(int)dt+" min "+f.fmt("%4.2f",(dt%1.)*60)+" sec\t";
+#else
+          sout += String.format(Locale.US, "\t%d min %4.2f sec\t", (int)dt, (dt%1.)*60);
+#endif /* JAVAME */
         } 
         sout+="\n";
         if ((special_mode & SP_MODE_HOCAL) != 0) {
           IntObj ihou=new IntObj(), imin=new IntObj(), isec=new IntObj(), isgn=new IntObj();
           DblObj dfrc=new DblObj();
           sl.swe_split_deg(jut, SweConst.SE_SPLIT_DEG_ROUND_MIN, ihou, imin, isec, dfrc, isgn);
+#ifdef JAVAME
           sout="\""+f.fmt("%04d",jyear)+" "+f.fmt("%02d",jmon)+" "+f.fmt("%02d",jday)+" "+f.fmt("%02d",ihou.val)+"."+f.fmt("%02d",imin.val)+" "+f.fmt("%d",ecl_type)+"\",\n";
+#else
+          sout=String.format(Locale.US, "\"%04d %02d %02d %02d.%02d %d\",\n", jyear, jmon, jday, ihou.val, imin.val, ecl_type);
+#endif /* JAVAME */
         } 
         do_printf(sout);
       }
@@ -3278,7 +3754,7 @@ System.out.print("swetest ");
 #ifdef JAVAME
         sout += obj_name + " " + sevtname[event_type] + ": " + sd.getYear() + "/" + f.fmt("%02d", sd.getMonth()) + "/" + f.fmt("%02d", sd.getDay()) + " " + stim0 + " " + stz + " (" + f.fmt("%.5f", dret[0]) + ")\n";
 #else
-        sout += String.format("%s %s: %d/%02d/%02d %s %s (%.5f)\n", obj_name, sevtname[event_type], sd.getYear(), sd.getMonth(), sd.getDay(), stim0, stz, dret[0]);
+        sout += String.format(Locale.US, "%s %s: %d/%02d/%02d %s %s (%.5f)\n", obj_name, sevtname[event_type], sd.getYear(), sd.getMonth(), sd.getDay(), stim0, stz, dret[0]);
 #endif /* JAVAME */
       } else {
         /* display the moment of beginning and optimum visibility */
@@ -3291,7 +3767,7 @@ System.out.print("swetest ");
 #ifdef JAVAME
         sout += obj_name + " " + sevtname[event_type] + ": " + sd.getYear() + "/" + f.fmt("%02d", sd.getMonth()) + "/" + f.fmt("%02d", sd.getDay()) + " " + stim0 + " " + stz + " (" + f.fmt("%.5f", dret[0]) + ", opt " + stim1 + ", end " + stim2 + ", dur " + f.fmt("%.1f", (dret[2] - dret[0]) * 1440) + " min\n";
 #else
-        sout += String.format("%s %s: %d/%02d/%02d %s %s (%.5f), opt %s, end %s, dur %.1f min\n", obj_name, sevtname[event_type], sd.getYear(), sd.getMonth(), sd.getDay(), stim0, stz, dret[0], stim1, stim2, (dret[2] - dret[0]) * 1440);
+        sout += String.format(Locale.US, "%s %s: %d/%02d/%02d %s %s (%.5f), opt %s, end %s, dur %.1f min\n", obj_name, sevtname[event_type], sd.getYear(), sd.getMonth(), sd.getDay(), stim0, stz, dret[0], stim1, stim2, (dret[2] - dret[0]) * 1440);
 #endif /* JAVAME */
       }
     } else {
@@ -3562,7 +4038,7 @@ System.out.print("swetest ");
   private int make_ephemeris_path(int iflg, String argv0, StringBuffer opath) {	// path for output
     int sp;
     String path = "";
-    String dirglue = swed.DIR_GLUE;
+    String dirglue = SwissData.DIR_GLUE;
     int pathlen = 0;
     /* moshier needs no ephemeris path */
     if ((iflg & SweConst.SEFLG_MOSEPH)!=0)
@@ -3598,4 +4074,12 @@ System.out.print("swetest ");
     return s.trim();
   }
 
+  // Depending on mode (standalone or dependent_android)
+  // exit program or simply return
+  int exitProgram(int rc) {
+    if (!mode.equals("dependent_android")) {
+      System.exit(rc);
+    }
+    return rc;
+  }
 } // End of class Swetest

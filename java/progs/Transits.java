@@ -58,31 +58,34 @@ public class Transits
   "         -p.. -b... -s -lat... [other options]\n"+
   "         -p.. -b... -s -dist... [other options]\n"+
   "    - When do planets transit other planet's\n"+
-  "      longitude, latitude or distance:\n"+
+  "      longitude, latitude or distance (or speed with -s):\n"+
   "         -p.. -P.. -b... -lon... [other options])\n"+
   "         -p.. -P.. -b... -lat... [other options])\n"+
   "         -p.. -P.. -b... -dist... [other options])\n"+
-  "    - When do planets transit other planet's\n"+
-  "      speed in longitude, latitude or distance:\n"+
-  "         -p.. -P.. -b... -s -lon... [other options])\n"+
-  "         -p.. -P.. -b... -s -lat... [other options])\n"+
-  "         -p.. -P.. -b... -s -dist... [other options])\n"+
   "    - When does the SUM (==Yoga) of two planet's positions\n"+
   "      (or speeds with -s option) reach a certain value:\n"+
   "         -p.. -P.. -b... +lon... [other options])\n"+
   "         -p.. -P.. -b... +lat... [other options])\n"+
   "         -p.. -P.. -b... +dist... [other options])\n"+
-  "    - When do two planet have partile aspects to each other:\n"+
+  "    - When do house objects (house cusps, ascendant\n"+
+  "      et. al.) transit a certain longitude:\n"+
+  "         -o.. -b... -lon... [other options]\n"+
+  "    - When do house objects transit other planet's\n"+
+  "      longitude or vice versa:\n"+
+  "         -p.. -O.. -b... -lon... [other options])\n"+
+  "         -o.. -P.. -b... -lon... [other options])\n"+
+  "    - When do two planets have partile aspects to each other:\n"+
   "         -p.. -P.. -b... -partile... [other options])\n"+
-  "    - When do two planet loose partile aspect status\n"+
+  "    - When do two planets lose partile aspect status\n"+
   "      to each other:\n"+
   "         -p.. -P.. -b... -nonpartile... [other options])\n"+
   "    - When do two planet change their partile aspect status\n"+
   "      to each other:\n"+
   "         -p.. -P.. -b... +partile... [other options])\n"+
-  "    - Instead of -p you may use -o... to calculate over\n"+
-  "      one the house cusps or ascendant or MC.\n"+
   "\n    Other options:\n"+
+  "    - List a fixed number of consecutive transits:\n"+
+  "         [base options] -n...\n"+
+  "         [base options] -N...\n"+
   "    - List all transits in a date range by giving a second date:\n"+
   "         [base options] -b... -b...\n"+
   "         [base options] -b... -B...\n"+
@@ -93,9 +96,6 @@ public class Transits
   "         [base options] -ET... (or: -T...)\n"+
   "         [base options] -UT...\n"+
   "         [base options] -LT...\n"+
-  "    - List a fixed number of consecutive transits:\n"+
-  "         [base options] -n...\n"+
-  "         [base options] -N...\n"+
   "    - Search backwards (\"reverse\"):\n"+
   "         [base options] -r\n"+
   "    - Calculate in the sidereal zodiac:\n"+
@@ -123,8 +123,12 @@ public class Transits
   "         [base options] -dloc[...]\n"+
   "         [base options] -nloc[...]\n"+
 #ifdef EXTPRECISION
-  "    - Modify the calculation precision:\n"+
+  "    - Modify calculation precisions:\n"+
   "         [base options] -x...\n"+
+  "         [base options] -rf...\n"+
+#else
+  "    - Modify calculation precision:\n"+
+  "         [base options] -rf...\n"+
 #endif /* EXTPRECISION */
   "    - Give the path to the ephemeris data files:\n"+
   "         [base options] -edir...\n"+
@@ -137,7 +141,7 @@ public class Transits
   static final String infodate = "\n"+
   "  Date entry:\n"+
   "  You can enter the start date entry (option '-b') and the end date\n"+
-  "  entry (if required, option '-B') in one of the following formats:\n"+
+  "  entry (if required, option '-b' or '-B') in one of the following formats:\n"+
   "\n"+
   "        2-27-1991       three integers separated by a nondigit character for\n"+
   "                        day month year. Dates are interpreted as Gregorian\n"+
@@ -147,7 +151,7 @@ public class Transits
   "                        The sequence of year, month and day is determined\n"+
   "                        by the locale settings, see options -loc etc.. With\n"+
   "                        -locde 5.8.2000 would be interpreted as a date in\n"+
-  "                        August, -locen would see a date in May 2000.\n"+
+  "                        August 2000, -locen would see a date in May 2000.\n"+
   "                        Use -et / -ut / -lt without any following time to\n"+
   "                        force times to be interpreted as ET (-et), UT (-ut)\n"+
   "                        or local time (LT, -lt). Default ist ET.\n"+
@@ -180,8 +184,7 @@ public class Transits
   "                  Use option -hdate for more information.\n"+
   "                  You can use two -b... options to give a starting and\n"+
   "                  an end date.\n"+
-  "                  Note: the date format is month/day/year (US style)\n"+
-  "                  by default.\n"+
+  "                  NOTE: the date format is year/month/day by default.\n"+
   "        -j....    Same as -bj....\n"+
   "        -BDATE    use this date as the end date for a time range, use\n"+
   "                  -Bj..... for a julian day number\n"+
@@ -198,10 +201,9 @@ public class Transits
   "        -ethh:mm:ss hour in ET for -b... date, it defaults to 0.0\n"+
   "        -EThh:mm:ss hour in ET for -B... date. Default: the value of -et\n"+
   "        -lthh:mm:ss hour in local time in the timezone as it is setup on\n"+
-  "                    your computer\n"+
+  "                    your computer for -b... date.\n"+
   "        -LThh:mm:ss hour in local time in the timezone as it is setup on\n"+
-  "                    your computer\n"+
-  "                    of -lt\n"+
+  "                    your computer for -B... date. Defaults to time of -lt\n"+
   "                    Be aware that the local time offset will be constant\n"+
   "                    for all times being output. E.g.: when daylight\n"+
   "                    saving time is in effect NOW but not on the transit\n"+
@@ -219,13 +221,23 @@ public class Transits
   "                    5 Jupiter      (Lilith)           I Vesta\n"+
   "                    6 Saturn     B osculating lunar   c Interpolated lunar apogee\n"+
   "                    7 Uranus       apogee             g Interpolated lunar perigee\n"+
+  "                  To calculate other minor planets, use -p/.../, e.g., -p/3633/ to\n"+
+  "                  find a transit of the asteroid 3633 (Mira).\n"+
+  "                  You may combine /.../ notation with other planets, e.g.\n"+
+  "                  -p4/27//3633/8 to find any transit over Mars, Neptune, or\n"+
+  "                  asteroids 27 or 3633.\n"+
+  "                  ATTENTION: calculating other planets than the 22 planets above\n"+
+  "                  is still in beta status and may be much slower, as first I'm\n"+
+  "                  calculating some (about 100 or 200) random speed values to get an\n"+
+  "                  idea of the speed of the object before trying to find the transit.\n"+
   "        -P.\n"+
   "        -P...     Calculate transits relative to this or these planets.\n"+
   "                  When giving more than one planet here, it will calculate\n"+
   "                  the next or previous transit(s) over any of these\n"+
   "                  planets.\n"+
-  "        -o...     One or more of the house cusps or ascendants. Separate\n"+
-  "                  multiple objects by slashes or commas (e.g. -oasc,mc/house7).\n"+
+  "        -o.\n"+
+  "        -o...     (Small letter o) One or more of the house cusps or ascendants.\n"+
+  "                  Separate multiple objects by slash or comma (e.g. -oasc,mc/house7).\n"+
   "                  Supported objects are:\n"+
   "                    house1\n"+
   "                    ...\n"+
@@ -238,10 +250,17 @@ public class Transits
   "                    coasc1      (co-ascendant, method Walter Koch)\n"+
   "                    coasc2      (co-ascendant, method Michael Munkasey)\n"+
   "                    polasc      (polar ascendant of Michael Munkasey)\n"+
-  "                  Only topocentric longitudinal transits are supported.\n"+
-  "                  Use -hsys... to specify any house system.\n"+
-  "                  Default is placidus == -hsysP.\n"+
-  "        -hsys.    Any of the supported house systems. They are:\n"+
+  "                    -o / -O require parameter -house.\n"+
+  "        -O.\n"+
+  "        -O...     (Capital letter O) Calculate transits relative to this or these\n"+
+  "                  house objects. See option -o for more information. When giving\n"+
+  "                  more than one house object here, it will calculate the next or\n"+
+  "                  previous transit(s) over any of these objects.\n"+
+  "        -house[long,lat,hsys]\n"+
+  "                  If using option -o / -O, you have to specify a location\n"+
+  "                  and a house system. Longitude and latitude are given as\n"+
+  "                  degrees with decimal fraction; house system is one of the\n"+
+  "                  following characters:\n"+
   "                    B       (Alcabitius)\n"+
   "                    C       (Campanus)\n"+
   "                    E       (Equal)\n"+
@@ -257,7 +276,7 @@ public class Transits
   "                    V       (Equal Vehlow)\n"+
   "                    W       (Equal, whole sign houses)\n"+
   "                    X       (Axial rotation system/Meridian houses)\n"+
-  "                  Default is Placidus.\n"+
+  "                  Use any non digit character to separate the single fields.\n"+
   "        -lon...   longitude or longitudinal speed, over which the transit\n"+
   "                  has to occur. If two planets are given, this means the\n"+
   "                  position (or speed) of planet -px after planet -Px\n"+
@@ -267,7 +286,7 @@ public class Transits
   "        -dist...  distance or speed in distance movement in AU, over which\n"+
   "                  the transit has to occur. If two planets are given, this\n"+
   "                  means the distance position (or speed) of planet -px\n"+
-  "                  after planet -Px\n"+
+  "                  after planet -Py\n"+
   "        +lon...   same as -lon for transits of one planet over another\n"+
   "                  planet with the difference that the SUM (Yoga) of the\n"+
   "                  positions or speeds of both planets will be calculated\n"+
@@ -283,7 +302,7 @@ public class Transits
   "                  of their respective longitudinal 30 degree subsection (== sign):\n"+
   "                  (int)(lon1%30) +- (int)offset == (int)(lon2%30)\n"+
   "        -nonpartile...\n"+
-  "                  calculate, when two planets loose partile aspect status\n"+
+  "                  calculate, when two planets lose partile aspect status\n"+
   "                  next time. See -partile\n"+
   "                  (int)(lon1%30) + (int)offset != (int)(lon2%30)\n"+
   "                  See -partile.\n"+
@@ -310,7 +329,7 @@ public class Transits
   "                  a given position\n"+
   "\n    Additional options:\n"+
   "        -r        search backward\n"+
-  "        -topo[long;lat;elev]\n"+
+  "        -topo[long,lat,elev]\n"+
   "                  Calculate related to a position on the surface of the\n"+
   "                  earth, default is geocentric calculation. Longitude,\n"+
   "                  latitude (degrees with decimal fraction) and elevation\n"+
@@ -362,44 +381,62 @@ public class Transits
   "                  This precision modifier defaults to 1, meaning: don't\n"+
   "                  alter precision.\n"+
 #endif /* EXTPRECISION */
+  "        -random_factors...\n"+
+  "        -rf...    When no extreme speeds of a planet or object are available\n"+
+  "                  those speeds will be estimated by 200 random speed calculations\n"+
+  "                  and then mulitplied by a factor of 1.4.\n"+
+  "                  This is mostly true for asteroids, but in some other cases\n"+
+  "                  as well like topocentric planets with a height of more than\n"+
+  "                  50,000 km or the like.\n"+
+  "                  Ignored, when extreme speeds are available.\n\n"+
+  "                  Use -rf<count>/<factor> to override the default, e.g.\n"+
+  "                    -rf1000/1.3\n\n"+
+  "                  This is necessary, as we need to have an idea of how fast\n"+
+  "                  and slow the object may move, when calculating transits.\n"+
+  "                  Increasing the count will give more exact results, but\n"+
+  "                  it will increase startup time.\n"+
+  "                  Increasing the 'safety factor' will slow down each single\n"+
+  "                  calculation. Decreasing the factor will increase the\n"+
+  "                  chance of missed transits or unprecise dates.\n"+
   "        -f...     Output format options, default is -fdt or -fvdt, if we\n"+
   "                  calculate consecutive transits with changing degrees.\n"+
   "        -f+...    Same as -f, but append the following options to the\n"+
   "                  default options instead of replacing them all.\n"+
   "                  Available options:\n"+
-  "          n       The name of the planet(s).\n"+
-  "          d, d..  Output transit date and time with a given number of\n"+
-  "                  decimal places in the seconds part.\n"+
-  "                  'd5' might give you a time output like 20:26:46.80099,\n"+
-  "                  'd' (or 'd0') will result in 20:26:47\n"+
-  "                  All date output is localized to the 'en_US' locale if\n"+
-  "                  not specified by the different -loc etc. options.\n"+
-  "          t       Postfix the dates with 'ET' (Ephemeris Time) or 'UT'\n"+
-  "                  (Universal Time) as appropriate.\n"+
-  "          j, j..  Output transit date and time as julian day numbers with\n"+
-  "                  the given numbers of decimal places. Saying 'j' is\n"+
-  "                  identical to saying 'j8': 8 decimal places.\n"+
-  "          v, v..  Output the transit degree or distance or speed value\n"+
-  "                  with the given number of decimal places. 'v' is equal\n"+
-  "                  to 'v2'\n"+
-  "          p, p..  Output the actual position (or speed) on the found date\n"+
-  "                  with the given number of decimal places. 'p' is equal\n"+
-  "                  to 'p2', which means, two decimal places.\n"+
-  "               Only when calculating relative transits:\n"+
-  "          P, P..  (Capital P) adds the real difference or sum (for yoga\n"+
-  "                  transits) of the planets positions to the output. 'P'\n"+
-  "                  means 'P2', which means, output the number with two\n"+
-  "                  decimal places.\n\n"+
+  "          n         The name of the planet(s).\n"+
+  "          d, d..    Output transit date and time with a given number of\n"+
+  "                    decimal places in the seconds part.\n"+
+  "                    'd5' might give you a time output like 20:26:46.80099,\n"+
+  "                    'd' (or 'd0') will result in 20:26:47\n"+
+  "                    All date output is localized to the 'iso' locale (YYYY-MM-DD)\n"+
+  "                    if not specified differently by the -loc etc. options.\n"+
+  "          t         Postfix the dates with 'ET' (Ephemeris Time) or 'UT'\n"+
+  "                    (Universal Time) as appropriate.\n"+
+  "          j, j..    Output transit date and time as julian day numbers with\n"+
+  "                    the given numbers of decimal places. Saying 'j' is\n"+
+  "                    identical to saying 'j8': 8 decimal places.\n"+
+  "          v, v..    Output the transit degree or distance or speed value\n"+
+  "                    with the given number of decimal places. 'v' is equal\n"+
+  "                    to 'v2'\n"+
+  "          p, p..    Output the actual position (or speed) on the found date\n"+
+  "                    with the given number of decimal places. 'p' is equal\n"+
+  "                    to 'p8', which means, eight decimal places.\n"+
+  "                 Only when calculating relative transits:\n"+
+  "          P, P..    (Capital P) adds the real difference or sum (for yoga\n"+
+  "                    transits) of the planets positions to the output. 'P'\n"+
+  "                    means 'P8', which means, output the number with eight\n"+
+  "                    decimal places.\n\n"+
   "  Localization (internationalization):\n"+
   "  ====================================\n"+
-  "  Input parsing and output formatting is done using the 'en_US' locale,\n"+
-  "  meaning in the american style by default.\n"+
+  "  Input parsing and output formatting of numbers is done using the 'en_US'\n"+
+  "  locale, dates are parsed and output in 'ISO' style (YYYY-MM-DD).\n"+
   "  Localization knows about two different fields: numbers and dates. You\n"+
   "  can give both localization information for input parsing and output\n"+
-  "  formatting. The default is 'en_US', you can change it to your current\n"+
-  "  system locale by giving the option -loc without any locale added.\n"+
-  "  The -loc options will change all patterns at the same time, all other\n"+
-  "  options will just care for partial aspects at a time.\n"+
+  "  formatting. The default is 'iso' (YYYY-MM-DD), you can change it to\n"+
+  "  your current system locale by giving the option -loc without any locale\n"+
+  "  string added.\n"+
+  "  The -loc option will change all patterns at the same time, all other\n"+
+  "  options will just care for some aspects.\n"+
   "    -loc  is for input parsing and output formatting of numbers and dates\n\n"+
   "    -iloc is for input parsing of numbers and dates\n"+
   "    -oloc is for output formatting of numbers and dates\n\n"+
@@ -422,11 +459,11 @@ public class Transits
   "    -locales  List all available locales. Does not compute anything.\n\n"+
   "  Other options:\n"+
   "  ==============\n"+
-#ifndef NO_JPL
+#ifndef JAVAME
   "        -ejpl...  calculate with JPL ephemeris. Append filename of JPL\n"+
   "                  data file. If the filename is not appended, the\n"+
   "                  default SweConst.SE_FNAME_DE406 (de406.eph) is used.\n"+
-#endif /* NO_JPL */
+#endif /* JAVAME */
   "        -eswe     calculate with swiss ephemeris\n"+
 #ifndef NO_MOSHIER
   "        -emos     calculate with moshier ephemeris\n"+
@@ -466,7 +503,7 @@ public class Transits
   "     Next transit of the moon over 123.4702 degrees:\n"+
   "       java Transits -p1 -lon123.4702 -btoday -utnow\n\n"+
   "     Last transit over alcabitius-MC over 180 degrees at D-Helmstedt:\n"+
-  "       java Transits -omc -hsysb -lon180 -btoday -utnow -r -topo11,52.22,160\n\n"+
+  "       java Transits -omc -house11,52.22,b -lon180 -btoday -utnow -r\n\n"+
   "     The first complete Nakshatras cycle in year 2006 starting with\n"+
   "     Ashvini (0"+swed.ODEGREE_STRING+" in sidereal zodiac) and Lahiri ayanamsh related to a\n"+
   "     topocentric position somewhere in Germany:\n"+
@@ -530,6 +567,13 @@ public class Transits
   "     the problem will disappear:\n"+
   "       java Transits -p23 -P235 -btoday -lon75 -n10 -oloc\n"+
   "       java Transits -p23 -P23 -btoday -lon75/0 -n10 -oloc\n\n"+
+  "  Transits of planets relative to house objects:\n"+
+  "     Last transit of Sun 90 degrees ahead of MC in Koch house system:\n"+
+  "       java Transits -p0 -Omc -btoday -utnow -lon90 -house88,22.17,K -utnow -r -f+p -oloc\n\n"+
+  "     Transit of sidereal Mercury 30 degrees ahead of sidereal cusp of house 7:\n"+
+  "       java Transits -p2 -Ohouse7 -btoday -utnow -lon30 -sid1 -house83.4,17.81,P -oloc\n\n"+
+  "     The next 10 transits of venus with square or opposition aspect to the ascendant:\n"+
+  "       java Transits -oASC -P3 -btoday -utnow -lon90/180/270/0 -n10 -house11,52.26,P -f+p -oloc\n\n"+
 #ifdef TEST_ITERATIONS
   "  Display information about the calculations themselves:\n"+
   "     How many calculations does it take, to find ten full moons:\n"+
@@ -547,10 +591,9 @@ public class Transits
   SwissLib  sl=new SwissLib();
   Extlib    el=new Extlib();
   SwissData swed=new SwissData();
-  CFmt f=new CFmt();
 
   Locale[] locs = Locale.getAvailableLocales();
-  String locale = "en_US"; // Make en_US the default
+  String locale = null;
   String Nlocale = null;   // Locale to localize numbers on input
   String Dlocale = null;   // Locale to interpret dates on input
   String nlocale = null;   // Locale to localize numbers on output
@@ -575,8 +618,13 @@ public class Transits
 
   double tzOffset = 0;
 
+  int randomCount = 0;
+  double randomFactor = 0;
+
+
   /**
-  * See -h parameter for help on all parameters.
+  * Test program for transit calculations.
+  * @param argv See -h parameter for help on all parameters.
   */
   public static void main(String argv[]) {
     Transits sc=new Transits();
@@ -635,7 +683,7 @@ System.err.println(np);
       return 0;
     }
 
-    boolean outOfTimeRange = false;
+    // boolean outOfTimeRange = false;
     TransitResult tr = null;
     boolean isFirstCalculation = true;
     boolean savedDuplicateTransitPoints = a.duplicateTransitPoints;
@@ -659,7 +707,7 @@ System.err.println(np);
         if (isFirstCalculation) {
           tr.pl1 = a.pl1;
           tr.pl2 = a.pl2;
-          System.err.println(getPlanetnameString(a, tr) + " no transit");
+          System.err.println(getPlanetnameString(a, tr) + (a.mpp1 ? " etc.: " : "") + " no transit");
         }
         break;
       }
@@ -699,7 +747,7 @@ System.err.println(np);
       a.count--;
     } // while (in timeRange or cnt > 0)...
 
-    if (outOfTimeRange) {
+    if (a.v.outOfTimeRange) {
       System.err.println("\nCalculation(s) exceed(s) available time range.");
     }
 
@@ -765,7 +813,10 @@ System.err.println(np);
           }
         } catch (SwissephException swe) {
           errCnt++;
-          if ((swe.getType() & SwissephException.OUT_OF_TIME_RANGE) != 0 ||
+          if ((swe.getType() & SwissephException.BEYOND_USER_TIME_LIMIT) != 0) {
+            // beyond user time limit is normally(?) due to internal limits in
+            // this class - don't do anything about it.
+          } else if ((swe.getType() & SwissephException.OUT_OF_TIME_RANGE) != 0 ||
               (swe.getType() & SwissephException.BEYOND_USER_TIME_LIMIT) != 0) {
             // Hack, SwissEph does not yet return meaningful types in all cases...
             a.v.outOfTimeRange = true;
@@ -849,11 +900,21 @@ System.err.println(np);
                       // combination '08', pls will contain '80'.
     String pls = "";
     for(int n1 = 0; n1 < planets1.length(); n1++) {
+      String pl1 = planets1.substring(n1, n1+1);
+      if (pl1.charAt(0) == '/') {	// asteroid like "/399046/"
+        pl1 = planets1.substring(n1, planets1.indexOf('/', n1 + 1) + 1);
+        n1 = planets1.indexOf('/', n1 + 1);
+      }
       for(int n2 = 0; n2 < planets2.length(); n2++) {
+        String pl2 = planets2.substring(n2, n2+1);
+        if (pl2.charAt(0) == '/') {	// asteroid like "/399046/"
+          pl2 = planets2.substring(n2, planets2.indexOf('/', n2 + 1) + 1);
+          n2 = planets2.indexOf('/', n2 + 1);
+        }
         // Skip planet combinations with both planets being the same...
-        if (planets1.charAt(n1) != planets2.charAt(n2)) {
-          String comb = planets1.charAt(n1) + "" + planets2.charAt(n2);
-          String revComb = planets2.charAt(n2) + "" + planets1.charAt(n1);
+        if (!pl1.equals(pl2)) {
+          String comb = pl1 + pl2;
+          String revComb = pl2 + pl1;
           int idxR = pls0.indexOf(revComb);
           int idx = pls0.indexOf(comb);
           // Add only, if this planetary combination is not yet inserted
@@ -889,6 +950,27 @@ System.err.println(np);
       }
     }
     return pls0 + "@" + pls;
+  }
+
+  // Return a String of each of the planet-object combinations as a
+  // sequence of one character (== planet) plus house string
+  String getHouseobjectCombinations(String planets, String objects) {
+    String pls = "";
+    for(int n1 = 0; n1 < planets.length(); n1++) {
+      String pl = planets.substring(n1, n1+1);
+      if (pl.charAt(0) == '/') {	// asteroid like "/399046/"
+        pl = planets.substring(n1, planets.indexOf('/', n1 + 1) + 1);
+        n1 = planets.indexOf('/', n1 + 1);
+      }
+
+      String[] ar_objects = objects.split("[,/]");
+      for(int n2 = 0; n2 < ar_objects.length; n2++) {
+        int obj = string_to_houseobject(ar_objects[n2]);
+        String comb = pl + "" + obj;
+        pls += comb + " ";
+      }
+    }
+    return pls;
   }
 
   String group(ObjFormatter f, int cnt, String pad) {
@@ -973,23 +1055,6 @@ System.err.println(np);
       switch ((int)a.outputFormat.charAt(n)) {
         // Print date and time:
         case (int)'n': // output planet name(s):
-                       int len = 9;
-                       if (a.pls1.indexOf("g") > 0 ||
-                           a.pls1.indexOf("c") > 0) {
-                         len += 4;
-                       }
-                       String plNames = sw.swe_get_planet_name(tr.pl1);
-                       plNames = (plNames + "             ").substring(0,len);
-
-                       if (tr.pl2 >= 0) {
-                         len += 12;
-                         if (a.pls2.indexOf("g") > 0 ||
-                             a.pls2.indexOf("c") > 0) {
-                           len += 4;
-                         }
-                         plNames += " - " + sw.swe_get_planet_name(tr.pl2);
-                       }
-//                       s += (plNames+"                      ").substring(0,len);
                        s += getPlanetnameString(a, tr);
                        break;
         case (int)'d': // output date, read optional decimal places:
@@ -1049,7 +1114,7 @@ System.err.println(np);
                          s += "/day";
                        }
                        break;
-        // Output actual position or speed:
+        // Verify option, output actual position or speed:
         case (int)'p': // read optional decimal places:
                        cnt = 0;
                        cntIsSet = false;
@@ -1065,50 +1130,22 @@ System.err.println(np);
                        }
                        if (!cntIsSet) { cnt = 8; }
 
-                       if (a.objects != null) {
-//TODO
-                         s += "[not implemented]";
-                         break;
-                       }
 
-                       serr = new StringBuffer();
-                       xx = new double[6];
-                       idx = 0;
-                       if ((a.iflag & SweConst.SEFLG_TRANSIT_LATITUDE) != 0) {
-                         idx = 1;
-                       } else if ((a.iflag & SweConst.SEFLG_TRANSIT_DISTANCE) != 0) {
-                         idx = 2;
+                       if (a.pls1 != null) {
+                         s += verifyPlanet(a, tr, 1, cnt);
                        }
-                       pflags = a.iflag;
-                       if ((a.iflag & SweConst.SEFLG_TRANSIT_SPEED) != 0) {
-                         idx += 3;
-                         pflags |= SweConst.SEFLG_SPEED;
+                       if (a.objects1 != null) {
+                         s += verifyHouseobject(a, tr, 1, cnt);
                        }
-                       pflags &= ~(SweConst.SEFLG_TRANSIT_LONGITUDE |
-                                   SweConst.SEFLG_TRANSIT_LATITUDE |
-                                   SweConst.SEFLG_TRANSIT_DISTANCE |
-                                   SweConst.SEFLG_TRANSIT_SPEED);
-
-                       ret = sw.swe_calc(a.sde1.getJulDay(), tr.pl1, pflags, xx, serr);
-                       if (ret < 0) {
-                         s += serr.toString().substring(0,10)+"...";
-                       } else {
-                         s += printFloat(xx[idx], 4, cnt, (a.rollover?a.rolloverVal:0.));
+                       if (a.pls2 != null) {
+                         s += verifyPlanet(a, tr, 2, cnt);
                        }
-// Puuuh: we need to calc it from tc!!!???!?!?!?
-                       if (tr.pl2 >= 0) {
-                         s += "  ";
-                         ret = sw.swe_calc(a.sde1.getJulDay(), tr.pl2, pflags, xx, serr);
-                         if (ret < 0) {
-                           s += serr.toString().substring(0,10)+"...";
-                           break;
-                         } else {
-                           s += printFloat(xx[idx], 3, cnt, (a.rollover?a.rolloverVal:0.));
-                         }
+                       if (a.objects2 != null) {
+                         s += verifyHouseobject(a, tr, 2, cnt);
                        }
                        break;
-        // 'P' adds output of two planets position (speed) difference:
-        case (int)'P': if (tr.pl2 < 0) { break; }
+        // Verify option, 'P' adds output of two planet's position (speed) difference:
+        case (int)'P': if (tr.pl2 < 0 && tr.obj2 < 0) { break; }
                        // read optional decimal places:
                        cnt = 0;
                        cntIsSet = false;
@@ -1124,46 +1161,138 @@ System.err.println(np);
                        }
                        if (!cntIsSet) { cnt = 8; }
 
-                       serr = new StringBuffer();
-                       xx = new double[6];
-                       idx = 0;
-                       if ((a.iflag & SweConst.SEFLG_TRANSIT_LATITUDE) != 0) {
-                         idx = 1;
-                       } else if ((a.iflag & SweConst.SEFLG_TRANSIT_DISTANCE) != 0) {
-                         idx = 2;
-                       }
-                       pflags = a.iflag;
-                       if ((a.iflag & SweConst.SEFLG_TRANSIT_SPEED) != 0) {
-                         idx += 3;
-                         pflags |= SweConst.SEFLG_SPEED;
-                       }
-                       pflags &= ~(SweConst.SEFLG_TRANSIT_LONGITUDE |
-                                   SweConst.SEFLG_TRANSIT_LATITUDE |
-                                   SweConst.SEFLG_TRANSIT_DISTANCE |
-                                   SweConst.SEFLG_TRANSIT_SPEED);
-
-                       ret = sw.swe_calc(a.sde1.getJulDay(), tr.pl1, pflags, xx, serr);
-                       if (ret < 0) {
-                         s += serr.toString().substring(0,10)+"...";
-                         break;
-                       }
-// Puuuh: we need to calc it from tc!!!???!?!?!?
-                       double x1 = xx[idx];
-                       ret = sw.swe_calc(a.sde1.getJulDay(), tr.pl2, pflags, xx, serr);
-                       if (ret < 0) {
-                         s += serr.toString().substring(0,10)+"...";
-                         break;
-                       }
-                       x1 += (a.yogaTransit?xx[idx]:-xx[idx]);
-                       if (idx >= 1) {
-                         s += printFloat(x1, 3, cnt, (a.rollover?a.rolloverVal:0.));
+                       if (a.pls1 != null) {
+                         s += verifyPlanet(a, tr, 1, cnt, true);
                        } else {
-                         s += printFloat((x1+a.rolloverVal)%a.rolloverVal, 3, cnt, (a.rollover?a.rolloverVal:0.));
+                         s += verifyPlanet(a, tr, 2, cnt, true);
                        }
                        break;
       }
     }
     return s;
+  }
+
+
+  // Verify a planet's position for -fp format option:
+  String verifyPlanet(TransitArguments a, TransitResult tr, int which, int cnt) {
+    return verifyPlanet(a, tr, which, cnt, false);
+  }
+  // Verify a planet's position for -fp (diff == false) or -fP (diff == true) format option:
+  String verifyPlanet(TransitArguments a, TransitResult tr, int which, int cnt, boolean diff) {
+    String s = "";
+    StringBuffer serr = new StringBuffer();
+    double[] xx = new double[6];
+    int idx = 0;
+    if ((a.iflag & SweConst.SEFLG_TRANSIT_LATITUDE) != 0) {
+      idx = 1;
+    } else if ((a.iflag & SweConst.SEFLG_TRANSIT_DISTANCE) != 0) {
+      idx = 2;
+    }
+    int pflags = a.iflag;
+    if ((a.iflag & SweConst.SEFLG_TRANSIT_SPEED) != 0) {
+      idx += 3;
+      pflags |= SweConst.SEFLG_SPEED;
+    }
+    pflags &= ~(SweConst.SEFLG_TRANSIT_LONGITUDE |
+                SweConst.SEFLG_TRANSIT_LATITUDE |
+                SweConst.SEFLG_TRANSIT_DISTANCE |
+                SweConst.SEFLG_TRANSIT_SPEED);
+
+    int ret = sw.swe_calc(a.sde1.getJulDay(), (which == 1 ? tr.pl1 : tr.pl2), pflags, xx, serr);
+    if (ret < 0) {
+      s += serr.toString().substring(0,10)+"...";
+      if (diff) { return s; }
+    } else if (!diff) {
+      s += printFloat(xx[idx], 4, cnt, (a.rollover?a.rolloverVal:0.));
+    }
+
+    if (diff) {
+      if (a.pls1 != null && a.pls2 != null) {	// diff between two planets
+        double x1 = xx[idx];
+        ret = sw.swe_calc(a.sde1.getJulDay(), tr.pl2, pflags, xx, serr);
+        if (ret < 0) {
+          s += serr.toString().substring(0,10)+"...";
+          return s;
+        }
+        x1 += (a.yogaTransit?xx[idx]:-xx[idx]);
+        if (idx >= 1) {
+          s += printFloat(x1, 3, cnt, (a.rollover?a.rolloverVal:0.));
+        } else {
+          s += printFloat((x1+a.rolloverVal)%a.rolloverVal, 3, cnt, (a.rollover?a.rolloverVal:0.));
+        }
+
+      } else {	// diff between planet and house object
+        double[] cusps = new double[(a.hsys == SweConst.SE_HSYS_GAUQUELIN_SECTORS ? 37 : 13)];
+        double[] ascmc = new double[10];
+
+        int houseObject = (which == 1 ? tr.obj2 : tr.obj1);
+        if (houseObject <= -1000) { return ""; }
+
+        int house_flags = a.house_flags;
+        if ((a.iflag & SweConst.SEFLG_TRANSIT_SPEED) != 0) {
+          house_flags |= SweConst.SEFLG_SPEED;
+        }
+        house_flags &= ~(SweConst.SEFLG_TRANSIT_LONGITUDE |
+                    SweConst.SEFLG_TRANSIT_SPEED);
+
+
+        ret = sw.swe_houses(a.sde1.getJulDay() - SweDate.getDeltaT(a.sde1.getJulDay()), house_flags, a.house_lat, a.house_lon, a.hsys, cusps, ascmc);
+
+        if (ret<0) {
+          throw new SwissephException(a.sde1.getJulDay() - SweDate.getDeltaT(a.sde1.getJulDay()), SwissephException.UNDEFINED_ERROR,
+                "Calculation failed with return code "+ret+".");
+        }
+        double h = 0;
+        if (houseObject < 0) {      // Houses have negative index
+          h = cusps[Math.abs(houseObject)];
+        } else {
+          h = ascmc[houseObject];
+        }
+        xx[idx] -= h;
+        if (idx >= 1) {
+          s += printFloat(xx[idx], 3, cnt, (a.rollover?a.rolloverVal:0.));
+        } else {
+          s += printFloat((xx[idx]+a.rolloverVal)%a.rolloverVal, 3, cnt, (a.rollover?a.rolloverVal:0.));
+        }
+      }
+    }
+
+    return s;
+  }
+
+
+  // Verify a house object's position for -fp format option:
+  String verifyHouseobject(TransitArguments a, TransitResult tr, int which, int cnt) {
+    String s = "";
+    StringBuffer serr = new StringBuffer();
+    double[] cusps = new double[(a.hsys == SweConst.SE_HSYS_GAUQUELIN_SECTORS ? 37 : 13)];
+    double[] ascmc = new double[10];
+
+    int houseObject = (which == 1 ? tr.obj1 : tr.obj2);
+    if (houseObject <= -1000) { return ""; }
+
+    int house_flags = a.house_flags;
+    if ((a.iflag & SweConst.SEFLG_TRANSIT_SPEED) != 0) {
+      house_flags |= SweConst.SEFLG_SPEED;
+    }
+    house_flags &= ~(SweConst.SEFLG_TRANSIT_LONGITUDE |
+                SweConst.SEFLG_TRANSIT_SPEED);
+
+
+    int ret = sw.swe_houses(a.sde1.getJulDay() - SweDate.getDeltaT(a.sde1.getJulDay()), house_flags, a.house_lat, a.house_lon, a.hsys, cusps, ascmc);
+
+    if (ret<0) {
+      throw new SwissephException(a.sde1.getJulDay() - SweDate.getDeltaT(a.sde1.getJulDay()), SwissephException.UNDEFINED_ERROR,
+            "Calculation failed with return code "+ret+".");
+    }
+    double h = 0;
+    if (houseObject < 0) {      // Houses have negative index
+      h = cusps[Math.abs(houseObject)];
+    } else {
+      h = ascmc[houseObject];
+    }
+
+    return printFloat(h, 4, cnt, (a.rollover?a.rolloverVal:0.));
   }
 
 
@@ -1193,7 +1322,7 @@ System.err.println(np);
     boolean multipleValues = false;
     boolean isExponent = false;
 
-    Vector tmpValues = new Vector();
+    Vector<Double> tmpValues = new Vector<Double>();
 
     String dblString = "";
     char lastChar = '\0';
@@ -1364,16 +1493,31 @@ System.err.println(4);
   }
 
 
+  // def == null => "iso" / "en_US"
+  // def == "" => getDefault()
+  // loc == null => def
+  // loc == "" => getDefault()
+  // => loc
   String checkLocale(String locale, String defLocale) {
-    if ("".equals(defLocale)) {
+    return checkLocale(locale, defLocale, false);
+  }
+  String checkLocale(String locale, String defLocale, boolean forDate) {
+    if (defLocale == null) {
+      defLocale = (forDate ? "iso" : "en_US");
+    } else if ("".equals(defLocale)) {
       defLocale = Locale.getDefault().toString();
     }
-    
+
     if (locale == null) {
       return defLocale;
-    }
-    if ("".equals(locale)) {
+    } else if ("".equals(locale)) {
       return Locale.getDefault().toString();
+    } else if ("ja_JP_JP".equals(locale)) {
+      return "ja_JP_JP_#u-ca-japanese";
+    } else if ("th_TH_TH".equals(locale)) {
+      return "th_TH_TH_#u-nu-thai";
+    } else if ("iso".equals(locale)) {
+      return locale;
     }
     for(int n=0; n < locs.length; n++) {
       if (locs[n].toString().equals(locale)) {
@@ -1578,11 +1722,16 @@ System.err.println("Use option -locales to list all available Locales.");
       boolean neg=false;
       try {
         for (; n<3; n++) {
+          boolean has_digits = false;
           ints[n] = 0;
           neg=(dt.charAt(i)=='-');
           if (neg) { i++; }
           while (Character.isDigit(dt.charAt(i))) {
+            has_digits = true;
             ints[n]=ints[n]*10+Character.digit(dt.charAt(i++),10);
+          }
+          if (!has_digits) {
+            return null;
           }
           if (neg) { ints[n]=-ints[n]; }
           int nd = 0; // no digit
@@ -1677,6 +1826,32 @@ System.err.println("Use option -locales to list all available Locales.");
     return SweConst.OK;
   }
 
+  // removes a planet from the string of planets:
+  String remove_ipl(String s, int pos) {
+    if (s.startsWith("/")) {
+      try {
+        s = s.substring(0, pos) + s.substring(s.indexOf('/', pos+1) + 1);
+      } catch (Exception e) {
+      }
+    } else {
+      s = s.substring(0, pos) + s.substring(pos + 1);
+    }
+    return s;
+  }
+  // returns the planet number like letter_to_ipl(), but also
+  // interprets the /xxx/ notation for asteroid numbers
+  int string_to_ipl(String s) {
+    if (s.startsWith("/")) {
+      int plno = 0;
+      try {
+        s = s.substring(1, s.indexOf('/', 1));
+        return Integer.parseInt(s) + SweConst.SE_AST_OFFSET;
+      } catch (Exception e) {
+        return -2;
+      }
+    }
+    return letter_to_ipl(s.charAt(0));
+  }
   int letter_to_ipl(char letter) {
 //    if (letter >= '0' && letter <= '9')
 //      return (int)letter - '0' + SweConst.SE_SUN;
@@ -1734,6 +1909,52 @@ System.err.println("Use option -locales to list all available Locales.");
     }
     return -1;
   }
+  int string_to_houseobject(String s) {
+    s = s.toLowerCase();
+    if ("house1".equals(s)) {
+      return SweConst.SE_HOUSE1;
+    } else if ("house2".equals(s)) {
+      return SweConst.SE_HOUSE2;
+    } else if ("house3".equals(s)) {
+      return SweConst.SE_HOUSE3;
+    } else if ("house4".equals(s)) {
+      return SweConst.SE_HOUSE4;
+    } else if ("house5".equals(s)) {
+      return SweConst.SE_HOUSE5;
+    } else if ("house6".equals(s)) {
+      return SweConst.SE_HOUSE6;
+    } else if ("house7".equals(s)) {
+      return SweConst.SE_HOUSE7;
+    } else if ("house8".equals(s)) {
+      return SweConst.SE_HOUSE8;
+    } else if ("house9".equals(s)) {
+      return SweConst.SE_HOUSE9;
+    } else if ("house10".equals(s)) {
+      return SweConst.SE_HOUSE10;
+    } else if ("house11".equals(s)) {
+      return SweConst.SE_HOUSE11;
+    } else if ("house12".equals(s)) {
+      return SweConst.SE_HOUSE12;
+    } else if ("asc".equals(s)) {
+      return SweConst.SE_ASC;
+    } else if ("mc".equals(s)) {
+      return SweConst.SE_MC;
+    } else if ("armc".equals(s)) {
+      return SweConst.SE_ARMC;
+    } else if ("vertex".equals(s)) {
+      return SweConst.SE_VERTEX;
+    } else if ("equasc".equals(s)) {
+      return SweConst.SE_EQUASC;
+    } else if ("coasc1".equals(s)) {
+      return SweConst.SE_COASC1;
+    } else if ("coasc2".equals(s)) {
+      return SweConst.SE_COASC2;
+    } else if ("polasc".equals(s)) {
+      return SweConst.SE_POLASC;
+    }
+
+    return 0;
+  }
 
   String limitLineLength(String line, int maxLen, String nlPad) {
     String s = "";
@@ -1778,8 +1999,21 @@ System.err.println("Use option -locales to list all available Locales.");
   String getPlanetNames(String pls, String pad) {
     String s = "";
     for(int n = 0; n < pls.length(); n++) {
-      int pl = letter_to_ipl(pls.charAt(n));
+      int pl = string_to_ipl(pls.substring(n));
+      if (pl > SweConst.SE_AST_OFFSET) {
+        n += ("//" + (pl-SweConst.SE_AST_OFFSET)).length() - 1;
+      }
       s += pad + sw.swe_get_planet_name(pl);
+    }
+    return s.substring(pad.length());
+  }
+
+  String getHouseobjectNames(String houses, String pad) {
+    String s = "";
+    String[] ar_houses = houses.split("[,/]");
+    for(int n = 0; n < ar_houses.length; n++) {
+      int house = string_to_houseobject(ar_houses[n]);
+      s += pad + SwissEph.getHouseobjectname(house);
     }
     return s.substring(pad.length());
   }
@@ -1787,6 +2021,9 @@ System.err.println("Use option -locales to list all available Locales.");
   TransitArguments parseArgs(String argv[])
       throws IllegalArgumentException {
     TransitArguments a = new TransitArguments();
+
+    String randomFactors = null;
+
     /*
      * parse command line
     */
@@ -1870,13 +2107,13 @@ System.err.println("Use option -locales to list all available Locales.");
         }
       } else if (argv[i].equals("-true")) {
         a.iflag |= SweConst.SEFLG_TRUEPOS;
-#ifndef NO_JPL
+#ifndef JAVAME
       } else if (argv[i].startsWith("-ejpl")) {
         a.whicheph = SweConst.SEFLG_JPLEPH;
         if (argv[i].length() > 5) {
           a.fname = argv[i].substring(5);
         }
-#endif /* NO_JPL */
+#endif /* JAVAME */
       } else if (argv[i].equals("-eswe")) {
         a.whicheph = SweConst.SEFLG_SWIEPH;
 #ifndef NO_MOSHIER
@@ -1896,6 +2133,11 @@ System.err.println("Use option -locales to list all available Locales.");
         a.isUt=argv[i].startsWith("-ut") || a.isLt;
         if (argv[i].length()>len) {
           a.sBeginhour = argv[i].substring(len);
+          if (!a.sBeginhour.equals("now") &&
+              !a.sBeginhour.matches("[0-9][0-9]*:[0-9][0-9]*:[0-9][0-9]*")) {
+            throw new IllegalArgumentException("Unrecognized option '" + argv[i]
+                    + "'");
+          }
         }
       } else if (argv[i].startsWith("-UT") ||
                  argv[i].startsWith("-ET") ||
@@ -1919,8 +2161,8 @@ System.err.println("Use option -locales to list all available Locales.");
           } else if (a.enddate == null) {
             a.enddate = (wob?"j":"") + argv[i].substring(2);
           } else {
-            System.err.println("Invalid parameter combination:\n"+
-                         "Excess -b option."+
+            throw new IllegalArgumentException("Invalid parameter combination:\n"+
+                         "Excess -b options."+
                          "\nUse option '-h' for additional help.");
           }
         }
@@ -1941,21 +2183,27 @@ System.err.println("Use option -locales to list all available Locales.");
         }
       } else if (argv[i].startsWith("-o") && !argv[i].startsWith("-oloc")) {
         if (argv[i].length() >= 3) {
-          a.objects = argv[i].substring(2);
+          a.objects1 = argv[i].substring(2);
         } else {
           throw new IllegalArgumentException(invalidArgument(argv[i],2));
-        }
-      } else if (argv[i].startsWith("-hsys")) {
-        if (argv[i].length() == 6) {
-          a.hsys = argv[i].charAt(5);
-        } else {
-          throw new IllegalArgumentException(invalidArgument(argv[i],5));
         }
       } else if (argv[i].startsWith("-P")) {
         if (argv[i].length() >= 3) {
           a.pls2 = argv[i].substring(2);
         } else {
           throw new IllegalArgumentException(invalidArgument(argv[i],2));
+        }
+      } else if (argv[i].startsWith("-O")) {
+        if (argv[i].length() >= 3) {
+          a.objects2 = argv[i].substring(2);
+        } else {
+          throw new IllegalArgumentException(invalidArgument(argv[i],2));
+        }
+      } else if (argv[i].startsWith("-house")) {	// lon lat house_system
+        if (argv[i].length() >= 8) {
+          a.htopoS = argv[i].substring(6);
+        } else {
+          throw new IllegalArgumentException(invalidArgument(argv[i],6));
         }
       } else if (argv[i].startsWith("-f")) {
         if (argv[i].length() > 2) {
@@ -2057,6 +2305,9 @@ System.err.println("Use option -locales to list all available Locales.");
           throw new IllegalArgumentException(invalidArgument(argv[i],2));
         }
 #endif /* EXTPRECISION */
+      } else if (argv[i].startsWith("-rf") ||
+          argv[i].startsWith("-random_factors")) {
+        randomFactors = argv[i];
 #ifdef TEST_ITERATIONS
       } else if (argv[i].startsWith("-iter")) {
         a.withIterations = true;
@@ -2066,7 +2317,21 @@ System.err.println("Use option -locales to list all available Locales.");
                 + "'");
       }
     }
-    return initArgs(a);
+    TransitArguments ta = initArgs(a);
+
+    // Localized input parameters:
+    if (randomFactors != null) {
+      int len = (randomFactors.startsWith("-rf") ? 3 : 15);
+// TODO: should check for match against numIFracSeparator instead of replacing numIFracSeparator with "."
+      String rf = randomFactors.substring(len).replace(numIFracSeparator, ".");
+      if (!rf.matches("[0-9]+/[0-9.]+")) {
+        throw new IllegalArgumentException(invalidArgument(randomFactors,len));
+      }
+      randomCount = Integer.parseInt(rf.substring(0, rf.indexOf('/')));
+      randomFactor = Double.parseDouble(rf.substring(rf.indexOf('/') + 1));
+    }
+
+    return ta;
   }
 
   TransitArguments initArgs(TransitArguments a) {
@@ -2078,11 +2343,12 @@ System.err.println("Use option -locales to list all available Locales.");
     // -Nloc (-iloc) (var. Nlocale) locale to parse numbers
     // -dloc (-oloc) (var. dlocale) locale to format dates
     // -nloc (-oloc) (var. nlocale) locale to format numbers
-    locale = checkLocale(locale, "");
-    Dlocale = checkLocale(Dlocale, locale);
-    Nlocale = checkLocale(Nlocale, locale);
-    dlocale = checkLocale(dlocale, locale);
-    nlocale = checkLocale(nlocale, locale);
+    String defLocale = locale;
+    locale = checkLocale(locale, null);
+    Dlocale = checkLocale(Dlocale, defLocale, true);
+    Nlocale = checkLocale(Nlocale, defLocale);
+    dlocale = checkLocale(dlocale, defLocale, true);
+    nlocale = checkLocale(nlocale, defLocale);
 
     dif = el.createLocDateTimeFormatter(Dlocale, true); // DateInputFormat
     dof = el.createLocDateTimeFormatter(dlocale, force24hSystem); // DateOutputFormat
@@ -2094,47 +2360,6 @@ System.err.println("Use option -locales to list all available Locales.");
     nnof = NumberFormat.getInstance(el.getLocale(nlocale));
     nnof.setGroupingUsed(false);
     nnof.setMaximumFractionDigits(12);
-// Arabic numbers don't get used by default, see http://bugs.sun.com/view_bug.do?bug_id=4336841
-// Work around this for all "inherited" arabic locales:
-// ar:    \u0660
-// ar_AE: inherited	// from ar?
-// ar_BH: inherited
-// ar_DZ: 0
-// ar_EG: inherited
-// ar_IN: inherited
-// ar_IQ; inherited
-// ar_JO: inherited
-// ar_KW: inherited
-// ar_LB: inherited
-// ar_LY: inherited
-// ar_MA: 0
-// ar_OM: inherited
-// ar_QA: inherited
-// ar_SA: inherited
-// ar_SD: inherited
-// ar_SY: inherited
-// ar_TN: 0
-// ar_YE: inherited
-    boolean arabicNumbers = (nlocale.startsWith("ar") &&
-        !"ar_DZ".equals(nlocale) &&
-        !"ar_MA".equals(nlocale) &&
-        !"ar_TN".equals(nlocale));
-    if (arabicNumbers) {
-      DecimalFormat df = (DecimalFormat)nnof;
-      DecimalFormatSymbols dfs = df.getDecimalFormatSymbols();
-      dfs.setZeroDigit('\u0660');
-      df.setDecimalFormatSymbols(dfs);
-
-      df = (DecimalFormat)dof.getNumberFormat();
-      dfs = df.getDecimalFormatSymbols();
-      dfs.setZeroDigit('\u0660');
-      df.setDecimalFormatSymbols(dfs);
-
-      df = (DecimalFormat)dnof;
-      dfs = df.getDecimalFormatSymbols();
-      dfs.setZeroDigit('\u0660');
-      df.setDecimalFormatSymbols(dfs);
-    }
 
     numOFracSeparator = el.getDecimalSeparator(nnof);
     secondsIdx = el.getPatternLastIdx(dof.toPattern(), "s", dof); // No input with parts of seconds?
@@ -2183,6 +2408,18 @@ System.err.println("Use option -locales to list all available Locales.");
     // Initialize SweDate objects to the given times and dates:
     a.sde1 = makeDate(a.begindate, a.beginhour, a.isUt, a.isLt, Dlocale);
     a.sde2 = makeDate(a.enddate, a.endhour, a.isUT, a.isLT, Dlocale);
+
+    // Check parameters:
+    if (a.sde1 == null) {
+      throw new IllegalArgumentException(
+              "Specify a valid date with the -b option!\n"+
+              "Use the -h or -hdate option for more information.");
+    }
+    if (a.enddate != null && a.sde2 == null) {
+      throw new IllegalArgumentException(
+              "Specify a valid date with the -b / -B option!\n"+
+              "Use the -h or -hdate option for more information.");
+    }
 
     if (a.convert) {
       String invalids = "npP";
@@ -2262,7 +2499,7 @@ System.err.println("Use option -locales to list all available Locales.");
         }
         // Read field values:
         String ts = a.topoS;
-        a.top_long=nnif.parse(ts.substring(0,ts.indexOf(';'))).doubleValue();
+        a.top_lon=nnif.parse(ts.substring(0,ts.indexOf(';'))).doubleValue();
         ts=ts.substring(ts.indexOf(';')+1);
         a.top_lat=nnif.parse(ts.substring(0,ts.indexOf(';'))).doubleValue();
         ts=ts.substring(ts.indexOf(';')+1);
@@ -2273,38 +2510,72 @@ System.err.println("Use option -locales to list all available Locales.");
                 invalidArgument("-topo"+a.topoS,5,Nlocale));
       }
     }
+    if (a.htopoS != null && a.objects1 == null && a.objects2 == null) {
+      throw new IllegalArgumentException(
+              "-house is a house object parameter and cannot\n"+
+              "be used on pure planet transit calculations.\n"+
+              "Use the -h option for more information.");
+    }
+    // house == house topo == lon lat house_system; split everything:
+    if (a.htopoS != null) {
+          try {
+            String[] ar_htopo = a.htopoS.split("[^0-9a-zA-Z" + numIFracSeparator + "]");
+            if (ar_htopo.length != 3 || ar_htopo[2].length() != 1) {
+              throw new NumberFormatException();
+            }
+            a.house_lon = Double.parseDouble(ar_htopo[0]);
+            a.house_lat = Double.parseDouble(ar_htopo[1]);
+            a.hsys = ar_htopo[2].toUpperCase().charAt(0);
+          } catch (NumberFormatException ne) {
+            throw new IllegalArgumentException(
+                    "Expecting -houselon,lat,H with 'H' as the character\n"+
+                    "of the house system. lon, lat have to be numbers.\n"+
+                    "Use the -h option for more information.");
+          }
+    }
+    if (a.sidmode != -1) {
+      a.house_flags = SweConst.SEFLG_SIDEREAL;
+    }
 
 
+    //////////////////////////////////////////////////////////////
     // Interpret and check parameters and parameter combinations:
 
     // Set ephemeris data file paths:
     a.iflag = (a.iflag & ~SweConst.SEFLG_EPHMASK) | a.whicheph;
     String curDir = System.getProperties().getProperty("user.dir");
     if (a.ephepath.length() > 0) {
+// System.err.println("SD: " + a.sde1); java Transits -f+pP -dloc -b1.1.0 -ut -house88,0,E -lon0 -ohouse1 will return ET date(?) if a.sde1.toString() isn't called before???
       sw.swe_set_ephe_path(a.ephepath);
     } else if (make_ephemeris_path(a.iflag, curDir) == SweConst.ERR) {
       a.iflag = (a.iflag & ~SweConst.SEFLG_EPHMASK) | SweConst.SEFLG_MOSEPH;
       a.whicheph = SweConst.SEFLG_MOSEPH;
     }
-#ifndef NO_JPL
+#ifndef JAVAME
     if ((a.whicheph & SweConst.SEFLG_JPLEPH)!=0) {
       sw.swe_set_jpl_file(a.fname);
     }
-#endif /* NO_JPL */
+#endif /* JAVAME */
 
 
     // Check for required parameters
-    if (a.pls1 == null && a.objects == null) {
+    if (a.pls1 == null && a.objects1 == null) {
       throw new IllegalArgumentException(
-              "Specify one or more planets with the -p option or ask\n"+
-              "for a house- or ascendant transit with -o...!\n"+
+              "Specify one or more planets or other objects with the -p option\n"+
+              "or ask for a house- or ascendant transit with -o...!\n"+
               "Use the -h option for more information.");
     }
-    if ((a.pls1 != null || a.pls2 != null) && a.objects != null) {
+    if (a.pls1 != null && a.objects1 != null ||
+        a.pls2 != null && a.objects2 != null) {
       throw new IllegalArgumentException(
-              "Search for planets or for house / ascendent\n"+
-              "transits only, but not for both at the same\n"+
-              "time. Use the -h option for more information.");
+              "Use -p -O or -o -P for relative transits over a planet\n"+
+              "and a house object (mind the capitalization).\n");
+    }
+    if (a.objects1 != null && a.objects2 != null) {
+      throw new IllegalArgumentException(
+              "You may search for transits of house objects over\n"+
+              "planets, but not for house transits over other house\n"+
+              "objects.");
     }
     if (a.begindate == null) {
       throw new IllegalArgumentException(
@@ -2321,6 +2592,13 @@ System.err.println("Use option -locales to list all available Locales.");
               "  ... -lat0/-0.3/0.3 ...\n"+
               "Use the -h option for more information.");
     }
+    if ((a.objects1 != null || a.objects2 != null) && a.htopoS == null) {
+            throw new IllegalArgumentException(
+                    "Longitude, latitude, and house system for the house\n" +
+                    "object calculation missing.\n" +
+                    "Use -house<lon>,<lat>,<house system> to add this info.");
+    }
+
 
     // A second time gets set equal to the first time, if it is not given
     // on the command line:
@@ -2329,7 +2607,6 @@ System.err.println("Use option -locales to list all available Locales.");
       a.isUT = a.isUt;
       a.isLT = a.isLt;
     }
-
 
     // Add the transit flags to the calculation flags:
     a.cflag = a.iflag;
@@ -2367,19 +2644,6 @@ System.err.println("Use option -locales to list all available Locales.");
     }
 
 
-    // Multiple planets?
-    a.mp1 = (a.pls1 != null && a.pls1.length() > 1);
-    a.mp2 = (a.pls2 !=null && a.pls2.length() > 1);
-
-    // Force output of planet names, if multiple planets are requested
-    if (a.mp1 || a.mp2) {
-      if (a.outputFormat.indexOf("n") < 0 &&
-          (!a.outputFormatIsSet || appendOutputFormat)) {
-        a.outputFormat = "n" + a.outputFormat;
-      }
-    }
-
-
     // Checks...
     // Parameter combinations:
     //   -p... -b... +-lon/lat/dist/*partile [other options]
@@ -2387,8 +2651,10 @@ System.err.println("Use option -locales to list all available Locales.");
     //   -p... -b... -B... +-lon/lat/dist/*partile [other options]
     //   -p... -P... -b... -B... +-lon/lat/dist/*partile [other options]
     //   -o... -b... -lon... -topo... [other options]
+    //   -p... -O... -b... [other options]
+    //   -o... -P... -b... [other options]
 
-    if (a.pls2 == null && a.outputFormat.indexOf('P') >= 0) {
+    if (a.pls2 == null && a.objects2 == null && a.outputFormat.indexOf('P') >= 0) {
       System.out.println("Info: ignoring output format character 'P' on non-relative transits.");
     }
 
@@ -2402,43 +2668,97 @@ System.err.println("Use option -locales to list all available Locales.");
               "Use option '-h' for additional help.");
     }
 
+    a.pls1_cnt = a.pls2_cnt = 0;
     // Planets:
     if (a.pls1 != null) {
       for(int n = 0; n < a.pls1.length(); n++) {
-        char p = a.pls1.charAt(n);
-        if (letter_to_ipl(p) == -1) {
+        String p = a.pls1.substring(n);
+        int ipl_check = string_to_ipl(p);
+	if (ipl_check > SweConst.SE_AST_OFFSET) {
+		n += ("//" + (ipl_check-SweConst.SE_AST_OFFSET)).length() - 1;
+	}
+        if (ipl_check == -1) {
           throw new IllegalArgumentException(
                   "Unsupported planet " +
-                  (Character.isDigit(p)?"number":"character") + ": '" + p +
+                  (Character.isDigit(p.charAt(n))?"number":"character") + ": '" + p +
+                  "'.\nCheck for valid planets with the '-h' option.");
+        } else if (ipl_check == -2) {
+          throw new IllegalArgumentException(
+                  "Syntax error on -p option: check for balanced /.../ " +
+                  "parameters on asteroids." +
                   "'.\nCheck for valid planets with the '-h' option.");
         }
+        a.pls1_cnt++;
       }
     }
     if (a.pls2 != null) {
       for(int n = 0; n < a.pls2.length(); n++) {
-        char p = a.pls2.charAt(n);
-        if (letter_to_ipl(p) == -1) {
+        String p = a.pls2.substring(n);
+        int ipl_check = string_to_ipl(p);
+	if (ipl_check > SweConst.SE_AST_OFFSET) {
+		n += ("//" + (ipl_check-SweConst.SE_AST_OFFSET)).length() - 1;
+	}
+        if (ipl_check == -1) {
           throw new IllegalArgumentException(
                   "Unsupported planet " +
-                  (Character.isDigit(p)?"number":"character") + ": '" + p +
+                  (Character.isDigit(p.charAt(n))?"number":"character") + ": '" + p +
+                  "'.\nCheck for valid planets with the '-h' option.");
+        } else if (ipl_check == -2) {
+          throw new IllegalArgumentException(
+                  "Syntax error on -p option: check for balanced /.../ " +
+                  "parameters on asteroids." +
                   "'.\nCheck for valid planets with the '-h' option.");
         }
+        a.pls2_cnt++;
       }
     }
+
+    // Multiple planets?
+    a.mpp1 = (a.pls1_cnt > 1);
+    a.mpp2 = (a.pls2_cnt > 1);
+
     // House objects:
-    if (a.objects != null) {
-      StringTokenizer tk = new StringTokenizer(a.objects.replace(',', '/'), "/");
-      a.mpo = (tk.countTokens() > 1);
+    if (a.objects1 != null) {
+      StringTokenizer tk = new StringTokenizer(a.objects1.replace(',', '/'), "/");
+      a.mpo1 = (tk.countTokens() > 1);
       while(tk.hasMoreTokens()) {
         String obj = tk.nextToken();
         if (!isValidHouseObject(obj)) {
             throw new IllegalArgumentException(
                     "Unknown house or ascendent object '" + obj +
-                    "' in '-o" + a.objects + "'.\n" +
+                    "' in '-o" + a.objects1 + "'.\n" +
                     "Check for valid objects with the '-h' option.");
         }
       }
-      a.objects = a.objects.replace(',', '/');
+      a.objects1 = a.objects1.replace(',', '/');
+      if (a.hsys == ' ') {
+            throw new IllegalArgumentException(
+                    "Missing house system, use -house parameter for " +
+                    "this.\n" +
+                    "Check for valid house systems with the '-h' option.");
+      }
+      if (a.hsys != 'B' && a.hsys != 'C' && a.hsys != 'E' &&
+          /*a.hsys != 'G' &&*/ a.hsys != 'H' && a.hsys != 'K' &&
+          a.hsys != 'M' && a.hsys != 'O' && a.hsys != 'P' &&
+          a.hsys != 'R' && a.hsys != 'T' && a.hsys != 'U' &&
+          a.hsys != 'V' && a.hsys != 'W' && a.hsys != 'X') {
+            throw new IllegalArgumentException(
+                    "Invalid house system '" + a.hsys + "'.\n" +
+                    "Check for valid house systems with the '-h' option.");
+      }
+    } else if (a.objects2 != null) {
+      StringTokenizer tk = new StringTokenizer(a.objects2.replace(',', '/'), "/");
+      a.mpo2 = (tk.countTokens() > 1);
+      while(tk.hasMoreTokens()) {
+        String obj = tk.nextToken();
+        if (!isValidHouseObject(obj)) {
+            throw new IllegalArgumentException(
+                    "Unknown house or ascendent object '" + obj +
+                    "' in '-O" + a.objects2 + "'.\n" +
+                    "Check for valid objects with the '-h' option.");
+        }
+      }
+      a.objects2 = a.objects2.replace(',', '/');
       if (a.hsys == ' ') {
             throw new IllegalArgumentException(
                     "Missing house system, use -hsys parameter for " +
@@ -2451,12 +2771,20 @@ System.err.println("Use option -locales to list all available Locales.");
           a.hsys != 'R' && a.hsys != 'T' && a.hsys != 'U' &&
           a.hsys != 'V' && a.hsys != 'W' && a.hsys != 'X') {
             throw new IllegalArgumentException(
-                    "Invalid house system '-hsys" + a.hsys + "'.\n" +
+                    "Invalid house system '" + a.hsys + "'.\n" +
                     "Check for valid house systems with the '-h' option.");
       }
     }
 
-    if (a.yogaTransit && a.pls2 == null) {
+    // Force output of planet / object names, if multiple planets or objects are requested
+    if (a.mpp1 || a.mpp2 || a.mpo1 || a.mpo2) {
+      if (a.outputFormat.indexOf("n") < 0 &&
+          (!a.outputFormatIsSet || appendOutputFormat)) {
+        a.outputFormat = "n" + a.outputFormat;
+      }
+    }
+
+    if (a.yogaTransit && (a.pls2 == null || a.objects1 != null || a.objects2 != null)) {
       throw new IllegalArgumentException(
               "Yoga transits can only be computed over two planets.\n" +
               "Use '-h' option for valid parameter combinations.");
@@ -2466,25 +2794,18 @@ System.err.println("Use option -locales to list all available Locales.");
               "Partile transits can only be computed over two planets.\n" +
               "Use '-h' option for valid parameter combinations.");
     }
-
-    sw.swe_set_topo(a.top_long, a.top_lat, a.top_elev);
-
-    if (a.sidmode>=0) {
-      sw.swe_set_sid_mode(a.sidmode,0.,0.);
-      a.iflag |= SweConst.SEFLG_SIDEREAL;
-    }
-
-
-    if (a.yogaTransit && a.pls2 == null) {
+    if (a.calcSpeed && (a.objects1 != null || a.objects2 != null)) {
       throw new IllegalArgumentException(
-              "Yoga transits can only be computed over two planets.\n" +
-              "Use '-h' option for valid parameter combinations.");
+              "Speed transits aren't available for transits over house\n" +
+              "objects so far.");
     }
-    if ((a.partileStart || a.partileEnd) && a.pls2 == null) {
+    if (!a.transitValString.startsWith("-lon") && (a.objects1 != null || a.objects2 != null)) {
       throw new IllegalArgumentException(
-              "Partile transits can only be computed over two planets.\n" +
-              "Use '-h' option for valid parameter combinations.");
+              "Only transits over a longitudinal value are available for\n" +
+              "transits over house objects.");
     }
+
+
 
     // Ignore EQUATORIAL on -dist / +dist
     if (a.equatorial && (
@@ -2494,7 +2815,7 @@ System.err.println("Use option -locales to list all available Locales.");
       a.iflag &= ~SweConst.SEFLG_EQUATORIAL;
     }
 
-    sw.swe_set_topo(a.top_long, a.top_lat, a.top_elev);
+    sw.swe_set_topo(a.top_lon, a.top_lat, a.top_elev);
 
     if (a.sidmode>=0) {
       sw.swe_set_sid_mode(a.sidmode,0.,0.);
@@ -2503,6 +2824,7 @@ System.err.println("Use option -locales to list all available Locales.");
 
 
     a.tjde1 = a.sde1.getJulDay();
+//System.err.println("SD 1: " + a.sde1);
     if (a.sde2 != null) {
       a.tjde2 = a.sde2.getJulDay();
     }
@@ -2531,6 +2853,7 @@ System.err.println("Use option -locales to list all available Locales.");
         return false;
       }
     }
+    obj = obj.toLowerCase();
     return ("asc".equals(obj) ||
             "mc".equals(obj) ||
             "armc".equals(obj) ||
@@ -2554,12 +2877,12 @@ System.err.println("Use option -locales to list all available Locales.");
       System.out.print("Ayanamsha");
 // Should state the ayanamsha system here!
       if (a.enddate == null) {
-         System.out.print(":         "+(a.mp1?" ":"")+
+         System.out.print(":         "+(a.mpp1 || a.mpo1?" ":"")+
                                      doubleToDMS(sw.swe_get_ayanamsa(a.tjde1)));
       } else {
-         System.out.println("\n on starting date: "+(a.mp1?" ":"")+
+         System.out.println("\n on starting date: "+(a.mpp1 || a.mpo1?" ":"")+
                                      doubleToDMS(sw.swe_get_ayanamsa(a.tjde1)));
-         System.out.println(" on end date:      "+(a.mp1?" ":"")+
+         System.out.println(" on end date:      "+(a.mpp1 || a.mpo1?" ":"")+
                                     doubleToDMS(sw.swe_get_ayanamsa(a.tjde2)));
       }
     }
@@ -2567,25 +2890,30 @@ System.err.println("Use option -locales to list all available Locales.");
     if (a.isLt) {
       System.out.println("Using localtime:   UTC+"+nnof.format(tzOffset*24) + "h");
     }
-    System.out.println("Starting date:     "+(a.mp1?" ":"")+jdToDate(a.sde1, a.isUt, a.isLt, 0)+(a.isLt?" LT":(a.isUT?" UT":" ET")));
+    System.out.println("Starting date:     "+(a.mpp1 || a.mpo1?" ":"")+jdToDate(a.sde1, a.isUt, a.isLt, 0)+(a.isLt?" LT":(a.isUT?" UT":" ET")));
     if (a.enddate!=null) {
-      System.out.println("End date:          "+(a.mp1?" ":"")+jdToDate(a.sde2, a.isUT, a.isLT, 0)+(a.isLT?" LT":(a.isUT?" UT":" ET")));
+      System.out.println("End date:          "+(a.mpp1 || a.mpo1?" ":"")+jdToDate(a.sde2, a.isUT, a.isLT, 0)+(a.isLT?" LT":(a.isUT?" UT":" ET")));
     }
+
     if (!a.yogaTransit && !a.partileStart && !a.partileEnd) {
       if (a.pls1 != null) {
-        System.out.println("Transiting planet" + (a.mp1?"s":"") + ": " +
+        System.out.println("Transiting planet" + (a.mpp1?"s":"") + ": " +
                            limitLineLength(getPlanetNames(a.pls1, " or "),
                                            70,
                                            "                    "));
-      } else if (a.objects != null) {
-        System.out.println("Transiting object" + (a.mpo?"s":"") + ": " +
-                           limitLineLength(a.objects,
+      } else if (a.objects1 != null) {
+        String topo = " at " +
+            doubleToDMS(SMath.abs(a.house_lon)) + (a.house_lon<0?"W":"E") + "/" +
+            doubleToDMS(SMath.abs(a.house_lat)) + (a.house_lat<0?"S":"N") +
+            " in " + sw.swe_house_name(a.hsys) + " house system";
+        System.out.println("Transiting object" + (a.mpo1?"s":"") + ": " +
+                           limitLineLength(getHouseobjectNames(a.objects1, " or ") + topo,
                                            70,
                                            "                    "));
       }
     }
-    System.out.print("Reference point:   " + (a.mp1?" ":""));
-    if (a.calcSpeed) {
+    System.out.print("Reference point:   " + (a.mpp1 || a.mpo1?" ":""));
+    if (a.calcSpeed) {	// no house object transits possible
       ObjFormatter dblf = new ObjFormatter(a.to.values,
                                            swed.ODEGREE_STRING+"/day",
                                            nnof);
@@ -2593,9 +2921,9 @@ System.err.println("Use option -locales to list all available Locales.");
         if (a.yogaTransit) {
           line = "combined " + (a.helio?"heliocentric ":"") + " speed of " +
                   group(dblf, a.to.values.length, " or ") +
-                  " of " + (a.mp1?"the planets ":"planet ") +
-                  getPlanetNames(a.pls1, " or ") + (a.mp1?" with ":" and ") +
-                  (a.mp2?"any of ":"") + getPlanetNames(a.pls2, ", ");
+                  " of " + (a.mpp1?"the planets ":"planet ") +
+                  getPlanetNames(a.pls1, " or ") + (a.mpp1 || a.mpo1?" with ":" and ") +
+                  (a.mpp2?"any of ":"") + getPlanetNames(a.pls2, ", ");
         } else {
           line = (a.helio?"heliocentric ":"") + "speed of " +
                   group(dblf, a.to.values.length, " or ") + " " +
@@ -2615,7 +2943,7 @@ System.err.println("Use option -locales to list all available Locales.");
         }
         System.out.println(limitLineLength(line,
                            70,
-                           "                   "+(a.mp1?" ":"")));
+                           "                   "+(a.mpp1 || a.mpo1?" ":"")));
       } else {
         line = group(dblf, a.to.values.length, " or ") + " in " +
                   (a.helio?"heliocentric ":"") +
@@ -2630,13 +2958,13 @@ System.err.println("Use option -locales to list all available Locales.");
         }
         System.out.println(limitLineLength(line,
                            70,
-                           "                   "+(a.mp1?" ":"")));
+                           "                   "+(a.mpp1 || a.mpo1?" ":"")));
       }
       System.out.println();
       if ((a.iflag&SweConst.SEFLG_TOPOCTR)!=0) {
-        System.out.println("Topographic pos.:  "+(a.mp1?" ":"") +
-          doubleToDMS(SMath.abs(a.top_long)) + (a.top_long<0?"S":"N") + "/" +
-          doubleToDMS(SMath.abs(a.top_lat)) + (a.top_lat<0?"W":"E") + "/" +
+        System.out.println("Topographic pos.:  "+(a.mpp1 || a.mpo1?" ":"") +
+          doubleToDMS(SMath.abs(a.top_lon)) + (a.top_lon<0?"W":"E") + "/" +
+          doubleToDMS(SMath.abs(a.top_lat)) + (a.top_lat<0?"S":"N") + "/" +
           nnof.format(a.top_elev) + "m");
       }
     } else { // Transit over a lon / lat / dist position:
@@ -2652,8 +2980,8 @@ System.err.println("Use option -locales to list all available Locales.");
                                                   "latitudinal":"distance"))
                 ) +
                 " positions of " +
-                (a.mp1?"the planets ":"planet ") + getPlanetNames(a.pls1, " or ") +
-                (a.mp1?" with ":" and ") + (a.mp2?"any of ":"") +
+                (a.mpp1?"the planets ":"planet ") + getPlanetNames(a.pls1, " or ") +
+                (a.mpp1?" with ":" and ") + (a.mpp2?"any of ":"") +
                 getPlanetNames(a.pls2, ", ") + " reach " +
                 group(dblf, a.to.values.length, " or ") +
                 (a.sidmode>=0?" in the sidereal zodiac":"");
@@ -2685,6 +3013,26 @@ System.err.println("Use option -locales to list all available Locales.");
               " position of "+  getPlanetNames(a.pls2, " or ");
           }
         }
+      } else if (a.objects2 != null) {
+        String topo = " at " +
+            doubleToDMS(SMath.abs(a.house_lon)) + (a.house_lon<0?"W":"E") + "/" +
+            doubleToDMS(SMath.abs(a.house_lat)) + (a.house_lat<0?"S":"N") +
+            " in " + sw.swe_house_name(a.hsys) + " house system";
+        line = group(dblf, a.to.values.length, " or ") + " ";
+        if (a.to.idxOffset==2) { // distance
+          line += "farther away than " + getHouseobjectNames(a.objects2, " or ") +
+                  (a.helio?" (heliocentric)":"");
+        } else {
+          line += (a.to.values.length!=1?"ahead of":
+                         (a.to.values[0].doubleValue()<0?"before":"after")) + " " + 
+            (a.helio?"heliocentric ":"") +
+            (a.equatorial ?
+                (a.to.idxOffset==0?"right ascension":"declination") :
+                (a.to.idxOffset==0?"longitudinal":(a.to.idxOffset==1?
+                                                "latitudinal":"distance"))
+            ) +
+            " position of "+  getHouseobjectNames(a.objects2, " or ") + topo;
+        }
       } else {
         line = group(dblf, a.to.values.length, " or ") + " " +
                 (a.to.idxOffset==2?"of ":"") +
@@ -2701,12 +3049,19 @@ System.err.println("Use option -locales to list all available Locales.");
       }
       System.out.println(limitLineLength(line,
                          70,
-                         "                   " + (a.mp1?" ":"")));
+                         "                   " + (a.mpp1 || a.mpo1?" ":"")));
       if ((a.iflag&SweConst.SEFLG_TOPOCTR)!=0) {
-        System.out.println("Topographic pos.:  " + (a.mp1?" ":"") +
-            doubleToDMS(SMath.abs(a.top_long)) + (a.top_long<0?"S":"N") + "/" +
-            doubleToDMS(SMath.abs(a.top_lat)) + (a.top_lat<0?"W":"E") + "/" +
+        if (a.objects1 != null) {
+          System.out.println("Topographic pos.:  " + (a.mpp1?" ":"") +
+              doubleToDMS(SMath.abs(a.house_lon)) + (a.house_lon<0?"W":"E") + "/" +
+              doubleToDMS(SMath.abs(a.house_lat)) + (a.house_lat<0?"S":"N") + "/" +
+              nnof.format(a.top_elev) + "m");
+        } else {
+          System.out.println("Topographic pos.:  "+(a.mpp1 || a.mpo1?" ":"") +
+            doubleToDMS(SMath.abs(a.top_lon)) + (a.top_lon<0?"W":"E") + "/" +
+            doubleToDMS(SMath.abs(a.top_lat)) + (a.top_lat<0?"S":"N") + "/" +
             nnof.format(a.top_elev) + "m");
+        }
       }
     }
 
@@ -2724,7 +3079,8 @@ System.err.println("Use option -locales to list all available Locales.");
     // Init all required TransitCalculators:
     TransitCalculator tcs[] = null;
     a.idxDuplicates = Integer.MAX_VALUE;
-    if (a.pls2 != null) {  // relative or yoga or partile transits between two planets
+
+    if (a.pls1 != null && a.pls2 != null) {  // relative or yoga or partile transits between two planets
       String planetCombinations = getPlanetCombinations(a.pls1,a.pls2);
       if ("@".equals(planetCombinations)) {
         throw new IllegalArgumentException(
@@ -2734,44 +3090,139 @@ System.err.println("Use option -locales to list all available Locales.");
       a.idxDuplicates = planetCombinations.indexOf('@');
       planetCombinations = planetCombinations.substring(0,a.idxDuplicates) +
                            planetCombinations.substring(a.idxDuplicates+1);
+      a.pls_cnt = 0;
+      boolean ast = false;
+      for(int pc = 0; pc < planetCombinations.length(); pc++) {
+        char ch = planetCombinations.charAt(pc);
+        if (!ast) {
+          a.pls_cnt += 1;
+        }
+        if (planetCombinations.charAt(pc) == '/') {
+          ast = !ast;
+          continue;
+        }
+      }
+      a.pls_cnt /= 2;
       a.idxDuplicates /= 2;
-      tcs = new TransitCalculator[planetCombinations.length()/2];
-      a.plNumbers = new int[planetCombinations.length()/2][2];
-      a.objNumbers = new int[planetCombinations.length()/2];
+      tcs = new TransitCalculator[a.pls_cnt];
+      a.plNumbers = new int[a.pls_cnt][2];
+      a.objNumbers = new int[a.pls_cnt][2];
       int ci = 0;
       int t = 0;
       while(t < tcs.length) {
-        a.pl1 = letter_to_ipl(planetCombinations.charAt(ci));
-        a.pl2 = letter_to_ipl(planetCombinations.charAt(ci+1));
-        ci += 2;
-        tcs[t] = new TCPlanetPlanet(sw, a.pl1, a.pl2, a.iflag, a.to.values[0].doubleValue());
+	// Planet 1:
+        String pls1 = planetCombinations.substring(ci, ci + 1);
+        if ("/".equals(pls1)) {
+          pls1 = planetCombinations.substring(ci, planetCombinations.indexOf("/", ci + 1) + 1);
+          ci = planetCombinations.indexOf("/", ci + 1);
+        }
+        ci++;
+        a.pl1 = string_to_ipl(pls1);
+
+	// Planet 2:
+        String pls2 = planetCombinations.substring(ci, ci + 1);
+        if ("/".equals(pls2)) {
+          pls2 = planetCombinations.substring(ci, planetCombinations.indexOf("/", ci + 1) + 1);
+          ci = planetCombinations.indexOf("/", ci + 1);
+        }
+        a.pl2 = string_to_ipl(pls2);
+        ci++;
+        try {
+          if (randomCount == 0) {
+            tcs[t] = new TCPlanetPlanet(sw, a.pl1, a.pl2, a.iflag, a.to.values[0].doubleValue());
+          } else {
+            tcs[t] = new TCPlanetPlanet(sw, a.pl1, a.pl2, a.iflag, a.to.values[0].doubleValue(), randomCount, randomFactor);
+          }
+        } catch (SwissephException se) {
+System.err.println(pls1 + " / " + pls2);
+          if (se.getType() == SwissephException.FILE_NOT_FOUND) {
+            System.err.println(se.getMessage());
+            // Remove all planet occurences of pls1 or pls2 (which one???) and start over?
+            throw new IllegalArgumentException("Planet not found");
+          }
+        }
 #ifdef EXTPRECISION
         tcs[t].setPrecisionFactor(a.extPrecision);
 #endif /* EXTPRECISION */
         a.plNumbers[t][0] = a.pl1;
         a.plNumbers[t][1] = a.pl2;
-        a.objNumbers[t] = 0;
+        a.objNumbers[t][0] = a.objNumbers[t][1] = -1000;
         t++;
       }
-    } else if (a.objects != null) {  // house transits
-      StringTokenizer tk = new StringTokenizer(a.objects, "/");
+
+    } else if ((a.pls1 != null && a.objects2 != null) || (a.objects1 != null && a.pls2 != null)) {  // relative transits between planet and house object
+      boolean planetFirst = (a.pls1 != null);
+      String planets = (a.pls1 != null ? a.pls1 : a.pls2);
+      String hobjects = (a.objects1 != null ? a.objects1 : a.objects2);
+
+      String objectCombinations = getHouseobjectCombinations(planets, hobjects);
+      a.obj_cnt = objectCombinations.split(" ").length;
+      tcs = new TransitCalculator[a.obj_cnt];
+      a.plNumbers = new int[a.obj_cnt][2];
+      a.objNumbers = new int[a.obj_cnt][2];
+      int t = 0;
+      String[] ar_objCombinations = objectCombinations.split(" ");
+      while(t < tcs.length) {
+        int ci = 0;
+
+	// Planet:
+        String pl = ar_objCombinations[t].substring(0, 1);
+        if ("/".equals(pl)) {
+          pl = ar_objCombinations[t].substring(0, ar_objCombinations[t].indexOf("/", 1) + 1);
+          ci = ar_objCombinations[t].indexOf("/", 1);
+        }
+        ci++;
+        a.pl1 = string_to_ipl(pl);
+
+	// House object:
+        int objno = Integer.parseInt(ar_objCombinations[t].substring(ci));
+        //int objno = getObjectFromString(obj);
+
+        try {
+          if (randomCount == 0) {
+            tcs[t] = new TCPlanetHouse(sw, a.pl1, a.iflag, objno, a.hsys, a.house_flags, a.house_lon, a.house_lat, a.to.values[0].doubleValue());
+          } else {
+            tcs[t] = new TCPlanetHouse(sw, a.pl1, a.iflag, objno, a.hsys, a.house_flags, a.house_lon, a.house_lat, a.to.values[0].doubleValue(), randomCount, randomFactor);
+          }
+        } catch (SwissephException se) {
+//System.err.println(pls1 + " / " + pls2);
+          if (se.getType() == SwissephException.FILE_NOT_FOUND) {
+            System.err.println(se.getMessage());
+            // Remove all planet occurences of pls1 or pls2 (which one???) and start over?
+            throw new IllegalArgumentException("Planet not found");
+          }
+        }
+#ifdef EXTPRECISION
+        tcs[t].setPrecisionFactor(a.extPrecision);
+#endif /* EXTPRECISION */
+        a.plNumbers[t][0] = (planetFirst ? a.pl1 : -1);
+        a.plNumbers[t][1] = (planetFirst ? -1 : a.pl1);
+        a.objNumbers[t][0] = (planetFirst ? -1000 : objno);
+        a.objNumbers[t][1] = (planetFirst ? objno : -1000);
+        t++;
+      }
+
+    } else if (a.objects1 != null) {  // house transits
+      StringTokenizer tk = new StringTokenizer(a.objects1, "/");
       tcs = new TransitCalculator[tk.countTokens()];	// Nur dann "Objekte", wenn keine "Planeten" angegeben sind?
       a.plNumbers = new int[tk.countTokens()][2];
-      a.objNumbers = new int[tk.countTokens()];
+      a.objNumbers = new int[tk.countTokens()][2];
       for(int t = 0; t < tcs.length; t++) {
         int objno = getObjectFromString(tk.nextToken());
-        tcs[t] = new TCHouses(sw, objno, a.hsys, a.top_long, a.top_lat, a.iflag, a.to.values[0].doubleValue());
+        tcs[t] = new TCHouses(sw, objno, a.hsys, a.house_lon, a.house_lat, a.house_flags, a.to.values[0].doubleValue());
         a.plNumbers[t][0] = -1;
         a.plNumbers[t][1] = -1;
-        a.objNumbers[t] = objno;
+        a.objNumbers[t][0] = objno;
+        a.objNumbers[t][1] = -1;
 #ifdef EXTPRECISION
         tcs[t].setPrecisionFactor(a.extPrecision);
 #endif /* EXTPRECISION */
       }
+
     } else { // transit of ONE planet over a position or speed
-      tcs = new TransitCalculator[a.pls1.length()];
-      a.plNumbers = new int[a.pls1.length()][2];
-      a.objNumbers = new int[a.pls1.length()];
+      tcs = new TransitCalculator[a.pls1_cnt];
+      a.plNumbers = new int[a.pls1_cnt][2];
+      a.objNumbers = new int[a.pls1_cnt][2];
       // Move moon (1) and mean node (t) to the end of calculations, to
       // speed calculations up. An extreme situation: -p12 -lon0 -s -n...
       // will require more than 2,230,000(!!!) iterations, but
@@ -2781,20 +3232,55 @@ System.err.println("Use option -locales to list all available Locales.");
         a.pls1 = a.pls1.substring(0,index) +
                  a.pls1.substring(index+1) + 'm';
       }
-      index = a.pls1.indexOf('1');
-      if (index >= 0) {
-        a.pls1 = a.pls1.substring(0,index) +
-                 a.pls1.substring(index+1) + '1';
+
+      // Moon. Don't interpret /341/ as moon though...
+      boolean ast = false;
+      for(index = 0; index < a.pls1.length(); index++) {
+        char ch = a.pls1.charAt(index);
+        if (ch == '/') {
+          ast = !ast;
+          continue;
+        }
+        if (ch == '1' && !ast) {
+          a.pls1 = a.pls1.substring(0,index) +
+                   a.pls1.substring(index+1) + '1';
+          break;
+        }
       }
-      for(int t = 0; t < tcs.length; t++) {
-        a.pl1 = letter_to_ipl(a.pls1.charAt(t));
-        tcs[t] = new TCPlanet(sw, a.pl1, a.iflag, a.to.values[0].doubleValue());
+
+
+      // Generate all transitcalculators:
+      for(int t = 0, ppos=0; t < tcs.length; t++, ppos++) {
+        a.pl1 = string_to_ipl(a.pls1.substring(ppos));
+        try {
+          if (randomCount == 0) {
+            tcs[t] = new TCPlanet(sw, a.pl1, a.iflag, a.to.values[0].doubleValue());
+          } else {
+            tcs[t] = new TCPlanet(sw, a.pl1, a.iflag, a.to.values[0].doubleValue(), randomCount, randomFactor);
+          }
+        } catch (SwissephException se) {
+          if (se.getType() == SwissephException.FILE_NOT_FOUND) {
+            System.err.println(se.getMessage() +
+                "\nSkipping planet " + a.pl1 + ".");
+            // Remove planet and start over:
+            a.pls1 = remove_ipl(a.pls1, ppos);
+            a.pls1_cnt--;
+            if (a.pls1.length() > 0) {
+              return initCalculators(a);
+            } else {
+              throw new IllegalArgumentException("No planets found");
+            }
+          }
+        }
 #ifdef EXTPRECISION
         tcs[t].setPrecisionFactor(a.extPrecision);
 #endif /* EXTPRECISION */
         a.plNumbers[t][0] = a.pl1;
         a.plNumbers[t][1] = -1;
-        a.objNumbers[t] = 0;
+        a.objNumbers[t][0] = a.objNumbers[t][1] = -1000;
+	if (a.pl1 > SweConst.SE_AST_OFFSET) {
+		ppos += ("//" + (a.pl1-SweConst.SE_AST_OFFSET)).length() - 1;
+	}
       }
     }
 
@@ -2814,6 +3300,7 @@ System.err.println("Use option -locales to list all available Locales.");
 
     return tcs;
   }
+
 
   int getObjectFromString(String s) {
     if ("asc".equals(s)) { return SweConst.SE_ASC;
@@ -2878,7 +3365,8 @@ System.err.println("Use option -locales to list all available Locales.");
 
           tr.pl1 = a.plNumbers[tr.tcsNo][0];
           tr.pl2 = a.plNumbers[tr.tcsNo][1];
-          tr.obj = a.objNumbers[tr.tcsNo];
+          tr.obj1 = a.objNumbers[tr.tcsNo][0];
+          tr.obj2 = a.objNumbers[tr.tcsNo][1];
         }
       } // for ...
 #ifdef TEST_ITERATIONS
@@ -2886,7 +3374,7 @@ System.err.println("Use option -locales to list all available Locales.");
       if (a.withIterations) {
         ObjFormatter of = new ObjFormatter(tcs[a.v.tcIndex].getObjectIdentifiers(), "", nnof);
         System.out.println("Iterations (" + group(of, tcs[a.v.tcIndex].getObjectIdentifiers().length, "/") + "): " +
-            f.fmt("%8d",a.v.iterations) +
+            String.format("%8d",a.v.iterations) +
             (a.v.iterateString.lastIndexOf('/')>0?
                 " (" + a.v.iterateString.substring(1) + ")":"")
         );
@@ -2917,11 +3405,30 @@ System.err.println("Use option -locales to list all available Locales.");
 
   String getPlanetnameString(TransitArguments a, TransitResult tr) {
     int len = 9;
-    if (a.pls1.indexOf("g") > 0 ||
-      a.pls1.indexOf("c") > 0) {
-      len += 4;
+    if (a.pls1 != null) {
+      // "g" and "c" have longer names, so extend the field length:
+      if (a.pls1.indexOf("g") > 0 ||
+        a.pls1.indexOf("c") > 0) {
+        len += 4;
+      }
+    } else if (a.objects1 != null) {
+        String[] houses = a.objects1.toLowerCase().split(",");
+        for(int n = 0; n < houses.length; n++) {
+          len = Math.max(len, SwissEph.getHouseobjectname(string_to_houseobject(houses[n])).length());
+        }
+        // SE_MC:     "medium coeli"
+        // SE_ARMC:   "sidereal time"
+        // SE_EQUASC: "equatorial ascendant"
+        // SE_COASC1: "co-ascendant of W. Koch"
+        // SE_COASC2: "co-ascendant of M. Munkasey"
+        // SE_POLASC: "polar asc. of M. Munkasey"
     }
-    String plNames = sw.swe_get_planet_name(tr.pl1);
+    String plNames = "";
+    if (tr.pl1 >= 0) {
+      plNames = sw.swe_get_planet_name(tr.pl1);
+    } else if (tr.obj1 > -1000) {
+      plNames = SwissEph.getHouseobjectname(tr.obj1);
+    }
     plNames = (plNames + "             ").substring(0,len);
 
     if (tr.pl2 >= 0 && a.pls2 != null) {
@@ -2931,6 +3438,14 @@ System.err.println("Use option -locales to list all available Locales.");
         len += 4;
       }
       plNames += " - " + sw.swe_get_planet_name(tr.pl2);
+    } else if (tr.obj2 > -1000 && a.objects2 != null) {
+      String[] houses = a.objects2.toLowerCase().split("/");
+      int len2 = 0;
+      for(int n = 0; n < houses.length; n++) {
+        len2 = Math.max(len2, SwissEph.getHouseobjectname(string_to_houseobject(houses[n])).length());
+      }
+      len += len2 + 3;
+      plNames += " - " + SwissEph.getHouseobjectname(tr.obj2);
     }
     return (plNames+"                      ").substring(0,len);
   }
@@ -3017,7 +3532,7 @@ class TransitArguments
 #endif /* JAVAME */
 		{
   // CH-Zuerich:
-  double top_long = 8.55;
+  double top_lon = 8.55;
   double top_lat = 47.38;
   double top_elev = 400;
 
@@ -3038,14 +3553,20 @@ class TransitArguments
   String sBeginhour = "";
   double beginhour = 0;
   String pls2 = null;
+  int pls2_cnt = 0;
   int pl2 = -2;                   // Means: not set
-  int obj = -2;                   // Means: not set
+  int obj1 = -2;                   // Means: not set
+  int obj2 = -2;                   // Means: not set
   double count = 1;
+  String htopoS = null;
+  double house_lon = 0;
+  double house_lat = 0;
+  int house_flags = 0;
   String topoS = null;
   boolean convert = false;
-#ifndef NO_JPL
-  String fname = SweConst.SE_FNAME_DE406;
-#endif /* NO_JPL */
+#ifndef JAVAME
+  String fname = SweConst.SE_FNAME_DFT;
+#endif /* JAVAME */
 
 
 
@@ -3082,7 +3603,11 @@ class TransitArguments
   // Required parameters:
   int pl1 = -2;
   String pls1 = null;
-  String objects = null;	// pls1 OR objects...
+  int pls_cnt = 0;		// Count of objects when pls1 and pls2 are used
+  int pls1_cnt = 0;
+  String objects1 = null;	// pls1 OR objects...
+  String objects2 = null;	// pls2 OR objects...
+  int obj_cnt = 0;		// Count of objects when a planet and an object are used
   char hsys = ' ';
   String begindate = null;
   String enddate = null;
@@ -3093,14 +3618,15 @@ class TransitArguments
 
   // Intermediate or other derived parameters:
   TransitOffsets to = null;
-  boolean mp1 = false; // More than one planet
-  boolean mp2 = false; // More than one planet on relative or yoga transits
-  boolean mpo = false; // More than one (house or ascendent) object
+  boolean mpp1 = false; // More than one planet
+  boolean mpp2 = false; // More than one planet on relative or yoga transits
+  boolean mpo1 = false; // More than one (house or ascendent) object
+  boolean mpo2 = false; // More than one (house or ascendent) object
 
   double tjde1 = 0.;
   double tjde2 = 0.;
   int[][] plNumbers = null;
-  int[] objNumbers = null;
+  int[][] objNumbers = null;
   SweDate   sde1 = new SweDate();
   SweDate   sde2 = new SweDate();
   boolean rollover = false;
@@ -3121,19 +3647,20 @@ class TransitResult
   // nearest transit point:
   public int tcsNo = 0;
 
-  // The nearest transit point found, Double.MAX_VALUE or Double.MIN_VALUE,
+  // The nearest transit point found, Double.MAX_VALUE or -Double.MAX_VALUE,
   // if no transit found:
   public double jdET = 0./0.;
 
   // The planet numbers:
   public int pl1 = 0;
   public int pl2 = 0;
-  public int obj = 0;
+  public int obj1 = 0;
+  public int obj2 = 0;
 
   public double transitValue = 0./0.;
 
   public String toString() {
-    return "tcs[" + tcsNo + "];pl:" + pl1 + "/" + pl2 + ";obj:" + obj + ";" + jdET;
+    return "tcs[" + tcsNo + "];pl:" + pl1 + "/" + pl2 + ";obj:" + obj1 + "/" + obj2 + ";" + jdET;
   }
 }
 #endif /* TRANSITS */

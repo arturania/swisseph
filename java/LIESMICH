@@ -12,10 +12,13 @@ Auch wenn die Portierung korrekt zu funktionieren scheint,
 sollten Sie gelegentlich auf http://th-mack.de/download
 nach Updates schauen.
 
-Falls Sie bei einem Update automatisch (per email)
-benachrichtigt werden möchten, oder falls Sie irgendwelche
-Fragen oder Kommentare haben, schicken Sie mir einfach eine
-email (an mack@ifis.cs.tu-bs.de).
+Falls Sie irgendwelche Fragen oder Kommentare haben,
+schicken Sie mir einfach eine email (an mack@ifis.cs.tu-bs.de).
+
+Nachrichten über Updates gibt es nur noch über die swisseph-
+Mailingliste. Bitte melden Sie sich bei swisseph@yahoogroups.com
+an oder lesen Sie mit auf
+https://groups.yahoo.com/neo/groups/swisseph/info.
 
 ACHTUNG: Wenn ich nicht innerhalb von ein paar Tagen auf eine
 Email antworte, bin ich entweder im Urlaub, oder ich habe die
@@ -419,9 +422,7 @@ Die wichtigsten Optionen z.Zt. sind:
 
 TRANSITS         Schließt Routinen zur Transitberechnung mit ein.
 
-NO_JPL           Keine Unterstützung für JPL
-
-NO_MOSHIER       Keine Unterstützung für Moshier
+NO_MOSHIER       Keine Unterstützung für Moshier Berechnungsroutinen
 
 JAVAME
 J2ME             Compiliert für die Java Micro Edition (JavaME, J2ME)
@@ -483,19 +484,6 @@ NO_RISE_TRANS    Setzt automatisch die Option -DASTROLOGY.
                  Swecl.swe_rise_trans() und Swecl.swe_gauquelin_sector()
                  ausgeschlossen. Letztere Methode benötigt
                  swe_rise_trans().
-
-NIO              Benutzt die java.nio Klassen in FilePtr.java.
-                 ACHTUNG: Wenn Sie mit -DNIO vorkompilieren, kann die
-                 Bibliothek nicht mehr mit der Google App Engine eingesetzt
-                 werden. Ebenso gibt es Probleme mit JPL-Berechnungen,
-                 die DE431 nutzen, weil java.nio keine Dateien größer
-                 als ca. 2GB unterstützt.
-                 Das java.nio Paket kann einen Geschwindigkeitsvorteil
-                 bis zu 40% erzielen, wenn man kontinuierlich alle Fixsterne
-                 berechnet, weil das Lesen in der Datei fixstars.cat
-                 sehr viel Zeit benötigt. Bei den Planetenberechnungen
-                 ist dieser Effekt nicht oder praktisch nicht sichtbar;
-                 der Gewinn dürfte dort bei 0% bis 10% liegen.
 
 PRELOAD_FIXSTARS Diese Option erlaubt die Nutzung der preloadFixstarsFile()
                  Methode aus SwissEph.java, so daß mehrfache Fixstern-
@@ -559,8 +547,7 @@ NUT_IAU_2000B    Ähnlich wie die PREC_* Optionen wird mit diesen
 ----------
 
 Für Applets ist es sinnvoll, nur mit SwissEphemeris zu
-kompilieren (... -DNO_JPL -DNO_MOSHIER, wegen des Code-
-Umfangs).
+kompilieren (... -DNO_MOSHIER, wegen des Code-Umfangs).
 
 Um dann auf die Datendateien zugreifen zu können, müssen
 sie auf dem selben WWW Server liegen, auf dem auch das
@@ -687,16 +674,14 @@ sefstars.txt, seleapsec.txt, and seorbel.txt.
 9. Google App Engine
 --------------------
 
-Die Google App Engine verträgt zwei Dinge nicht, die ggf.
-in der Bibliothek verwendet werden:
+Die Google App Engine verträgt es nicht, wenn in der Bibliothek
+das Paket
 
-- java.nio.MappedByteBuffer
-- java.net.Socket
+java.net.Socket
 
-Ersteres läßt sich umgehen, indem das Paket nicht mit -DNIO
-vorkompiliert wird, letzteres indem man in swe_set_ephe_path()
-bzw. im Kontruktor der SwissEph Klasse keine URL wie
-"http\\://th-mack.de/datafiles" hineinschreibt.
+verwendet wird. Das kann man vermeiden, indem man in
+swe_set_ephe_path() bzw. im Kontruktor der SwissEph Klasse
+keine URL wie "http\\://th-mack.de/datafiles" hineinschreibt.
 
 
 
@@ -779,12 +764,18 @@ fragen.
 Ja, ich weiß, so etwas tut man nicht... ;-)
 
 
+Version 2.01.00-02:
+
+- Die Nutzung von java.nio ist primär wegen der mangelnden Nutzbarkeit
+  mit den DE431 Datendateien nicht mehr vorgesehen.
+
+
 Version 1.80.00-01:
 
 - Standardmäßig wurde bisher java.nio genutzt, jetzt ist es per
   Default ausgeschaltet, weil es keine Dateigrößen jenseits von
-  2GB verarbeiten kann. Siehe die Betrachtungen weiter oben zum
-  Thema Vorkompilierung mit NIO.
+  2GB verarbeiten kann. Zudem kann es nicht in den Google App Engine
+  eingesetzt werden.
 
 
 Version 1.70.00-01:

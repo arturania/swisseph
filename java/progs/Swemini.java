@@ -1,6 +1,9 @@
 #ifdef J2ME
 #define JAVAME
 #endif /* J2ME */
+#ifdef JAVAME
+#define ORIGINAL
+#endif /* J2ME */
 /*
    This is a port of the Swiss Ephemeris Free Edition, Version 1.80.00
    of Astrodienst AG, Switzerland from the original C Code to Java. For
@@ -95,7 +98,9 @@ public class Swemini
   SweDate sd=new SweDate();
   SwissData swed=new SwissData();
   SwissEph sw=new SwissEph();
+#ifdef ORIGINAL
   CFmt f=new CFmt();
+#endif /* ORIGINAL */
 
   public static void main(String[] p) {
     Swemini sw=new Swemini();
@@ -157,8 +162,12 @@ snam=null; // Realistisch?
        * compute Ephemeris time from Universal time by adding delta_t
        */
       te = tjd + sd.getDeltaT(tjd);
+#ifdef ORIGINAL
       System.out.print("date: "+f.fmt("%02d",jday)+"."+f.fmt("%02d",jmon)+"."+
                        jyear+" at 0:00 Universal time\n");
+#else
+      System.out.print(String.format(Locale.US, "date: %02d.%02d.%d at 0:00 Universal time\n", jday, jmon, jyear));
+#endif /* ORIGINAL */
       System.out.print("planet     \tlongitude\tlatitude\tdistance\t"+
                        "speed long.\n");
       /*
@@ -185,9 +194,13 @@ snam=null; // Realistisch?
         /*
          * print the coordinates
          */
+#ifdef ORIGINAL
         System.out.print(f.fmt("%10s",snam)+"\t"+f.fmt("%11.7f",x2[0])+"\t"+
                          f.fmt("%10.7f",x2[1])+"\t"+f.fmt("%10.7f",x2[2])+"\t"+
                          f.fmt("%10.7f",x2[3])+"\n");
+#else
+        System.out.print(String.format(Locale.US, "%10s\t%11.7f\t%10.7f\t%10.7f\t%10.7f\n",snam,x2[0],x2[1],x2[2],x2[3]));
+#endif /* ORIGINAL */
       }
     }
   }

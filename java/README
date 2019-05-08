@@ -12,9 +12,13 @@ you might want to look for updates to this package at
 http://th-mack.de/international/download with some
 regularity.
 
-If you want to get notifications about updates, or if
-there are any questions, you can send me an email about
-this (mack@ifis.cs.tu-bs.de).
+If there are any questions, you can send me an email
+about them (mack@ifis.cs.tu-bs.de).
+
+Notifications about updates will be sent to the
+swisseph-mailinglist only - please subscribe to
+swisseph@yahoogroups.com or read at
+https://groups.yahoo.com/neo/groups/swisseph/info.
 
 NOTE: If I do not react to an email in a reasonable time,
 I'm either on holidays, or your email appeared to be spam.
@@ -130,8 +134,7 @@ files to be precompiled can be found (-i). Additionally, you can
 specify some options ("-D<...>") described below in section 5.5.
 
 Especially, if you want to use transit routines, you HAVE TO use
-the -DTRANSITS option. And in many cases, you would use -DNO_JPL,
-to remove all code for JPL planet calculation methods.
+the -DTRANSITS option.
 
 
 
@@ -402,8 +405,6 @@ The most important options when precompiling are:
 
 TRANSITS         Includes routines to calculate planetary transits
 
-NO_JPL           Compile without support for JPL routines
-
 NO_MOSHIER       Compile without support for the semianalytical
                  Moshier routines
 
@@ -460,20 +461,10 @@ ASTROLOGY        (Beta status) Calculate astrological planets,
                    SE_BIT_NO_REFRACTION (and the flags to choose
                    the method of calculation SEFLG_*EPH)
 
-
 NO_RISE_TRANS    Sets switch -DASTROLOGY automatically. This option
                  additionally excludes the methods Swecl.swe_rise_trans()
                  and Swecl.swe_gauquelin_sector(), which needs the
                  swe_rise_trans() method.
-
-NIO              Will use the java.nio code in FilePtr.java etc.. This
-                 disallows you to use the code in Google App Engine
-                 and it disallows JPL calculation using DE431, as java.nio
-                 cannot handle files bigger than 2GB in size.
-                 On the other hand, the java.nio package seems to give
-                 you a minor perfomance gain in special circumstances,
-                 preferrably when calculating fixstars, which reads much
-                 more data from file than planet calculations.
 
 PRELOAD_FIXSTARS This switch will allow you to use the preloadFixstarsFile()
                  method in SwissEph.java, so multiple fixstars calculations
@@ -539,7 +530,7 @@ NUT_IAU_2000B    Similar to the PREC_* switches, these switches
 
 You should reduce code size as far as possible, when writing
 applets. For this reason, it might be good to only use
-SwissEphemeris calculation routines (... -DNO_JPL -DNO_MOSHIER).
+SwissEphemeris calculation routines (... -DNO_MOSHIER).
 
 To access the data files from applets, they have to be on
 the same WWW server as the applet itself. And they have to
@@ -658,17 +649,10 @@ sefstars.txt, seleapsec.txt, and seorbel.txt.
 9 Google App Engine
 -------------------
 
-Don't use
-
-  java Precompile -DNIO ...
-
-if compiling with Google App Engine, as the use of
-java.nio.MappedByteBuffer is disallowed there.
-
 Don't use URLs like 'http\\://th-mack.de' in your
 swe_set_ephe_path() call or in the constructor to
 SwissEph, as the Google App Engine disallows the use
-of sockets as well.
+of sockets.
 
 
 
@@ -748,11 +732,19 @@ me on this via email (mack@ifis.cs.tu-bs.de).
 Yes, I know: it is never a good idea to change the interface...
 
 
+Version 2.01.00-02:
+
+- The use of java.nio isn't available anymore, as the disadvantages
+  outweigh the advantages. The main disadvantage is the limitation
+  to files of 2 GB maximum, as this disallows the use of java.nio
+  with DE431.
+
+
 Version 1.80.00-01:
 
 - The use java.nio was the default in previous versions, this version
   defaults to NOT use java.nio because of its limitations regarding
-  file size. See the considerations of the NIO Precompile switch above.
+  file size.
 
 
 Version 1.70.00-01:
