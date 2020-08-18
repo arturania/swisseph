@@ -2,6 +2,7 @@ import java.io.*;
 import java.util.*;
 import java.security.GeneralSecurityException;
 
+@SuppressWarnings("unchecked")
 /**
 * A simple class to precompile Java source code similar to C precompilation.<p>
 * The idea behind this is in having an option to generate similar sources
@@ -11,8 +12,8 @@ import java.security.GeneralSecurityException;
 * Syntax:<br>
 * <blockquote>
 * <code>
-* java Precompile [-q] [-f] -i<InputDir> [-i<InputDir> ...] [-o<OutputDir> [-o<OutputDir> ...]] {-D<definedParameter>...}<br>
-* java Precompile -l -i<InputDir> [-i<InputDir> ...]
+* java Precompile [-q] [-f] -i&lt;InputDir&gt; [-i&lt;InputDir&gt; ...] [-o&lt;OutputDir&gt; [-o&lt;OutputDir&gt; ...]] {-D&lt;definedParameter&gt;...}<br>
+* java Precompile -l -i&lt;InputDir&gt; [-i&lt;InputDir&gt; ...]
 * </code>
 * </blockquote>
 * In the first mode, you give this class at least one directory as parameter,
@@ -62,15 +63,15 @@ import java.security.GeneralSecurityException;
 public class Precompile {
   String[] inputFiles=null;
   String[] outputFiles=null;
-  Vector vDefines=new Vector();
-  Vector vGlDefines;             // A backup copy of the globally defined
+  Vector<String> vDefines=new Vector<String>();
+  Vector<String> vGlDefines;             // A backup copy of the globally defined
                                  // switches.
-  Vector vLevels=new Vector();
-  Vector vWarnings=new Vector();
+  Vector<Boolean> vLevels=new Vector<Boolean>();
+  Vector<String> vWarnings=new Vector<String>();
   String fname;                  // Current filename
   long lineCnt;
-  Vector outDir=new Vector();
-  Vector inDir=new Vector();
+  Vector<String> outDir=new Vector<String>();
+  Vector<String> inDir=new Vector<String>();
   boolean listDefines = false;
   boolean silent = false;
   boolean force = false;
@@ -107,12 +108,12 @@ static final String shortSyntax =
 
 // Error handling is a little limited so far!!!
   /**
-  * This is the routine to precompile all *.java files in a given directory.
+  * This is the routine to precompile all *.pre / *.java files in a given directory.
   * It takes directories as input parameter: in which directories do we look
   * for the source files. Optionally, you can say, into which directory to put
   * the precompiled sources. By default, Precompile.java will parse the input
   * file for a package statement, and output the file to that directory.<br>
-  * @param inputDirs In which directories are the java source files? ALL Java
+  * @param inputDirs In which directories are the .pre source files? ALL Java
   * source files in these directories will be precompiled.
   * @param outputDirs In which directories to put the precompiled source files.
   * They do not have to exist, they will be created automatically if needed.<br>
@@ -133,9 +134,7 @@ static final String shortSyntax =
   public String[] precompile(String[] inputDirs,
                              String[] outputDirs,
                              boolean force,
-                             String[] switches)
-      throws GeneralSecurityException,
-             IOException {
+                             String[] switches) {
     // Put all parameters into an array like the array of parameters
     // when running Precompile.java via the main() method:
     int len=0;
@@ -191,7 +190,7 @@ static final String shortSyntax =
   * <blockquote>
   * <ul>
   * <li><code>-i &lt;directory&gt;</code> The directory containing the input
-  * source files. All *.java files in this directory will be precompiled. You
+  * source files. All *.pre / *.java files in this directory will be precompiled. You
   * can give multiple directories with <code>-idir1 -idir2 -idir3 ...</code>.
   * <li><code>-o &lt;directory&gt;</code> (Optional) The directory to where
   * the precompiled source files will be written. You can give multiple
@@ -339,7 +338,7 @@ static final String shortSyntax =
               "number of output directories ("+outDir.size()+
               ")\nhave to match, or don't specify output directories!");
     }
-    vGlDefines=(Vector)vDefines.clone();
+    vGlDefines=(Vector<String>)(vDefines.clone());
     return 1;
   }
 
@@ -375,7 +374,7 @@ static final String shortSyntax =
     if (inputFiles.length<1) {
       throw new IllegalArgumentException(
                          "No source files (\""+inDir+File.separator+
-                         "*.java\") found.");
+                         "*.pre or *.java\") found.");
     }
     // Add the path to the file names:
     for(int i=0; i<inputFiles.length; i++) {
@@ -396,7 +395,7 @@ static final String shortSyntax =
           throw new IllegalArgumentException(
                                        "Cannot create directory '"+out+"'.");
         }
-        outputFiles[k] = pkgDir + File.separator + outputFiles[k];
+        outputFiles[k] = pkgDir + File.separator + outputFiles[k].replace(".pre", ".java");
         if (!force && new File(outputFiles[k]).exists()) {
           System.err.println("Output file '" + outputFiles[k] + "' exists.\n" +
                              "Remove file or use option '-f' to force overwriting!\n" +
@@ -504,7 +503,7 @@ static final String shortSyntax =
     return ".";
   }
 
-Vector vDefNames = new Vector();
+Vector<String> vDefNames = new Vector<String>();
 
   void listDefineSwitches(Vector inDir) {
     BufferedReader fIn=null;
@@ -518,7 +517,7 @@ Vector vDefNames = new Vector();
       if (files.length<1) {
         throw new IllegalArgumentException(
                        "No source files (\""+inDir+File.separator+
-                       "*.java\") found.");
+                       "*.pre or *.java\") found.");
       }
       for(int i=0; i<files.length; i++) {
         try {
@@ -565,7 +564,7 @@ Vector vDefNames = new Vector();
     BufferedWriter fOut=null;
 
     // Initialize the #defines to the state of calling the precompile routine:
-    vDefines=(Vector)vGlDefines.clone();
+    vDefines=(Vector<String>)vGlDefines.clone();
 
     try {
       fIn=new BufferedReader(new FileReader(fNameIn));
@@ -720,6 +719,6 @@ Vector vDefNames = new Vector();
 
 class JavaFilter implements FilenameFilter {
   public boolean accept(File dir, String name) {
-     return name.endsWith(".java");
+     return name.endsWith(".pre") || name.endsWith(".java");
   }
 }

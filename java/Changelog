@@ -1,4 +1,75 @@
 
+   * May 8, 2019
+   - Release of swisseph-2.01.00-java-{src|doc}-02
+
+   * May 8, 2019
+   - FileData.java: initialisation of long[] crc32_table
+     may have occured more then once in threaded
+     environments leading to rare file damage messages
+     on swisseph data files
+
+   * April 9, 2019
+   - Transits: now returns immediately, when a speed
+     transit is out of the possible speed range of the
+     planet.
+
+   * year 2018
+   - Transits: added the possibility to calculate transits
+     for any object. Beta status.
+
+   * March 22, 2016
+   - Transits.java: switched default date format to
+     ISO 8601 (YYYY-MM-DD)
+
+   * March 21, 2016
+   - Swetest.java: minor bug fixes
+   - Swetest.java: added methods to run Swetest as a
+     non-standalone class
+
+   * February 27, 2016
+   - Corrected Javadoc errors
+   - Transits.java: Implemented relative transits between
+     planets and house objects
+
+   * February 26, 2016
+   - Made Locale ja_JP_JP and th_TH_TH functionable in
+     Transits.java
+   - Removed the use of the java.nio package, as it
+     is too restrictive and has not enough advantages.
+   - Created TCPlanetHouse.java
+   - Cleaned up TransitCalculators
+
+
+   * August 12, 2015
+   - Release of swisseph-2.01.00-java-{src|doc}-01
+
+   * August 7, 2015
+   - Fixed an error in swe_lun_eclipse_when_loc
+     resulting in incorrect eclipse dates sometimes
+   - Added protected Swecl.swe_refrac_extended() to
+     public SwissEph.swe_refrac_extended
+
+
+   * May 10, 2015
+   - Release of swisseph-2.01.00-java-{src|doc}-00
+
+   * May 10, 2015
+   - Updated to version 2.01.00
+   - Extended non-speed transit calculations for any
+     planet or asteroid (beta version)
+
+   * December 12, 2014
+   - Transits.java: JPL data file defaults to de431.eph
+   - Transits.java: Better handling of out of time range
+
+   * August 22, 2014
+   - Changed getJPLRange() method to getDatafileTimerange()
+     to allow for other data files as well (asteroid and
+     moon- and planet-datafiles)
+   - Changed SwissData.DIR_GLUE and
+     SwissLib.swi_gen_filename() to static
+
+
    * August 7, 2014
    - Release of swisseph-2.00.00-java-{src|doc}-01
 

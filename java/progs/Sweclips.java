@@ -187,7 +187,9 @@ public class Sweclips
   SwissLib  sl=new SwissLib();
   SweDate   sd=new SweDate();
   SwissData swed=new SwissData();
+#ifdef ORIGINAL
   CFmt f=new CFmt();
+#endif /* ORIGINAL */
 
   static final String zod_nam[] = {"ar", "ta", "ge", "cn", "le", "vi",
                             "li", "sc", "sa", "cp", "aq", "pi"};
@@ -199,7 +201,8 @@ public class Sweclips
   private Sweclips() { }
 
   /**
-  * See -h parameter for help on all parameters.
+  * Sweclips
+  * @param argv Use -h to see a list of all parameters available
   */
   public static void main(String argv[]) {
     Sweclips sc=new Sweclips();
@@ -493,13 +496,25 @@ public class Sweclips
         } else {
           ecl_type = 0;
           if ((eclflag & SweConst.SE_ECL_TOTAL)!=0) {
+#ifdef ORIGINAL
             sout="total lunar eclipse: "+f.fmt("%f",attr[0])+" o/o \n";
+#else
+            sout=String.format(Locale.US, "total lunar eclipse: %f o/o \n", attr[0]);
+#endif /* ORIGINAL */
             ecl_type = ECL_LUN_TOTAL;
           } else if ((eclflag & SweConst.SE_ECL_PARTIAL)!=0) {
+#ifdef ORIGINAL
             sout="partial lunar eclipse: "+f.fmt("%f",attr[0])+" o/o \n";
+#else
+            sout=String.format(Locale.US, "partial lunar eclipse: %f o/o \n", attr[0]);
+#endif /* ORIGINAL */
             ecl_type = ECL_LUN_PARTIAL;
           } else if ((eclflag & SweConst.SE_ECL_PENUMBRAL)!=0) {
+#ifdef ORIGINAL
             sout="penumbral lunar eclipse: "+f.fmt("%f",attr[0])+" o/o \n";
+#else
+            sout=String.format(Locale.US, "penumbral lunar eclipse: %f o/o \n", attr[0]);
+#endif /* ORIGINAL */
             ecl_type = ECL_LUN_PENUMBRAL;
           } else {
             sout="no lunar eclipse \n";
@@ -539,8 +554,12 @@ public class Sweclips
           do_printf(serr);
           System.exit(0);
         }
+#ifdef ORIGINAL
         sout+=f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+f.fmt("%4d",jyear)+
                               "\t"+hms(jut,0)+"\t"+f.fmt("%f",attr[0])+" o/o\n";
+#else
+        sout+=String.format(Locale.US, "%2d.%2d.%4d\t"+hms(jut,0)+"\t%f o/o\n",jday,jmon,jyear,attr[0]);
+#endif /* ORIGINAL */
         /* eclipse times, penumbral, partial, total begin and end */
 	  sout+="  "+hms_from_tjd(tret[6])+" ";
           if (tret[2] != 0)
@@ -566,9 +585,14 @@ public class Sweclips
           DblObj dfrc=new DblObj();
           sl.swe_split_deg(jut, SweConst.SE_SPLIT_DEG_ROUND_MIN,
                            ihou, imin, isec, dfrc, isgn);  
+#ifdef ORIGINAL
           sout=f.fmt("\"%04d",jyear)+" "+f.fmt("%02d",jmon)+" "+
                f.fmt("%02d",jday)+" "+f.fmt("%02d",ihou.val)+"."+
                f.fmt("%02d",imin.val)+" "+f.fmt("%d",ecl_type)+"\",\n";
+#else
+          sout=String.format(Locale.US, "\"%04d %02d %02d %02d.%02d %d\",\n",
+                 jyear,jmon,jday,ihou.val,imin.val,ecl_type);
+#endif /* ORIGINAL */
         } 
         do_printf(sout);
       }
@@ -609,11 +633,20 @@ public class Sweclips
             jmon=sd.getMonth();
             jday=sd.getDay();
             jut=sd.getHour();
+#ifdef ORIGINAL
 	    sout+=f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+
                   f.fmt("%4d",jyear)+"\t"+hms(jut,0)+"\t"+f.fmt("%f",attr[0])+
                   "o/o\n";
+#else
+	    sout+=String.format(Locale.US, "%2d.%2d.%4d\t"+hms(jut,0)+"\t%fo/o\n",
+                  jday,jmon,jyear,attr[0]);
+#endif /* ORIGINAL */
 	    dt = (tret[3] - tret[2]) * 24 * 60;
+#ifdef ORIGINAL
 	    sout+="\t"+(int) dt+" min "+f.fmt("%4.2f",(dt%1.)*60.)+" sec\t";
+#else
+	    sout+=String.format(Locale.US, "\t%d min %4.2f sec\t",(int)dt,(dt%1.)*60.);
+#endif /* ORIGINAL */
 	    if ((eclflag & SweConst.SE_ECL_1ST_VISIBLE)!=0)
 	      sout+=hms_from_tjd(tret[1])+" ";
 	    else
@@ -668,9 +701,17 @@ public class Sweclips
             jmon=sd.getMonth();
             jday=sd.getDay();
             jut=sd.getHour();
+#ifdef ORIGINAL
             sout += f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+f.fmt("%4d",jyear)+"\t"+hms(jut,0)+"\t"+f.fmt("%f",attr[0])+"o/o\n";
+#else
+            sout += String.format(Locale.US, "%2d.%2d.%4d\t"+hms(jut,0)+"\t%fo/o\n",jday,jmon,jyear,attr[0]);
+#endif /* ORIGINAL */
             dt = (tret[3] - tret[2]) * 24 * 60;
+#ifdef ORIGINAL
             sout += "\t"+(int) dt+" min "+f.fmt("%4.2f",(dt%1) * 60)+" sec\t";
+#else
+            sout += String.format(Locale.US, "\t%d min %4.2f sec\t",(int) dt,(dt%1) * 60);
+#endif /* ORIGINAL */
             if ((eclflag & SweConst.SE_ECL_1ST_VISIBLE)!=0)
               sout += hms_from_tjd(tret[1]) + " ";
             else
@@ -736,9 +777,14 @@ public class Sweclips
         jmon=sd.getMonth();
         jday=sd.getDay();
         jut=sd.getHour();
+#ifdef ORIGINAL
         sout+=f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+f.fmt("%4d",jyear)+
               "\t"+hms(jut,0)+"\t"+f.fmt("%f",attr[3])+" km\t"+
               f.fmt("%f",attr[0])+" o/o\n";
+#else
+        sout+=String.format(Locale.US, "%2d.%2d.%4d\t"+hms(jut,0)+"\t%f km\t%f o/o\n",
+              jday,jmon,jyear,attr[3],attr[0]);
+#endif /* ORIGINAL */
         sout+="\t"+hms_from_tjd(tret[2])+" ";
         if (tret[4] != 0)
 	    sout+=hms_from_tjd(tret[4])+" ";
@@ -767,7 +813,11 @@ public class Sweclips
           if (SMath.abs(tret[0] - t_ut) > 1)
             do_printf("when_loc returns wrong date\n");
           dt = (tret[3] - tret[2]) * 24 * 60;
+#ifdef ORIGINAL
           sout+="\t"+(int) dt+" min "+f.fmt("%4.2f",(dt%1.)*60.)+" sec\t";
+#else
+          sout+=String.format(Locale.US, "\t%d min %4.2f sec\t", (int) dt, (dt%1.)*60.);
+#endif /* ORIGINAL */
         }
         sout+="\n";
         if ((smod & SMOD_HOCAL)!=0) {
@@ -776,9 +826,14 @@ public class Sweclips
           DblObj dfrc=new DblObj();
           sl.swe_split_deg(jut, SweConst.SE_SPLIT_DEG_ROUND_MIN,
                            ihou, imin, isec, dfrc, isgn);
+#ifdef ORIGINAL
           sout="\""+f.fmt("%04d",jyear)+" "+f.fmt("%02d",jmon)+" "+
                f.fmt("%02d",jday)+" "+f.fmt("%02d",ihou.val)+"."+
                f.fmt("%02d",imin.val)+" "+f.fmt("%d",ecl_type)+"\",\n";
+#else
+          sout=String.format(Locale.US, "\"%04d %02d %02d %02d.%02d %d\",\n",
+               jyear,jmon,jday,ihou.val,imin.val,ecl_type);
+#endif /* ORIGINAL */
         }
         do_printf(sout);
       }
@@ -815,7 +870,12 @@ public class Sweclips
         jmon=sd.getMonth();
         jday=sd.getDay();
         jut=sd.getHour();
+#ifdef ORIGINAL
         sout += f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+f.fmt("%4d",jyear)+"\t"+hms(jut,0)+"\t"+f.fmt("%f",attr[3])+" km\t"+f.fmt("%f",attr[0])+" o/o\n";
+#else
+        sout += String.format(Locale.US, "%2d.%2d.%4d\t"+hms(jut,0)+"\t%f km\t%f o/o\n",
+                jday,jmon,jyear,attr[3],attr[0]);
+#endif /* ORIGINAL */
         sout += "\t"+hms_from_tjd(tret[2])+" ";
         if (tret[4] != 0)
           sout += hms_from_tjd(tret[4])+" ";
@@ -842,14 +902,23 @@ public class Sweclips
           if (SMath.abs(tret[0] - t_ut) > 1)
             do_printf("when_loc returns wrong date\n");
           dt = (tret[3] - tret[2]) * 24 * 60;
+#ifdef ORIGINAL
           sout += "\t"+(int) dt+" min "+f.fmt("%4.2f",(dt%1.)*60)+" sec\t";
+#else
+          sout += String.format(Locale.US, "\t%d min %4.2f sec\t", (int) dt, (dt%1.)*60);
+#endif /* ORIGINAL */
         }
         sout+="\n";
         if ((smod & SMOD_HOCAL)!=0) {
           IntObj ihou=new IntObj(), imin=new IntObj(), isec=new IntObj(), isgn=new IntObj();
           DblObj dfrc=new DblObj();
           sl.swe_split_deg(jut, SweConst.SE_SPLIT_DEG_ROUND_MIN, ihou, imin, isec, dfrc, isgn);
+#ifdef ORIGINAL
           sout="\""+f.fmt("%04d",jyear)+" "+f.fmt("%02d",jmon)+" "+f.fmt("%02d",jday)+" "+f.fmt("%02d",ihou.val)+"."+f.fmt("%02d",imin.val)+" "+f.fmt("%d",ecl_type)+"\",\n";
+#else
+          sout=String.format(Locale.US, "\"%04d %02d %02d %02d.%02d %d\",\n",
+               jyear,jmon,jday,ihou.val,imin.val,ecl_type);
+#endif /* ORIGINAL */
         }
         do_printf(sout);
       }
@@ -886,8 +955,12 @@ public class Sweclips
           jmon=sd.getMonth();
           jday=sd.getDay();
           jut=sd.getHour();
+#ifdef ORIGINAL
           sout+=f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+f.fmt("%4d",jyear)+
                 "\t"+hms(jut,0)+"    ";
+#else
+          sout+=String.format(Locale.US, "%2d.%2d.%4d\t"+hms(jut,0)+"    ", jday,jmon,jyear);
+#endif /* ORIGINAL */
         }
         sout+="set      ";
         if (tret[1] == 0) sout+="         -                     \n";
@@ -899,8 +972,12 @@ public class Sweclips
           jmon=sd.getMonth();
           jday=sd.getDay();
           jut=sd.getHour();
+#ifdef ORIGINAL
           sout+=f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+f.fmt("%4d",jyear)+
                 "\t"+hms(jut,0)+"\n";
+#else
+          sout+=String.format(Locale.US, "%2d.%2d.%4d\t"+hms(jut,0)+"\n",jday,jmon,jyear);
+#endif /* ORIGINAL */
         }
         do_printf(sout);
       }
@@ -934,8 +1011,12 @@ public class Sweclips
           jmon=sd.getMonth();
           jday=sd.getDay();
           jut=sd.getHour();
+#ifdef ORIGINAL
           sout+=f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+f.fmt("%4d",jyear)+
                 "\t"+hms(jut,0)+"    ";
+#else
+          sout+=String.format(Locale.US, "%2d.%2d.%4d\t"+hms(jut,0)+"    ",jday,jmon,jyear);
+#endif /* ORIGINAL */
         }
         sout+="itransit ";
         if (tret[1] == 0) sout+="         -                     \n";
@@ -947,8 +1028,12 @@ public class Sweclips
           jmon=sd.getMonth();
           jday=sd.getDay();
           jut=sd.getHour();
+#ifdef ORIGINAL
           sout+=f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+f.fmt("%4d",jyear)+
                 "\t"+hms(jut,0)+"\n";
+#else
+          sout+=String.format(Locale.US, "%2d.%2d.%4d\t"+hms(jut,0)+"\n",jday,jmon,jyear);
+#endif /* ORIGINAL */
         }
         do_printf(sout);
       }
@@ -1012,18 +1097,34 @@ public class Sweclips
       izod = (int) (x / 30);
       x = x%30.;
       kdeg = (long) x;
+#ifdef ORIGINAL
       s=f.fmt("%2ld",kdeg)+" "+zod_nam[izod]+" ";
+#else
+      s=String.format(Locale.US, "%2ld "+zod_nam[izod]+" ",kdeg);
+#endif /* ORIGINAL */
     } else {
       kdeg = (long) x;
+#ifdef ORIGINAL
       s=" "+f.fmt("%3ld", kdeg)+c;
+#else
+      s=String.format(Locale.US, " %3ld", kdeg)+c;
+#endif /* ORIGINAL */
     }
     x -= kdeg;
     x *= 60;
     kmin = (long) x;
     if ((iflag & BIT_ZODIAC)!=0 && (iflag & BIT_ROUND_MIN)!=0)
+#ifdef ORIGINAL
       s1=f.fmt("%2ld", kmin);
+#else
+      s1=String.format(Locale.US, "%2ld", kmin);
+#endif /* ORIGINAL */
     else
+#ifdef ORIGINAL
       s1=f.fmt("%2ld", kmin)+"'";
+#else
+      s1=String.format(Locale.US, "%2ld", kmin)+"'";
+#endif /* ORIGINAL */
     s+=s1;
     if ((iflag & BIT_ROUND_MIN)!=0)
       return return_dms(sgn,s);
@@ -1031,15 +1132,27 @@ public class Sweclips
     x *= 60;
     ksec = (long) x;
     if ((iflag & BIT_ROUND_SEC)!=0)
+#ifdef ORIGINAL
       s1=f.fmt("%2ld", ksec)+"\"";
+#else
+      s1=String.format(Locale.US, "%2ld\"", ksec);
+#endif /* ORIGINAL */
     else
+#ifdef ORIGINAL
       s1=f.fmt("%2ld", ksec);
+#else
+      s1=String.format(Locale.US, "%2ld", ksec);
+#endif /* ORIGINAL */
     s+=s1;
     if ((iflag & BIT_ROUND_SEC)!=0)
       return return_dms(sgn,s);
     x -= ksec;
     k = (long) (x * 10000);
+#ifdef ORIGINAL
     s1="."+f.fmt("%04ld", k);
+#else
+    s1=String.format(Locale.US, ".%04ld", k);
+#endif /* ORIGINAL */
     s+=s1;
     return(s);
   }
