@@ -9,7 +9,7 @@
 #endif /* NO_RISE_TRANS */
 #ifndef NO_JPL
 /*
-   This is a port of the Swiss Ephemeris Free Edition, Version 1.76.00
+   This is a port of the Swiss Ephemeris Free Edition, Version 2.00.00
    of Astrodienst AG, Switzerland from the original C Code to Java. For
    copyright see the original copyright notices below and additional
    copyright notes in the file named LICENSE, or - if this file is not
@@ -33,7 +33,7 @@
  | different reference frame from DE200. With DE4*, use routine
  | IERS_FK5().)
 
-  Authors: Dieter Koch and Alois Treindl, Astrodienst Zìrich
+  Authors: Dieter Koch and Alois Treindl, Astrodienst Zurich
 
 ************************************************************/
 /* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
@@ -90,6 +90,10 @@
   for promoting such software, products or services.
 */
 package swisseph;
+
+#ifdef ORIGINAL
+import java.util.Locale;
+#endif /* ORIGINAL */
 
 class SwephJPL
 #ifndef JAVAME
@@ -196,9 +200,20 @@ class SwephJPL
   /* plausibility test of these constants. Start and end date must be
    * between -20000 and +20000, segment size >= 1 and <= 200 */
       if (js.eh_ss[0] < -5583942 || js.eh_ss[1] > 9025909 || js.eh_ss[2] < 1 || js.eh_ss[2] > 200) {
+#ifdef ORIGINAL
+        if (serr != null) {
+          serr.setLength(0);
+      	  serr.append("alleged ephemeris file has invalid format.");
+          if (serr.length() + js.jplfname.length() + 3 < SwissData.AS_MAXCH) {
+            serr.setLength(0);
+	    serr.append("alleged ephemeris file (").append(js.jplfname).append(" has invalid format.");
+          }
+        }
+#else
         throw new SwissephException(1./0., SwissephException.OUT_OF_TIME_RANGE,
             SwephData.NOT_AVAILABLE,
             "alleged ephemeris file (" + js.jplfname + ") has invalid format.");
+#endif /* ORIGINAL */
       }
       /* ncon = number of constants */
 //    fread((void *) &ncon, sizeof(long), 1, js->jplfptr);
@@ -265,11 +280,13 @@ class SwephJPL
     } catch (java.io.IOException ioe) {
       throw new SwissephException(1./0., SwissephException.FILE_READ_ERROR,
           SweConst.ERR, ioe.getMessage());
-//#ifndef NO_NIO
+#ifdef NIO
     } catch (java.nio.BufferUnderflowException ioe) {
       throw new SwissephException(1./0., SwissephException.FILE_READ_ERROR,
           SweConst.ERR, ioe.getMessage());
-//#endif /* NO_NIO */
+#endif /* NIO */
+    } catch (SwissephException se) {
+      throw se;
     }
 #if 0           /* we prefer to compute ksize to be comaptible
                    with new DE releases */
@@ -347,9 +364,9 @@ class SwephJPL
    */
   int swi_pleph(double et, int ntarg, int ncent, double[] rrd,
                 StringBuffer serr) throws SwissephException {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephJPL.swi_pleph(double, int, int, double[], StringBuffer)");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     int i, retc;
     int list[]=new int[12];
     double[] pv = js.pv;
@@ -482,9 +499,9 @@ class SwephJPL
   private int interp(double[] buf, int bufOffs, double t, double intv,
                      int ncfin, int ncmin, int nain, int ifl, double[] pv,
                      int pvOffs) {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephJPL.interp(double[], int, double, double, int, int, int, int, double[], int)");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     /* Initialized data */
     double[] pc = js.pc;
     double[] vc = js.vc;
@@ -667,12 +684,12 @@ class SwephJPL
   private int state(double et, int[] list, boolean do_bary, double[] pv,
                     double[] pvsun, double[] nut, StringBuffer serr)
       throws SwissephException {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephJPL.state(double, int[], boolean, double[], double[], double[], StringBuffer)");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     int i, j, k;
-    long flen;
-    int nseg, nb;
+    int nseg;
+    long flen, nb;
     double[] buf = js.buf;
     double aufac=0., s, t=0., intv=0., ts[] = new double[4];
     int nrecl, ksize;
@@ -750,7 +767,7 @@ class SwephJPL
 //      if (js.do_reorder)
 //        reorder((char *) &lpt[0], sizeof(long), 3);
         /* cval[]:  other constants in next record */
-//      fseek(js.jplfptr, 1L * irecsz, 0);
+//      FSEEK(js.jplfptr, (off_t) (1L * irecsz), 0);
         js.jplfptr.seek(1L * irecsz_state);
 //      fread((void *) &js.eh_cval[0], sizeof(double), 400, js.jplfptr);
         for(int m=0;m<400;m++) {
@@ -759,32 +776,14 @@ class SwephJPL
 //      if (js.do_reorder)
 //        reorder((char *) &js.eh_cval[0], sizeof(double), 400);
         /* new 26-aug-2008: verify correct block size */
-#if 0
-      sp = strstr(js->ch_cnam, "EMRAT ");
-      if (sp == null) {
-        if (serr != null)
-        sprintf(serr, "JPL ephemeris file strange, constant name 'EMRAT' missing");
-        return ERR;
-      }
-      i = (sp - js->ch_cnam);
-      if (i % 6 != 0) {
-        if (serr != null)
-        sprintf(serr, "JPL ephemeris file strange, constant name 'EMRAT' not at multiple of 6");
-        return ERR;
-      }
-      i = i / 6;        /* position of EMRAT in constant array eh_cval */
-      if (js->eh_cval[i] != js->eh_emrat) {
-        if (serr != null)
-        sprintf(serr, "JPL ephemeris file error, record size failed EMRAT check");
-        return ERR;
-      }
-#endif
         for (i = 0; i < 3; ++i)
           ipt[i + 36] = lpt_state[i];
         nrl_state = 0;
         /* is file length correct? */
         /* file length */
-//      flen = ftell(js.jplfptr);
+//      FSEEK(js->jplfptr, (off_t) 0L, SEEK_END);
+        js.jplfptr.seek(js.jplfptr.length());
+//      flen = FTELL(js->jplfptr);
         flen=js.jplfptr.length();
         /* # of segments in file */
         nseg = (int) ((js.eh_ss[1] - js.eh_ss[0]) / js.eh_ss[2]);
@@ -802,18 +801,19 @@ class SwephJPL
         nb *= 8;
         /* add size of header and constants section */
         nb += 2 * ksize * nrecl;
-//#if 0
+#if 0
 //      printf("hallo %ld %ld\n", nb, flen);
 //      printf("hallo %ld %ld\n", nb-flen, ksize);
-//#endif /* 0 */
+#endif /* 0 */
         if (flen != nb
           /* some of our files are one record too long */
-          && flen - nb != ksize * nrecl) {
+          && flen - nb != ksize * nrecl
+          ) {
           if (serr != null) {
             serr.setLength(0);
             serr.append("JPL ephemeris file is mutilated; length = "+flen+" instead of "+nb+".");
             if (serr.length() + js.jplfname.length() < SwissData.AS_MAXCH - 1) {
-              serr.setLength(0); // Nanu???
+              serr.setLength(0);
               serr.append("JPL ephemeris file "+js.jplfname+" is mutilated; length = "+flen+" instead of "+nb+".");
             }
           }
@@ -822,24 +822,28 @@ class SwephJPL
         }
         /* check if start and end dates in segments are the same as in
          * file header */
-//      fseek(js->jplfptr, 2L * irecsz, 0);
+//      FSEEK(js->jplfptr, (off_t) (2L * irecsz), 0);
         js.jplfptr.seek(2L * irecsz_state);
 //      fread((void *) &ts[0], sizeof(double), 2, js->jplfptr);
         ts[0]=js.jplfptr.readDouble();
         ts[1]=js.jplfptr.readDouble();
 //      if (js->do_reorder)
 //        reorder((char *) &ts[0], sizeof(double), 2);
-//      fseek(js->jplfptr, (2 + nseg) * irecsz, 0);
-        js.jplfptr.seek((nseg + 2 - 1) * irecsz_state);
+//      FSEEK(js->jplfptr, (off_t) ((nseg + 2 - 1) * ((off_t) irecsz)), 0);
+        js.jplfptr.seek((long)(nseg + 2 - 1) * (long)irecsz_state);
 //      fread((void *) &ts[2], sizeof(double), 2, js->jplfptr);
-        ts[2]=0; //js.jplfptr.readDouble();
-        ts[3]=0; //js.jplfptr.readDouble();
+        ts[2]=js.jplfptr.readDouble();
+        ts[3]=js.jplfptr.readDouble();
 //      if (js->do_reorder)
 //        reorder((char *) &ts[2], sizeof(double), 2);
         if (ts[0] != js.eh_ss[0] || ts[3] != js.eh_ss[1]) {
           if (serr != null) {
             serr.setLength(0);
-            serr.append("JPL ephemeris file is corrupt; start/end date check failed.");
+#ifdef ORIGINAL
+            serr.append(String.format(Locale.US, "JPL ephemeris file is corrupt; start/end date check failed. %.1f != %.1f || %.1f != %.1f", ts[0],js.eh_ss[0],ts[3],js.eh_ss[1]));
+#else
+            serr.append("JPL ephemeris file is corrupt; start/end date check failed. " + ts[0] + " != " + js.eh_ss[0] + " || " + ts[3] + " != " + js.eh_ss[1]);
+#endif /* ORIGINAL */
           }
           throw new SwissephException(et, SwissephException.DAMAGED_FILE_ERROR,
               SwephData.NOT_AVAILABLE, serr);
@@ -856,11 +860,11 @@ class SwephJPL
       if (et < js.eh_ss[0] || et > js.eh_ss[1]) {
         if (serr != null) {
           serr.setLength(0);
-//#ifdef ORIGINAL
-          serr.append("jd "+sw.cv.fmt("%f",et)+" outside JPL eph. range "+sw.cv.fmt("%.2f",js.eh_ss[0])+" .. "+sw.cv.fmt("%.2f",js.eh_ss[1])+";");
-//#else
+#ifdef ORIGINAL
+          serr.append(String.format(Locale.US, "jd %f outside JPL eph. range %.2f .. %.2f;", et, js.eh_ss[0], js.eh_ss[1]));
+#else
           serr.append("jd "+et+" outside JPL eph. range "+js.eh_ss[0]+" .. "+js.eh_ss[1]+";");
-//#endif /* ORIGINAL */
+#endif /* ORIGINAL */
         }
         throw new SwissephException(et, SwissephException.OUT_OF_TIME_RANGE,
             SwephData.BEYOND_EPH_LIMITS, serr);
@@ -874,7 +878,12 @@ class SwephJPL
       /* read correct record if not in core */
       if (nr != nrl_state) {
         nrl_state = nr;
-        js.jplfptr.seek(nr * irecsz_state);
+//      if (FSEEK(js->jplfptr, (off_t) (nr * ((off_t) irecsz)), 0) != 0) {
+//        if (serr != NULL) 
+//          sprintf(serr, "Read error in JPL eph. at %f\n", et);
+//        return NOT_AVAILABLE;
+//      }
+        js.jplfptr.seek((long)nr * (long)irecsz_state);
         for (k = 1; k <= ncoeffs_state; ++k) {
 //        if ( fread((void *) &buf[k - 1], sizeof(double), 1, js.jplfptr) != 1) {
 
@@ -896,19 +905,21 @@ class SwephJPL
       ferr=true;
     } catch (java.io.IOException ie) {
       ferr=true;
-//#ifndef NO_NIO
+#ifdef NIO
     } catch (java.nio.BufferUnderflowException ie) {
       ferr=true;
-//#endif /* NO_NIO */
+#endif /* NIO */
+    } catch (SwissephException se) {
+      throw se;
     }
     if (ferr) {
       if (serr != null) {
         serr.setLength(0);
-//#ifdef ORIGINAL
+#ifdef ORIGINAL
         serr.append("Read error in JPL eph. at "+sw.cv.fmt("%f",et)+"\n");
-//#else
+#else
         serr.append("Read error in JPL eph. at "+et+"\n");
-//#endif /* ORIGINAL */
+#endif /* ORIGINAL */
       }
       throw new SwissephException(et, SwissephException.FILE_READ_ERROR,
           SwephData.NOT_AVAILABLE, serr);
@@ -949,16 +960,16 @@ class SwephJPL
    *  call state to initialize the ephemeris and read in the constants
    */
   private int read_const_jpl(double[] ss,  StringBuffer serr) throws SwissephException {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephJPL.read_const_jpl(double[], StringBuffer)");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     int i;
     // throws SwissephException if !SweConst.OK:
     state(0.0, null, false, null, null, null, serr);
 
     for (i = 0; i < 3; i++)
       ss[i] = js.eh_ss[i];
-//#if DEBUG_DO_SHOW
+#if DEBUG_DO_SHOW
     {
       static char *bname[] = {
           "Mercury", "Venus", "EMB", "Mars", "Jupiter", "Saturn",
@@ -984,7 +995,7 @@ class SwephJPL
         System.out.print("%.6s\t%24.16f\n", js.ch_cnam + i * 6, js.eh_cval[i]);
       fflush(stdout);
     }
-//#endif /* DEBUG_DO_SHOW */
+#endif /* DEBUG_DO_SHOW */
     return SweConst.OK;
   }
 
@@ -1003,9 +1014,9 @@ class SwephJPL
 //  }
 
   void swi_close_jpl_file() {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephJPL.swi_close_jpl_file()");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     if (js != null) {
       try {
         if (js.jplfptr != null) {
@@ -1025,9 +1036,9 @@ class SwephJPL
 
   int swi_open_jpl_file(double[] ss, String fname, String fpath,
                                 StringBuffer serr) throws SwissephException {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephJPL.swi_open_jpl_file(double[], String, String, StringBuffer)");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     int retc = SweConst.OK;
     /* if open, return */
     if (js != null && js.jplfptr != null) {
@@ -1050,7 +1061,7 @@ class SwephJPL
       retc = read_const_jpl(ss, serr);
     } catch (SwissephException se) {
       swi_close_jpl_file();
-      throw se;
+      return se.getRC();
     }
 
     /* intializations for function interpol() */
@@ -1064,9 +1075,9 @@ class SwephJPL
   }
 
   int swi_get_jpl_denum() {
-//#ifdef TRACE0
+#ifdef TRACE0
     Trace.log("SwephJPL.swi_get_jpl_denum()");
-//#endif /* TRACE0 */
+#endif /* TRACE0 */
     return js.eh_denum;
   }
 
@@ -1078,6 +1089,30 @@ class SwephJPL
       fp.seek(252+6*400);
       start = fp.readDouble();
       end = fp.readDouble();
+      double reorder = fp.readDouble();
+      /* reorder ? */
+      if (reorder < 1 || reorder > 200) {
+        long val=Double.doubleToLongBits(start);
+        val = (( val & 0x00000000000000ffL ) << 56) +
+              (( val & 0x000000000000ff00L ) << 40) +
+              (( val & 0x0000000000ff0000L ) << 24) +
+              (( val & 0x00000000ff000000L ) <<  8) +
+              (( val & 0x000000ff00000000L ) >>  8) +
+              (( val & 0x0000ff0000000000L ) >> 24) +
+              (( val & 0x00ff000000000000L ) >> 40) +
+              (( val & 0xff00000000000000L ) >> 56);
+        start = Double.longBitsToDouble(val);
+        val=Double.doubleToLongBits(end);
+        val = (( val & 0x00000000000000ffL ) << 56) +
+              (( val & 0x000000000000ff00L ) << 40) +
+              (( val & 0x0000000000ff0000L ) << 24) +
+              (( val & 0x00000000ff000000L ) <<  8) +
+              (( val & 0x000000ff00000000L ) >>  8) +
+              (( val & 0x0000ff0000000000L ) >> 24) +
+              (( val & 0x00ff000000000000L ) >> 40) +
+              (( val & 0xff00000000000000L ) >> 56);
+        end = Double.longBitsToDouble(val);
+      }
     } catch (SwissephException e) {
       throw e;
     } catch (Exception e) {

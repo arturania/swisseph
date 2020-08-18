@@ -2,7 +2,7 @@
 #define JAVAME
 #endif /* J2ME */
 /*
-   This is a port of the Swiss Ephemeris Free Edition, Version 1.75.00
+   This is a port of the Swiss Ephemeris Free Edition, Version 1.80.00
    of Astrodienst AG, Switzerland from the original C Code to Java. For
    copyright see the original copyright notices below and additional
    copyright notes in the file named LICENSE, or - if this file is not
@@ -27,7 +27,7 @@
           usual in western astrology.
 
 
-  Authors: Dieter Koch and Alois Treindl, Astrodienst Zìrich
+  Authors: Dieter Koch and Alois Treindl, Astrodienst Zurich
 
 **************************************************************/
 /* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
@@ -103,7 +103,7 @@ public class Swemini
   }
 
   private void main_start() {
-    String sp, sdate="", snam;
+    String sdate="", snam;
 snam=null; // Realistisch?
     StringBuffer serr=new StringBuffer();
     int jday = 1, jmon = 1, jyear = 2000;
@@ -114,14 +114,16 @@ snam=null; // Realistisch?
     iflag = SweConst.SEFLG_SPEED;
     while (true) {
       System.out.print("\nDate (d.m.y) ?");
-//      gets(sdate);
+      /*gets(sdate);*/
       try {
         InputStreamReader in=new InputStreamReader(System.in);
         BufferedReader bin=new BufferedReader(in);
         sdate=bin.readLine();
       } catch (IOException ie) {
         System.out.println(ie.getMessage());
+        System.exit(SweConst.OK);
       }
+      if( "".equals(sdate) ) System.exit(SweConst.OK);
       /*
        * stop if a period . is entered
        */

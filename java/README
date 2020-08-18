@@ -38,15 +38,14 @@ Contents:
 5.5 Precompile options
 6 Applets
 7 JavaME / J2ME
-8 Google App Engine
-9 Documentation
-10 Problems?
-11 Appendix
-11.1 Interface changes
-11.2 Supportive files
-11.3 Code size depending on Precompile options
-11.4 Testing
-11.5 Known problems
+8 Android
+9 Google App Engine
+10 Documentation
+11 Problems?
+12 Appendix
+12.1 Interface changes
+12.2 Supportive files
+12.3 Testing
 
 
 
@@ -61,7 +60,7 @@ Unpack the package, precompile, and then compile and run
 tests programs:
 
 javac Precompile.java
-java Precompile -qfc -iswesrc -iprogs -DNO_JPL -DTRANSITS
+java Precompile -qfc -iswesrc -iprogs -DTRANSITS
 javac Swetest.java
 javac Transits.java
 java Swetest -b13.4.1957 -ut17.57
@@ -79,7 +78,7 @@ javadoc -d doc swisseph .
 2. What is this package good for?
 --------------------------------
 
-This package is a package for planetary calculations
+This package is a library for planetary calculations
 to be used in your own programs. Some test programs
 are included as well.
 
@@ -131,8 +130,8 @@ files to be precompiled can be found (-i). Additionally, you can
 specify some options ("-D<...>") described below in section 5.5.
 
 Especially, if you want to use transit routines, you HAVE TO use
-the -DTRANSITS option. And normally, you would at least use
--DNO_JPL, to remove all code for JPL planet calculation methods.
+the -DTRANSITS option. And in many cases, you would use -DNO_JPL,
+to remove all code for JPL planet calculation methods.
 
 
 
@@ -214,9 +213,8 @@ Sometimes you would like to use some more classes:
 
 Outside of the package, you can find the class:
 
-- CFmt:      This class simulates the behaviour of the printf
-             formatting method in C. In newer versions of Java,
-             this can be done without additional classes.
+- CFmt:      Obsolete. This class simulates the behaviour of
+             the printf formatting method in C.
 
 
 
@@ -363,19 +361,23 @@ public class Sw1 {
 This package knows about three different calculation routines:
 JPL, SwissEph and Moshier.
 
+
 JPL and SwissEph need external data files to do their
 calculations, Moshier can be used stand alone.
+
 
 The disadvantage of the semi-analytical Moshier routines is
 the comparatively low speed of calculation, a lower exactness
 compared to the other routines and the huge amount of code
 needed for it (about 180 kB for Moshier alone).
 
+
 JPL (= Jet Propulsion Laboratory) exhibits the most exact
 calculations, the disadvantage is the use of really huge
 data files of about 9.5 MB per 300 years (you can download
-them at http://ssd.jpl.nasa.gov/, DE-406 ephemeris files
-(ftp://ssd.jpl.nasa.gov/pub/eph/export/unix)).
+them at http://ssd.jpl.nasa.gov/,
+(ftp://ssd.jpl.nasa.gov/pub/eph/planets/Linux)).
+
 
 The SwissEphemeris routines reproduce the exactness of JPL
 to 1/1000 of an arc second, but they just require data files
@@ -464,15 +466,14 @@ NO_RISE_TRANS    Sets switch -DASTROLOGY automatically. This option
                  and Swecl.swe_gauquelin_sector(), which needs the
                  swe_rise_trans() method.
 
-NO_NIO           Will remove the java.nio code from FilePtr.java etc.,
-                 so you should be able to compile for Google App Engine
-                 which disallow MappedByteBuffer from java.nio.
-                 It also allows you to compile with older Java versions,
-                 as the java.nio package was first introduced on Java 1.4.
-                 The java.nio package seems to give you a little
-                 perfomance gain in special circumstances, preferrably
-                 when calculating fixstars, which reads much more data
-                 from file than planet calculations.
+NIO              Will use the java.nio code in FilePtr.java etc.. This
+                 disallows you to use the code in Google App Engine
+                 and it disallows JPL calculation using DE431, as java.nio
+                 cannot handle files bigger than 2GB in size.
+                 On the other hand, the java.nio package seems to give
+                 you a minor perfomance gain in special circumstances,
+                 preferrably when calculating fixstars, which reads much
+                 more data from file than planet calculations.
 
 PRELOAD_FIXSTARS This switch will allow you to use the preloadFixstarsFile()
                  method in SwissEph.java, so multiple fixstars calculations
@@ -631,12 +632,35 @@ through the data files does not make too much sense.
 
 
 
-8 Google App Engine
+8 Android
+---------
+
+This library works well for Android as others told me.
+
+There is a sample project from Seenu Reddi (http://www.sastra.us)
+on http://th-mack.de/international/download (thanks for this!).
+
+If using the SEFLG_SWIEPH calculation method, you will
+need to put the data files into the assets folder and copy
+them to program-data folder on installation or first run.
+
+Then use this folder name on the SwissEph constructor or
+on swe_set_ephe_path.
+
+Same holds true for the other data files fixstars.cat,
+sefstars.txt, seleapsec.txt, and seorbel.txt.
+
+
+
+
+
+
+9 Google App Engine
 -------------------
 
-Use
+Don't use
 
-  java Precompile -DNO_NIO ...
+  java Precompile -DNIO ...
 
 if compiling with Google App Engine, as the use of
 java.nio.MappedByteBuffer is disallowed there.
@@ -650,7 +674,7 @@ of sockets as well.
 
 
 
-9. Documentation
+10. Documentation
 ----------------
 
 You can extract the classes documentation from the Java source
@@ -676,7 +700,7 @@ Astrodienst AG.
 
 
 
-10. Problems?
+11. Problems?
 -------------
 
 If you encounter some problems, you might want to check for
@@ -716,12 +740,19 @@ me on this via email (mack@ifis.cs.tu-bs.de).
 
 
 
-11 Appendix-
+12 Appendix
 -----------
 
-11.1 Interface changes
+12.1 Interface changes
 
 Yes, I know: it is never a good idea to change the interface...
+
+
+Version 1.80.00-01:
+
+- The use java.nio was the default in previous versions, this version
+  defaults to NOT use java.nio because of its limitations regarding
+  file size. See the considerations of the NIO Precompile switch above.
 
 
 Version 1.70.00-01:
@@ -812,7 +843,7 @@ Version 1.61.01-12:
 
 
 
-11.2 Supportive files
+12.2 Supportive files
 
 Some additional files may be needed or wanted. They can all be
 downloaded from the http://www.astro.com/swisseph server.
@@ -847,38 +878,10 @@ These files are:
 
 
 
-11.3 Code size depending on Precompile options
-
-When I compiled the package with:
-
-jikes -O swisseph/SwissEph.java && jar cf swisseph.jar swisseph/*.class
-
-I got the following code sizes depending on the Precompile
-options (1.61.02, Java subversion 00):
-
-278,470 (without any options)
-272,888 -DNO_JPL
- 89,218 -DNO_MOSHIER
- 83,518 -DNO_JPL -DNO_MOSHIER
- 59,521 -DNO_JPL -DNO_MOSHIER -DASTROLOGY
- 56,486 -DNO_JPL -DNO_MOSHIER -DASTROLOGY -DNO_RISE_TRANS
-
-The option -DASTROLOGY is not yet finally finished, you might
-expect to see further reductions in code size by the time, if
-I continue the job on this.
-
-
-
-
-
-
-11.4 Testing
+12.3 Testing
 
 Well, testing is never complete, but I did not find any
-problems for quite some time now. As JPL is still more of
-a purely "academic" nature in this port ("Who will want to
-use it anyways?"), JPL routines might have more problems
-than SwissEph oder Moshier routines.
+problems for quite some time now.
 
 I you find some differences to the C version, or if you
 encounter other problems, I would like to know about them.
@@ -889,16 +892,7 @@ ensure, you added the Precompile option -DSTRICTMATH .
 
 
 
-11.5 Known problems
-
-- The next version(s) will most probably get a complete new
-  interface to this library, so this will result in many
-  incompatibilities to earlier / current versions.
-
-
-
-
-Thomas Mack, 2nd of December, 2001 to October 2010
+Thomas Mack, 2nd of December, 2001 to February 2014
 
 mack@ifis.cs.tu-bs.de
 http://th-mack.de/download               (german language)

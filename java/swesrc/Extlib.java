@@ -74,6 +74,9 @@ public class Extlib
       locStrings[r] = locs[r].getLanguage();
       if (locs[r].getCountry().length() > 0) {
         locStrings[r] += "_"+locs[r].getCountry();
+        if (locs[r].getVariant().length() > 0) {
+          locStrings[r] += "_"+locs[r].getVariant();	// e.g. th_TH_TH
+        }
       }
     }
     return locStrings;
@@ -177,10 +180,15 @@ public class Extlib
     if (pattern.indexOf("s") < 0) {
       idx = pattern.indexOf("mm");
       if (idx >= 0) { // If not, it not even has a minutes part???
-        // We assume some non-digit char AFTER "mm" as it is the
-        // case with "mk" here ("d.M.yy HH:mm:" original, "dd.MM.yyyy HH:mm:"
-        // when changed):
-        pattern = pattern.substring(0,idx+3) + "ss" + pattern.substring(idx+3);
+        try {
+          // We assume some non-digit char AFTER "mm" as it is the
+          // case with "mk" here ("d.M.yy HH:mm:" original, "dd.MM.yyyy HH:mm:"
+          // when changed):
+          pattern = pattern.substring(0,idx+3) + "ss" + pattern.substring(idx+3);
+        } catch (StringIndexOutOfBoundsException sb) {
+          // In zh_SG, the format looks like dd/MM/yyyy a hh:mm (above assumption fails)
+          pattern = pattern.substring(0,idx+2) + pattern.substring(idx-1,idx) + "ss" + pattern.substring(idx+2);
+        }
       }
     }
 
@@ -210,7 +218,7 @@ public class Extlib
   * Returns the index in the formatter pattern of the given pattern 'what'
   * recalculated to the APPLIED pattern of the formatter.
   * E.g. for locale zh_HK the pattern is:
-  *    yyyy'Üπ¥'MM'ë∑Í'dd'ë˘ù' ahh:mm:ss
+  *    yyyy'Âπ¥'MM'Êúà'dd'Êó•' ahh:mm:ss
   * The index of 'ss' would NOT be 25, which we would get when simply counting in
   * the pattern string, but rather 20, when counting in the resulting string.
   */

@@ -1,14 +1,14 @@
-//#ifdef J2ME
-//#define JAVAME
-//#endif /* J2ME */
-//#ifdef JAVAME
-//#define NO_JPL
-//#endif /* JAVAME */
-//#ifdef NO_RISE_TRANS
-//#define ASTROLOGY
-//#endif /* NO_RISE_TRANS */
+#ifdef J2ME
+#define JAVAME
+#endif /* J2ME */
+#ifdef JAVAME
+#define NO_JPL
+#endif /* JAVAME */
+#ifdef NO_RISE_TRANS
+#define ASTROLOGY
+#endif /* NO_RISE_TRANS */
 /*
-   This is a port of the Swiss Ephemeris Free Edition, Version 1.75.00
+   This is a port of the Swiss Ephemeris Free Edition, Version 1.80.00
    of Astrodienst AG, Switzerland from the original C Code to Java. For
    copyright see the original copyright notices below and additional
    copyright notes in the file named LICENSE, or - if this file is not
@@ -26,7 +26,7 @@
   $Header: /home/dieter/sweph/RCS/swetest.c,v 1.74 2008/06/16 10:07:20 dieter Exp $
   swetest.c     A test program
 
-  Authors: Dieter Koch and Alois Treindl, Astrodienst Zrich
+  Authors: Dieter Koch and Alois Treindl, Astrodienst Zuerich
 
 **************************************************************/
 
@@ -108,7 +108,7 @@ public class Swetest
   "  With the proper options, swetest can be used to output a printed\n"+
   "  ephemeris and transfer the data into other programs like spreadsheets\n"+
   "  for graphical display.\n"+
-  "  Version: $Header: /home/dieter/sweph/RCS/swetest.c,v 1.75 2009/04/01 13:18:36 dieter Exp $\n"+
+  "  Version: $Header: /users/dieter/sweph/RCS/swetest.c,v 1.78 2010/06/25 07:22:10 dieter Exp $\n"+
   "\n";
   static final String infocmd1 = "\n"+
   "  Command line options:\n"+
@@ -126,8 +126,12 @@ public class Swetest
   "        -j...   same as -bj\n"+
   "        -tHH.MMSS  input time (ephemeris time)\n"+
   "        -ut     input date is universal time\n"+
-  "        -utHH:MM:SS input time\n"+
-  "        -utHH.MMSS input time\n"+
+  "	-utHH:MM:SS input time\n"+
+  "	-utHH.MMSS input time\n"+
+  "     output time for eclipses, occultations, risings/settings is UT by default\n"+
+  "        -lmt    output date/time is LMT (with -geopos)\n"+
+  "        -lat    output date/time is LAT (with -geopos)\n"+
+  "     object, number of steps, step with\n"+
   "        -pSEQ   planet sequence to be computed.\n"+
   "                See the letter coding below.\n"+
   "        -dX     differential ephemeris: print differential ephemeris between\n"+
@@ -135,14 +139,14 @@ public class Swetest
   "                example: -p2 -d0 -fJl -n366 -b1.1.1992 prints the longitude\n"+
   "                distance between SUN (planet 0) and MERCURY (planet 2)\n"+
   "                for a full year starting at 1 Jan 1992.\n"+
-  "        -DX     midpoint ephemeris, works the same way as the differential\n"+
-  "                mode -d described above, but outputs the midpoint position.\n"+
+  "	-DX	midpoint ephemeris, works the same way as the differential\n"+
+  "		mode -d described above, but outputs the midpoint position.\n"+
   "        -nN     output data for N consecutive days; if no -n option\n"+
   "                is given, the default is 1. If the option -n without a\n"+
   "                number is given, the default is 20.\n"+
   "        -sN     timestep N days, default 1. This option is only meaningful\n"+
   "                when combined with option -n.\n"+
-  "              ";
+  "";
   static final String infocmd2 =
   "     output format:\n"+
   "        -fSEQ   use SEQ as format sequence for the output columns;\n"+
@@ -156,174 +160,194 @@ public class Swetest
   "                gap to the TAB character; which is useful for data entry\n"+
   "                into spreadsheets.\n"+
   "     astrological house system:\n"+
-  "        -house[long,lat,hsys]\n"+
-  "                include house cusps. The longitude, latitude (degrees with\n"+
-  "                DECIMAL fraction) and house system letter can be given, with\n"+
-  "                commas separated, + for east and north. If none are given,\n"+
-  "                Greenwich UK and Placidus is used: 0.00,51.50,p.\n"+
-  "                The output lists 12 house cusps, Asc, MC, ARMC and Vertex.\n"+
-  "                Houses can only be computed if option -ut is given.\n"+
+  "        -house[long,lat,hsys]	\n"+
+  "		include house cusps. The longitude, latitude (degrees with\n"+
+  "		DECIMAL fraction) and house system letter can be given, with\n"+
+  "		commas separated, + for east and north. If none are given,\n"+
+  "		Greenwich UK and Placidus is used: 0.00,51.50,p.\n"+
+  "		The output lists 12 house cusps, Asc, MC, ARMC and Vertex.\n"+
+  "		Houses can only be computed if option -ut is given.\n"+
+  "                   A  equal\n"+
+  "                   E  equal\n"+
+  "                   B  Alcabitius\n"+
+  "                   C  Campanus\n"+
+  "                   G  36 Gauquelin sectors\n"+
+  "                   H  horizon / azimut\n"+
+  "                   K  Koch\n"+
+  "                   M  Morinus\n"+
+  "                   O  Porphyry\n"+
+  "                   P  Placidus\n"+
+  "                   R  Regiomontanus\n"+
+  "                   T  Polich/Page (\"topocentric\")\n"+
+  "                   U  Krusinski-Pisa-Goelzer\n"+
+  "                   V  equal Vehlow\n"+
+  "                   W  equal, whole sign\n"+
+  "                   X  axial rotation system/ Meridian houses\n"+
+  "                   Y  APC houses\n"+
   "        -hsy[hsys]	\n"+
-  "                house system to be used (for house positions of planets)\n"+
-  "                for long, lat, hsys, see -house\n"+
-  "        -geopos[long,lat,elev]\n"+
-  "                Geographic position. Can be used for azimuth and altitude\n"+
+  "		house system to be used (for house positions of planets)\n"+
+  "		for long, lat, hsys, see -house\n"+
+  "        -geopos[long,lat,elev]	\n"+
+  "		Geographic position. Can be used for azimuth and altitude\n"+
   "                or topocentric or house cups calculations.\n"+
   "                The longitude, latitude (degrees with DECIMAL fraction)\n"+
-  "                and elevation (meters) can be given, with\n"+
-  "                commas separated, + for east and north. If none are given,\n"+
-  "                Greenwich is used: 0,51.5,0\n"+
+  "		and elevation (meters) can be given, with\n"+
+  "		commas separated, + for east and north. If none are given,\n"+
+  "		Greenwich is used: 0,51.5,0\n"+
   "     sidereal astrology:\n"+
-  "        -ay..   ayanamsa, with number of method, e.g. ay0 for Fagan/Bradley\n"+
-  "        -sid..    sidereal, with number of method; 'sid0' for Fagan/Bradley\n"+
-  "                                                   'sid1' for Lahiri\n"+
-  "        -sidt0..  sidereal, projection on ecliptic of t0 \n"+
-  "        -sidsp..  sidereal, projection on solar system plane \n"+
-  "        ";
+  "	-ay..   ayanamsa, with number of method, e.g. ay0 for Fagan/Bradley\n"+
+  "	-sid..    sidereal, with number of method; 'sid0' for Fagan/Bradley\n"+
+  "	                                           'sid1' for Lahiri\n"+
+  "	-sidt0..  sidereal, projection on ecliptic of t0 \n"+
+  "	-sidsp..  sidereal, projection on solar system plane \n"+
+  "";
   static final String infocmd3 = ""+
-  "     ephemeris specifications:"+
+  "     ephemeris specifications:\n"+
   "        -edirPATH change the directory of the ephemeris files \n"+
   "        -eswe   swiss ephemeris\n"+
-//#ifndef NO_JPL
-  "        -ejpl   jpl ephemeris (DE406), or with ephemeris file name\n"+
-  "                -ejplde200.eph\n"+
-//#endif /* NO_JPL */
+#ifndef NO_JPL
+  "        -ejpl   jpl ephemeris (DE431), or with ephemeris file name\n"+
+  "                -ejplde200.eph \n"+
+#endif /* NO_JPL */
   "        -emos   moshier ephemeris\n"+
   "        -true             true positions\n"+
   "        -noaberr          no aberration\n"+
   "        -nodefl           no gravitational light deflection\n"+
-  "        -noaberr -nodefl  astrometric positions\n"+
+  "	-noaberr -nodefl  astrometric positions\n"+
   "        -j2000            no precession (i.e. J2000 positions)\n"+
   "        -icrs             ICRS (use Internat. Celestial Reference System)\n"+
-  "        -nonut            no nutation\n"+
-  "        -speed            high precision speed\n"+
-  "        -speed3           'low' precision speed from 3 positions\n"+
+  "        -nonut            no nutation \n"+
+  "        -speed            calculate high precision speed \n"+
+  "        -speed3           'low' precision speed from 3 positions \n"+
   "                          do not use this option. -speed parameter\n"+
-  "                          is faster and preciser \n"+
-  "        -iXX              force iflag to value XX\n"+
-//#ifndef NO_JPL
-  "        -testaa96         test example in AA 96, B37;\n"+
+  "			  is faster and preciser \n"+
+  "	-iXX	          force iflag to value XX\n"+
+#ifndef NO_JPL
+  "        -testaa96         test example in AA 96, B37,\n"+
   "                          i.e. venus, j2450442.5, DE200.\n"+
   "                          attention: use precession IAU1976\n"+
   "                          and nutation 1980 (s. swephlib.h)\n"+
   "        -testaa95\n"+
   "        -testaa97\n"+
-//#endif /* NO_JPL */
+#endif /* NO_JPL */
   "        -roundsec         round to seconds\n"+
   "        -roundmin         round to minutes\n"+
+  "";
+  static final String infocmd4 = ""+
   "     observer position:\n"+
   "        -hel    compute heliocentric positions\n"+
   "        -bary   compute barycentric positions (bar. earth instead of node) \n"+
-  "        -topo[long,lat,elev]    \n"+
-  "                topocentric positions. The longitude, latitude (degrees with\n"+
-  "                DECIMAL fraction) and elevation (meters) can be given, with\n"+
-  "                commas separated, + for east and north. If none are given,\n"+
-  "                Zrich is used: 8.55,47.38,400\n"+
+  "        -topo[long,lat,elev]	\n"+
+  "		topocentric positions. The longitude, latitude (degrees with\n"+
+  "		DECIMAL fraction) and elevation (meters) can be given, with\n"+
+  "		commas separated, + for east and north. If none are given,\n"+
+  "		Zuerich is used: 8.55,47.38,400\n"+
   "\n"+
-  "        ";
-//#ifdef ASTROLOGY
-  static final String infocmd4 = "";
-//#else
-  static final String infocmd4 =
-  "      special events:\n"+
-  "         -solecl solar eclipse\n"+
-  "                 output 1st line:\n"+
-  "                   eclipse date,\n"+
-  "                   time of maximum,\n"+
-  "                   core shadow width (negative with total eclipses),\n"+
-  "                   fraction of solar diameter that is eclipsed\n"+
-  "                 output 2nd line:\n"+
-  "                   start and end times for partial and total phase\n"+
-  "                 output 3rd line:\n"+
-  "                   geographical longitude and latitude of maximum eclipse,\n"+
-  "                   totality duration at that geographical position,\n"+
-  "                 output with -local, see below.\n"+
-  "         -occult occultation of planet or star by the moon. Use -p to\n"+
-  "                 specify planet (-pf -xfAldebaran for stars)\n"+
-  "                 output format same as with -solecl\n"+
-  "         -lunecl lunar eclipse\n"+
-  "                 output 1st line:\n"+
-  "                   eclipse date,\n"+
-  "                   time of maximum,\n"+
-  "                 output 2nd line:\n"+
-  "                   6 contacts for start and end of penumbral, partial, and\n"+
-  "                   total phase\n"+
-  "         -local  only with -solecl or -occult, if the next event of this\n"+
-  "                 kind is wanted for a given geogr. position.\n"+
-  "                 Use -geopos[long,lat,elev] to specify that position.\n"+
-  "                 If -local is not set, the program\n"+
-  "                 searches for the next event anywhere on earth.\n"+
-  "                 output 1st line:\n"+
-  "                   eclipse date,\n"+
-  "                   time of maximum,\n"+
-  "                   fraction of solar diameter that is eclipsed\n"+
-  "                 output 2nd line:\n"+
-  "                   local eclipse duration,\n"+
-  "                   local four contacts,\n"+
-#ifndef JAVAME
-//#ifndef ASTROLOGY
-  "         -hev[type] heliacal events,\n"+
-  "                 type 1 = heliacal rising\n"+
-  "                 type 2 = heliacal setting\n"+
-  "                 type 3 = evening first\n"+
-  "                 type 4 = morning last\n"+
-  "                 type 0 or missing = all four events are listed.\n"+
-//#endif /* ASTROLOGY */
-#endif /* JAVAME */
-  "         -rise   rising and setting of a planet or star.\n"+
-  "                 Use -geopos[long,lat,elev] to specify geographical position.\n"+
+#ifndef ASTROLOGY
+  "     special events:\n"+
+  "        -solecl solar eclipse\n"+
+  "                output 1st line:\n"+
+  "                  eclipse date,\n"+
+  "                  time of maximum (UT),\n"+
+  "                  core shadow width (negative with total eclipses),\n"+
+  "                  fraction of solar diameter that is eclipsed\n"+
+  "		  Julian day number (6-digit fraction) of maximum\n"+
+  "                output 2nd line:\n"+
+  "                  start and end times for partial and total phase\n"+
+  "                output 3rd line:\n"+
+  "                  geographical longitude and latitude of maximum eclipse,\n"+
+  "                  totality duration at that geographical position,\n"+
+  "                output with -local, see below.\n"+
+  "        -occult occultation of planet or star by the moon. Use -p to \n"+
+  "                specify planet (-pf -xfAldebaran for stars) \n"+
+  "                output format same as with -solecl\n"+
+  "        -lunecl lunar eclipse\n"+
+  "                output 1st line:\n"+
+  "                  eclipse date,\n"+
+  "                  time of maximum (UT),\n"+
+  "		  Julian day number (6-digit fraction) of maximum\n"+
+  "                output 2nd line:\n"+
+  "                  6 contacts for start and end of penumbral, partial, and\n"+
+  "                  total phase\n"+
+#endif /* ASTROLOGY */
   "";
-//#endif /* ASTROLOGY */
-  static final String infocmd5 =
-//#ifndef ASTROLOGY
-  "         -metr   southern and northern meridian transit of a planet of star\n"+
-  "                 Use -geopos[long,lat,elev] to specify geographical position.\n"+
-  "      specifications for eclipses:\n"+
-  "         -total  total eclipse (only with -solecl, -lunecl)\n"+
-  "         -partial partial eclipse (only with -solecl, -lunecl)\n"+
-  "         -annular annular eclipse (only with -solecl)\n"+
-  "         -anntot annular-total (hybrid) eclipse (only with -solecl)\n"+
-  "         -penumbral penumbral lunar eclipse (only with -lunecl)\n"+
-  "         -central central eclipse (only with -solecl, nonlocal)\n"+
-  "         -noncentral non-central eclipse (only with -solecl, nonlocal)\n"+
-//#endif /* ASTROLOGY */
-  "       specifications for risings and settings:\n"+
-  "         -norefrac   neglect refraction (with option -rise)\n"+
-  "         -disccenter find rise of disc center (with option -rise)\n"+
-  "         -hindu      hindu version of sunrise (with option -rise)\n"+
-  "      specifications for heliacal events:\n"+
-  "         -at[press,temp,rhum,visr]:\n"+
-  "                     pressure in hPa\n"+
-  "                     temperature in degrees Celsius\n"+
-  "                     relative humidity in %\n"+
-  "                     visual range, interpreted as follows:\n"+
-  "                       > 1 : meteorological range in km\n"+
-  "                       1>visr>0 : total atmospheric coefficient (ktot)\n"+
-  "                       = 0 : calculated from press, temp, rhum\n"+
-  "                     Default values are -at1013.25,15,40,0\n"+
-  "          -obs[age,SN] age of observer and Snellen ratio\n"+
-  "                     Default values are -obs36,1\n"+
-  "          -opt[age,SN,binocular,magn,diam,transm]\n"+
-  "                     age and SN as with -obs\n"+
-  "                     0 monocular or 1 binocular\n"+
-  "                     telescope magnification\n"+
-  "                     optical aperture in mm\n"+
-  "                     optical transmission\n"+
-  "                     Default values: -opt36,1,1,1,0,0 (naked eye)\n"+
-  "      backward search:\n"+
-  "         -bwd\n";
+static final String infocmd5 = ""+
+  "        -local  only with -solecl or -occult, if the next event of this\n"+
+  "                kind is wanted for a given geogr. position.\n"+
+  "                Use -geopos[long,lat,elev] to specify that position.\n"+
+  "                If -local is not set, the program \n"+
+  "                searches for the next event anywhere on earth.\n"+
+  "                output 1st line:\n"+
+  "                  eclipse date,\n"+
+  "                  time of maximum,\n"+
+  "                  fraction of solar diameter that is eclipsed\n"+
+  "                output 2nd line:\n"+
+  "                  local eclipse duration,\n"+
+  "                  local four contacts,\n"+
+#ifndef JAVAME
+#ifndef ASTROLOGY
+  "        -hev[type] heliacal events,\n"+
+  "		type 1 = heliacal rising\n"+
+  "		type 2 = heliacal setting\n"+
+  "		type 3 = evening first\n"+
+  "		type 4 = morning last\n"+
+  "	        type 0 or missing = all four events are listed.\n"+
+  ""+
+#endif /* ASTROLOGY */
+#endif /* JAVAME */
+  "        -rise   rising and setting of a planet or star.\n"+
+  "                Use -geopos[long,lat,elev] to specify geographical position.\n"+
+#ifndef ASTROLOGY
+  "        -metr   southern and northern meridian transit of a planet of star\n"+
+  "                Use -geopos[long,lat,elev] to specify geographical position.\n"+
+  "     specifications for eclipses:\n"+
+  "        -total  total eclipse (only with -solecl, -lunecl)\n"+
+  "        -partial partial eclipse (only with -solecl, -lunecl)\n"+
+  "        -annular annular eclipse (only with -solecl)\n"+
+  "        -anntot annular-total (hybrid) eclipse (only with -solecl)\n"+
+  "        -penumbral penumbral lunar eclipse (only with -lunecl)\n"+
+  "        -central central eclipse (only with -solecl, nonlocal)\n"+
+  "        -noncentral non-central eclipse (only with -solecl, nonlocal)\n"+
+#endif /* ASTROLOGY */
+  "     specifications for risings and settings:\n"+
+  "        -norefrac   neglect refraction (with option -rise)\n"+
+  "        -disccenter find rise of disc center (with option -rise)\n"+
+  "	-hindu      hindu version of sunrise (with option -rise)\n"+
+  "";
+static final String infocmd6 = ""+
+  "     specifications for heliacal events:\n"+
+  "        -at[press,temp,rhum,visr]:\n"+
+  "	            pressure in hPa\n"+
+  "		    temperature in degrees Celsius\n"+
+  "		    relative humidity in %\n"+
+  "		    visual range, interpreted as follows:\n"+
+  "		      > 1 : meteorological range in km\n"+
+  "		      1>visr>0 : total atmospheric coefficient (ktot)\n"+
+  "		      = 0 : calculated from press, temp, rhum\n"+
+  "		    Default values are -at1013.25,15,40,0\n"+
+  "         -obs[age,SN] age of observer and Snellen ratio\n"+
+  "	            Default values are -obs36,1\n"+
+  "         -opt[age,SN,binocular,magn,diam,transm]\n"+
+  "	            age and SN as with -obs\n"+
+  "		    0 monocular or 1 binocular\n"+
+  "		    telescope magnification\n"+
+  "		    optical aperture in mm\n"+
+  "		    optical transmission\n"+
+  "		    Default values: -opt36,1,1,1,0,0 (naked eye)\n"+
+  "     backward search:\n"+
+  "        -bwd\n";
 /* characters still available:
-    bcegijklruvxy
-   */
+    bcgijklruvxy
+ */
   static final String infoplan = "\n"+
   "  Planet selection letters:\n"+
-  "      planetary lists:\n"+
+  "     planetary lists:\n"+
   "        d (default) main factors 0123456789mtABCcg\n"+
   "        p main factors as above, plus main asteroids DEFGHI\n"+
   "        h ficticious factors J..X\n"+
   "        a all factors\n"+
   "        (the letters above can only appear as a single letter)\n\n"+
-  "      single planet letters:\n"+
+  "     single planet letters:\n"+
   "        0 Sun (character zero)\n"+
   "        1 Moon (character 1)\n"+
   "        2 Mercury\n"+
@@ -331,57 +355,57 @@ public class Swetest
   "        9 Pluto\n"+
   "        m mean lunar node\n"+
   "        t true lunar node\n"+
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
   "        n nutation\n"+
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
   "        o obliquity of ecliptic\n"+
-  "        q delta t\n"+
-  "        A mean lunar apogee (Lilith, Black Moon)\n"+
-//#ifndef ASTROLOGY
-  "        B osculating lunar apogee\n"+  // True Lilith
-  "        c intp. lunar apogee\n"+
-  "        g intp. lunar perigee\n"+
-//#endif /* ASTROLOGY */
+  "	q delta t\n"+
+  "	y time equation\n"+
+  "        A mean lunar apogee (Lilith, Black Moon) \n"+
+#ifndef ASTROLOGY
+  "        B osculating lunar apogee \n"+  // True Lilith
+  "        c intp. lunar apogee \n"+
+  "        g intp. lunar perigee \n"+
+#endif /* ASTROLOGY */
   "        C Earth (in heliocentric or barycentric calculation)\n"+
   "     dwarf planets, plutoids\n"+
   "        F Ceres\n"+
-  "        9 Pluto\n"+
-  "        s -xs136199   Eris\n"+
-  "        s -xs136472   Makemake\n"+
-  "        s -xs136108   Haumea\n"+
+  "	9 Pluto\n"+
+  "	s -xs136199   Eris\n"+
+  "	s -xs136472   Makemake\n"+
+  "	s -xs136108   Haumea\n"+
   "     some minor planets:\n"+
   "        D Chiron\n"+
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
   "        E Pholus\n"+
-  "        F Ceres\n"+
-  "        G Pallas\n"+
-  "        H Juno\n"+
-  "        I Vesta\n"+
+  "        G Pallas \n"+
+  "        H Juno \n"+
+  "        I Vesta \n"+
   "        s minor planet, with MPC number given in -xs\n"+
   "     fixed stars:\n"+
   "        f fixed star, with name or number given in -xf option\n"+
-  "        f -xfSirius   Sirius\n"+
+  "	f -xfSirius   Sirius\n"+
   "     fictitious objects:\n"+
-  "        J Cupido\n"+
-  "        K Hades\n"+
-  "        L Zeus\n"+
-  "        M Kronos\n"+
-  "        N Apollon\n"+
-  "        O Admetos\n"+
-  "        P Vulkanus\n"+
-  "        Q Poseidon\n"+
-  "        R Isis (Sevin)\n"+
-  "        S Nibiru (Sitchin)\n"+
-  "        T Harrington\n"+
+  "        J Cupido \n"+
+  "        K Hades \n"+
+  "        L Zeus \n"+
+  "        M Kronos \n"+
+  "        N Apollon \n"+
+  "        O Admetos \n"+
+  "        P Vulkanus \n"+
+  "        Q Poseidon \n"+
+  "        R Isis (Sevin) \n"+
+  "        S Nibiru (Sitchin) \n"+
+  "        T Harrington \n"+
   "        U Leverrier's Neptune\n"+
   "        V Adams' Neptune\n"+
   "        W Lowell's Pluto\n"+
   "        X Pickering's Pluto\n"+
   "        Y Vulcan\n"+
   "        Z White Moon\n"+
-  "        w Waldemath's dark Moon\n"+
+  "	w Waldemath's dark Moon\n"+
   "        z hypothetical body, with number given in -xz\n"+
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
   "        e print a line of labels\n"+
   "          \n";
 /* characters still available
@@ -398,9 +422,9 @@ public class Swetest
   "        p planet index\n"+
   "        P planet name\n"+
   "        J absolute juldate\n"+
-  "        T date formatted like 23.02.1992\n"+
+  "        T date formatted like 23.02.1992 \n"+
   "        t date formatted like 920223 for 1992 february 23\n"+
-  "        L longitude in degree ddd\u00b0mm'ss\"\n"+
+  "        L longitude in degree ddd mm'ss\"\n"+
   "        l longitude decimal\n"+
   "        Z longitude ddsignmm'ss\"\n"+
   "        S speed in longitude in degree ddd:mm:ss per day\n"+
@@ -412,9 +436,9 @@ public class Swetest
   "        R distance decimal in AU\n"+
   "        r distance decimal in AU, Moon in seconds parallax\n"+
   "          relative distance (1000=nearest, 0=furthest)\n"+
-  "        A Rectascension in hh:mm:ss\n"+
-  "        a rectascension hours decimal\n"+
-  "        D Declination degree\n"+
+  "        A right ascension in hh:mm:ss\n"+
+  "        a right ascension hours decimal\n"+
+  "        D declination degree\n"+
   "        d declination decimal\n"+
   "        I Azimuth degree\n"+
   "        i Azimuth decimal\n"+
@@ -430,22 +454,22 @@ public class Swetest
   "        U unit vector ecliptical\n"+
   "        u unit vector equatorial\n"+
   "        Q l, b, r, dl, db, dr, a, d, da, dd\n"+
-//#ifndef ASTROLOGY
-  "        n nodes (mean): ascending/descending (Me - Ne); longitude decimal\n"+
-  "        N nodes (osculating): ascending/descending, longitude; decimal\n"+
-  "        f apsides (mean): perihel, aphel, second focal point; longitude dec.\n"+
-  "        F apsides (osc.): perihel, aphel, second focal point; longitude dec.\n"+
-  "        n mean values: ascending, descending node (Me - Ne) decimal degree\n"+
-  "        N osculating values: ascending, descending node\n"+
-  "        f mean values for longitude: perihel, aphel, second focal point\n"+
-  "        F oscul. values for longitude: perihel, aphel, second focal point\n"+
-  "        + phase angle\n"+
-  "        - phase\n"+
-  "        * elongation\n"+
-  "        / apparent diameter of disc (without refraction)\n"+
-  "        = magnitude\n"+
-//#endif /* ASTROLOGY */
+#ifndef ASTROLOGY
+  "	n nodes (mean): ascending/descending (Me - Ne); longitude decimal\n"+
+  "	N nodes (osculating): ascending/descending, longitude; decimal\n"+
+  "	f apsides (mean): perihel, aphel, second focal point; longitude dec.\n"+
+  "	F apsides (osc.): perihel, aphel, second focal point; longitude dec.\n"+
+  "	+ phase angle\n"+
+  "	- phase\n"+
+  "	* elongation\n"+
+  "	/ apparent diameter of disc (without refraction)\n"+
+  "	= magnitude\n"+
+#endif /* ASTROLOGY */
   "";
+  static final String infoform2 = ""+
+  "        v (reserved)\n"+
+  "        V (reserved)\n"+
+  "	";
   static final String infodate = "\n"+
   "  Date entry:\n"+
   "  In the interactive mode, when you are asked for a start date,\n"+
@@ -453,7 +477,7 @@ public class Swetest
   "\n"+
   "        1.2.1991        three integers separated by a nondigit character for\n"+
   "                        day month year. Dates are interpreted as Gregorian\n"+
-  "                        after 4.10.1582 and as Julian Calender before.\n"+
+  "                        after 4.10.1582 and as Julian Calendar before.\n"+
   "                        Time is always set to midnight.\n"+
   "                        If the three letters jul are appended to the date,\n"+
   "                        the Julian calendar is used even after 1582.\n"+
@@ -490,30 +514,30 @@ public class Swetest
   "	position of asteroid 433 Eros (-ps -xs433)\n"+
   "\n"+
   "    java Swetest -pf -xfAldebaran -b1.1.2000\n"+
-  "     position of fixed star Aldebaran\n"+
+  "	position of fixed star Aldebaran \n"+
   "\n"+
   "    java Swetest -p1 -d0 -b1.12.1900 -n10 -fPTl -head\n"+
   "	angular distance of moon (-p1) from sun (-d0) for 10\n"+
   "	consecutive days (-n10).\n"+
   "\n"+
   "    java Swetest -p6 -DD -b1.12.1900 -n100 -s5 -fPTZ -head -roundmin\n"+
-  "     Midpoints between Saturn (-p6) and Chiron (-DD) for 100\n"+
-  "     consecutive steps (-n100) with 5-day steps (-s5) with\n"+
-  "     longitude in degree-sign format (-f..Z) rounded to minutes (-roundmin)\n"+
+  "      Midpoints between Saturn (-p6) and Chiron (-DD) for 100\n"+
+  "      consecutive steps (-n100) with 5-day steps (-s5) with\n"+
+  "      longitude in degree-sign format (-f..Z) rounded to minutes (-roundmin)\n"+
   "\n"+
   "    java Swetest -b5.1.2002 -p -house12.05,49.50,k -ut12:30\n"+
-  "        Koch houses for a location in Germany at a given date and time\n";
+  "	Koch houses for a location in Germany at a given date and time\n";
   /**************************************************************/
 
   SwissData swed = new SwissData();
   SwissLib  sl   = new SwissLib();
   SwissEph  sw   = new SwissEph();
   SweDate   sd   = null;
-//#ifndef JAVAME
-//#ifndef ASTROLOGY
+#ifndef JAVAME
+#ifndef ASTROLOGY
   SweHel    sh   = new SweHel(sw, sl, null, swed);
-//#endif /* ASTROLOGY */
-//#endif /* JAVAME */
+#endif /* ASTROLOGY */
+#endif /* JAVAME */
   CFmt      f    = new CFmt();
 
   static final double J2000=2451545.0;  /* 2000 January 1.5 */
@@ -522,18 +546,24 @@ public class Swetest
   static final int BIT_ROUND_SEC=1;
   static final int BIT_ROUND_MIN=2;
   static final int BIT_ZODIAC=4;
+  static final int BIT_LZEROES=8;
+
+  static final int BIT_TIME_LZEROES =  8;
+  static final int BIT_TIME_LMT     = 16;
+  static final int BIT_TIME_LAT     = 32;
+
   static final String PLSEL_D="0123456789mtA";
   static final String PLSEL_P="0123456789mtA"+
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
 "BCcg"+
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
                               "DEFGHI";
   static final String PLSEL_H="JKLMNOPQRSTUVWXYZw";
-//#ifdef ASTROLOGY
+#ifdef ASTROLOGY
   static final String PLSEL_A="0123456789mtACDEFGHIJKLMNOPQRSTUVWXYZ";
-//#else
+#else
   static final String PLSEL_A="0123456789mtABCcgDEFGHIJKLMNOPQRSTUVWXYZw";
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
 
   static final char DIFF_DIFF='d';
   static final char DIFF_MIDP='D';
@@ -563,30 +593,35 @@ public class Swetest
   private int diff_mode = 0;
   private boolean universal_time = false;
   private int round_flag = 0;
+  private int time_flag = 0;
+  private boolean short_output = false;
   private int special_event = 0;
   private int special_mode = 0;
+  private boolean hel_using_AV = false;
   private double x[]=new double[6], x2[]=new double[6], xequ[]=new double[6],
          xcart[]=new double[6], xcartq[]=new double[6],
          xobl[]=new double[6], xaz[]=new double[6], xt[]=new double[6],
          hpos, hpos2, armc, xsv[]=new double[6];
   private DblObj hposj=new DblObj(); /* double used as output parameter */
   private int hpos_meth = 0;
+  private double geopos[]=new double[10];
   private double attr[]=new double[20], tret[]=new double[20],
-         geopos[]=new double[3], datm[]=new double[4], dobs[]=new double[6];
+         datm[]=new double[4], dobs[]=new double[6];
   private int iflag = 0, iflag2;              /* external flag: helio, geo... */
   private static final String hs_nam[] = {"undef",
         "Ascendant", "MC", "ARMC", "Vertex"};
   private int direction = 1;
   private boolean direction_flag = false;
+  private int helflag = 0;
   private double tjd = 2415020.5;
   private int nstep = 1, istep;
   private int search_flag = 0;
   private String sout;
-//#ifdef JAVAME
+#ifdef JAVAME
   private int whicheph = SweConst.SEFLG_MOSEPH;
-//#else
+#else
   private int whicheph = SweConst.SEFLG_SWIEPH;
-//#endif /* JAVAME */
+#endif /* JAVAME */
   private String psp;
   private int p=0; // Index for psp
   private boolean norefrac = false;
@@ -648,9 +683,9 @@ public class Swetest
     int ihsy = (int)'p';
     boolean do_houses = false;
     String ephepath;
-//#ifndef NO_JPL
+#ifndef NO_JPL
     String fname;
-//#endif /* NO_JPL */
+#endif /* NO_JPL */
     String sdate;
     String begindate = null;
     long iflgret;
@@ -669,34 +704,10 @@ public class Swetest
 
     sd=new SweDate(tjd,gregflag);
 
-//JDfromUTC: 2455810.542432685
-//2455810.5416586776
-//UT1: 6.9.2011, 1:1:6.8742164969444275
-//ET: 6.9.2011, 0:59:59.999986588954926
-//
-//                double[] jd = sd.getJDfromUTC(2011, 9, 6, 1, 0, 0, true, true);
-//                System.err.println(jd.length + "\n" + jd[0] + "\n" + jd[1]);
-//                System.err.println(sd.getUTCfromJDUT1(jd[0], true, 2011, 9, 6, 1, 0, 0).day + "." +
-//                                sd.getUTCfromJDUT1(jd[0], true, 2011, 9, 6, 1, 0, 0).month + "." +
-//                                sd.getUTCfromJDUT1(jd[0], true, 2011, 9, 6, 1, 0, 0).year + ", " +
-//                                sd.getUTCfromJDUT1(jd[0], true, 2011, 9, 6, 1, 0, 0).hour + ":" +
-//                                sd.getUTCfromJDUT1(jd[0], true, 2011, 9, 6, 1, 0, 0).minute + ":" +
-//                                sd.getUTCfromJDUT1(jd[0], true, 2011, 9, 6, 1, 0, 0).second);
-
-{
-double dret[] = new double[2];
-dret = sd.getJDfromUTC(2011, 9, 6, 1, 0, 0, SweDate.SE_GREG_CAL, false);
-System.out.println("JDfromUTC: "+dret[0]+" "+dret[1]);
-SDate dt = sd.getUTCfromJDUT1(dret[0], SweDate.SE_GREG_CAL);
-System.out.println("UT1: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.minute+":"+dt.second);
-dt = sd.getUTCfromJDET(dret[0], SweDate.SE_GREG_CAL);
-System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.minute+":"+dt.second);
-
-}
     ephepath="";
-//#ifndef NO_JPL
-    fname=SweConst.SE_FNAME_DE406;
-//#endif /* NO_JPL */
+#ifndef NO_JPL
+    fname=SweConst.SE_FNAME_DFT;
+#endif /* NO_JPL */
     for (i = 0; i < argv.length; i++) {
       if (argv[i].startsWith("-DSE_EPHE_PATH")) {
         if (++i<argv.length) {
@@ -706,26 +717,36 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
         // hh:mmss or hh:mm:ss
         universal_time = true;
         if (argv[i].length() > 3) {
-          s1=argv[i].substring(3);
+          s1 = "\n" + argv[i].substring(3);
+          s1 = s1.substring(0, SMath.min(s1.length(), 30));
           if (s1.indexOf(':')>=0) {
             s1=s1.substring(0,s1.indexOf(':'))+"."+s1.substring(s1.indexOf(':')+1);
             if (s1.indexOf(':')>=0) {
               s1=s1.substring(0,s1.indexOf(':'))+s1.substring(s1.indexOf(':')+1);
             }
           }
+
+          // Extension to allow fraction of seconds; not internationalized.
           double frac = 0;
+#ifndef ORIGINAL
           if (s1.indexOf('.') != s1.lastIndexOf('.')) {
             // HH:MM:SS.FFF
             frac = Double.valueOf(
                 s1.substring(s1.lastIndexOf('.'))).doubleValue();
             s1 = s1.substring(0,s1.lastIndexOf('.'));
           }
+#endif /* ORIGINAL */
+
           thour = Double.valueOf(s1).doubleValue();
           /* h.mmss -> decimal */
           // Allowing for negative times: this is different from the C code!
-          t = (thour%1.0) * 100 + (thour<0?-1e-10:1e-10);
+#ifdef ORIGINAL
+          t = (thour%1.0) * 100 + 1e-6;
+#else
+          t = (thour%1.0) * 100 + (thour<0?-1e-6:1e-6);
+#endif /* ORIGINAL */
           j = (int) t;
-          t = (t%1.0) * 100 + 1e-10;
+          t = (t%1.0) * 100 + 1e-6;
           thour = (int) thour + j / 60.0 + t / 3600.0 + frac / 3600.0;
         }
       } else if (argv[i].startsWith("-head")) {
@@ -743,7 +764,7 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
           sid_mode=Integer.parseInt(argv[i].substring(3));
         }
         sw.swe_set_sid_mode(sid_mode, 0, 0);
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
       } else if (argv[i].startsWith("-sidt0")) {
         iflag |= SweConst.SEFLG_SIDEREAL;
 //      sid_mode = atol(argv[i]+6);
@@ -766,7 +787,7 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
           sid_mode = SweConst.SE_SIDM_FAGAN_BRADLEY;
         sid_mode |= SweConst.SE_SIDBIT_SSY_PLANE;
         sw.swe_set_sid_mode(sid_mode, 0, 0);
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
       } else if (argv[i].startsWith("-sid")) {
         iflag |= SweConst.SEFLG_SIDEREAL;
 //      sid_mode = atol(argv[i]+4);
@@ -780,30 +801,43 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
         }
         if (sid_mode > 0)
           sw.swe_set_sid_mode(sid_mode, 0, 0);
+      } else if (argv[i].equals("-jplhora")) {
+        iflag |= SweConst.SEFLG_JPLHOR_APPROX;
+      } else if (argv[i].equals("-jplhor")) {
+        iflag |= SweConst.SEFLG_JPLHOR;
       } else if (argv[i].startsWith("-j")) {
         begindate = argv[i].substring(1);
-//#ifndef NO_JPL
+#ifndef NO_JPL
       } else if (argv[i].startsWith("-ejpl")) {
         whicheph = SweConst.SEFLG_JPLEPH;
-        if (argv[i].length()>5)
+        if (argv[i].length()>5) {
           fname=argv[i].substring(5);
-//#endif /* NO_JPL */
+          fname=fname.substring(0, SMath.min(fname.length(), AS_MAXCH - 1));
+        }
+#endif /* NO_JPL */
       } else if (argv[i].startsWith("-edir")) {
-        if (argv[i].length() > 5)
+        if (argv[i].length() > 5) {
           ephepath=argv[i].substring(5);
-//#ifndef JAVAME
+          ephepath=ephepath.substring(0, SMath.min(ephepath.length(), AS_MAXCH - 1));
+        }
+#ifndef JAVAME
       } else if (argv[i].startsWith("-eswe")) {
         whicheph = SweConst.SEFLG_SWIEPH;
-//#endif /* JAVAME */
+#endif /* JAVAME */
       } else if (argv[i].startsWith("-emos")) {
         whicheph = SweConst.SEFLG_MOSEPH;
+      } else if (argv[i].startsWith("-helflag")) {
+        helflag = SwissLib.atoi(argv[i].substring(8));
+        if (helflag >= SweConst.SE_HELFLAG_AV)
+          hel_using_AV = true;
       } else if (argv[i].equals("-hel")) {
         iflag |= SweConst.SEFLG_HELCTR;
       } else if (argv[i].equals("-bary")) {
         iflag |= SweConst.SEFLG_BARYCTR;
       } else if (argv[i].startsWith("-house")) {
         sout="";
-        // sscanf(argv[i] + 6, "%lf,%lf,%s", &top_long, &top_lat, sout);
+// Java: use atof()?
+        // sscanf(argv[i] + 6, "%lf,%lf,%c", &top_long, &top_lat, sout);
         try {
           String h=argv[i].substring(6);
           int idx=h.indexOf(',');
@@ -814,7 +848,9 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
           if (idx<0) { idx=h.length(); }
           hf=h.substring(0,idx);
           top_lat=Double.valueOf(hf).doubleValue();
-          sout=h.substring(idx+1);
+          if (h.length() > idx) {
+            sout = h.substring(idx+1, idx+2);
+          }
         } catch (NumberFormatException nfe) {
         } catch (StringIndexOutOfBoundsException aie) {
         }
@@ -858,7 +894,7 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
         iflag |= SweConst.SEFLG_SPEED3;
       } else if (argv[i].equals("-speed")) {
         iflag |= SweConst.SEFLG_SPEED;
-//#ifndef NO_JPL
+#ifndef NO_JPL
       } else if (argv[i].startsWith("-testaa")) {
         whicheph = SweConst.SEFLG_JPLEPH;
         fname=SweConst.SE_FNAME_DE200;
@@ -871,12 +907,20 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
         fmt = "PADRu";
         universal_time = false;
         plsel="3";
-//#endif /* NO_JPL */
+#endif /* NO_JPL */
+      } else if (argv[i].equals("-lmt")) {
+        universal_time = true;
+        time_flag |= BIT_TIME_LMT;
+      } else if (argv[i].equals("-lat")) {
+        universal_time = true;
+        time_flag |= BIT_TIME_LAT;
       } else if (argv[i].equals("-lunecl")) {
         special_event = SP_LUNAR_ECLIPSE;
       } else if (argv[i].equals("-solecl")) {
         special_event = SP_SOLAR_ECLIPSE;
         have_geopos = true;
+      } else if (argv[i].equals("-short")) {
+        short_output = true;
       } else if (argv[i].equals("-occult")) {
         special_event = SP_OCCULTATION;
         have_geopos = true;
@@ -906,7 +950,7 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
       } else if (argv[i].equals("-rise")) {
     	special_event = SP_RISE_SET;
         have_geopos = true;
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
       } else if (argv[i].equals("-norefrac")) {
         norefrac = true;
       } else if (argv[i].equals("-disccenter")) {
@@ -923,6 +967,7 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
         if (argv[i].length() > 4)
           search_flag = SwissLib.atoi(argv[i].substring(4));
         have_geopos = true;
+        if (argv[i].indexOf("A") >= 0 || argv[i].indexOf("V") >= 0) hel_using_AV = true;
       } else if (argv[i].startsWith("-at")) {
 //        sscanf(argv[i]+3, "%lf,%lf,%lf,%lf", &(datm[0]), &(datm[1]), &(datm[2]), &(datm[3]));
     	StringTokenizer d = new StringTokenizer(argv[i].substring(3),",");
@@ -953,7 +998,7 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
       	  dobs[5] = Double.parseDouble(d.nextToken());
       	} catch (NumberFormatException ne) {
       	}
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
       } else if (argv[i].equals("-bwd")) {
         direction = -1;
         direction_flag = true;
@@ -961,15 +1006,15 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
         if (argv[i].length()>2) {
           spno = argv[i].substring(2);
           switch ((int)spno.charAt(0)) {
-          case (int)'d':
+          case 'd':
           /*
-          case (int)'\0':
-          case (int)' ':
+          case '\0':
+          case ' ':
           */
                           plsel = PLSEL_D; break;
-          case (int)'p':  plsel = PLSEL_P; break;
-          case (int)'h':  plsel = PLSEL_H; break;
-          case (int)'a':  plsel = PLSEL_A; break;
+          case 'p':  plsel = PLSEL_P; break;
+          case 'h':  plsel = PLSEL_H; break;
+          case 'a':  plsel = PLSEL_A; break;
           default:   plsel = spno;
           }
         } else {
@@ -978,26 +1023,30 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
         }
       } else if (argv[i].startsWith("-xs")) {
         /* number of asteroid */
-        sastno="0";
+        sastno="";
         if (argv[i].length()>3) {
           sastno=argv[i].substring(3);
+          sastno=sastno.substring(0, SMath.min(sastno.length(), AS_MAXCH - 1));
         }
       } else if (argv[i].startsWith("-xf")) {
         /* name or number of fixed star */
         star="";
         if (argv[i].length()>3) {
           star=argv[i].substring(3);
+          star=star.substring(0, SMath.min(star.length(), AS_MAXCH - 1));
         }
       } else if (argv[i].startsWith("-xz")) {
         /* number of hypothetical body */
         if (argv[i].length()>3) {
           shyp=argv[i].substring(3);
+          shyp=shyp.substring(0, SMath.min(shyp.length(), AS_MAXCH - 1));
         }
       } else if (argv[i].startsWith("-x")) {
         /* name or number of fixed star */
         star="";
         if (argv[i].length()>2) {
           star=argv[i].substring(2);
+          star=star.substring(0, SMath.min(star.length(), AS_MAXCH - 1));
         }
       } else if (argv[i].startsWith("-n")) {
         nstep=0;
@@ -1057,6 +1106,8 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
               s1=s1.substring(0,s1.indexOf(':'))+s1.substring(s1.indexOf(':')+1);
             }
           }
+
+          // Extension to allow fraction of seconds; not internationalized!
           double frac = 0;
           if (s1.indexOf('.') != s1.lastIndexOf('.')) {
             // HH:MM:SS.FFF
@@ -1064,12 +1115,17 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
                 s1.substring(s1.lastIndexOf('.'))).doubleValue();
             s1 = s1.substring(0,s1.lastIndexOf('.'));
           }
+
           thour = Double.valueOf(s1).doubleValue();
           /* h.mmss -> decimal */
           // Allowing for negative times: this is different from the C code!
-          t = (thour%1.) * 100 + (thour<0?-1e-10:1e-10);
+#ifdef ORIGINAL
+          t = (thour%1.) * 100 + (thour<0?-1e-6:1e-6);
+#else
+          t = (thour%1.) * 100 + 1e-6;
+#endif /* ORIGINAL */
           j = (int) t;
-          t = (t%1.) * 100 + 1e-10;
+          t = (t%1.) * 100 + 1e-6;
           thour = (int) thour + j / 60.0 + t / 3600.0 + frac / 3600.0;
         }
       } else if (argv[i].startsWith("-h")
@@ -1085,11 +1141,14 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
           System.out.print(infocmd3);
           System.out.print(infocmd4);
           System.out.print(infocmd5);
+          System.out.print(infocmd6);
         }
         if (sp.charAt(0) == 'p' || sp.charAt(0) == ' ')
           System.out.print(infoplan);
-        if (sp.charAt(0) == 'f' || sp.charAt(0) == ' ')
+        if (sp.charAt(0) == 'f' || sp.charAt(0) == ' ') {
           System.out.print(infoform);
+          System.out.print(infoform2);
+        }
         if (sp.charAt(0) == 'd' || sp.charAt(0) == ' ')
           System.out.print(infodate);
         if (sp.charAt(0) == 'e' || sp.charAt(0) == ' ')
@@ -1099,20 +1158,20 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
         sw.swe_close();
         return SweConst.OK;
       } else {
-        sout="illegal option "+argv[i]+"\n";
+        sout="illegal option "+argv[i].substring(0, SMath.min(argv[i].length(), AS_MAXCH-50))+"\n";
         System.out.print(sout);
         System.exit(1);
       }
     }
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
     if (special_event == SP_OCCULTATION ||
     	special_event == SP_RISE_SET ||
     	special_event == SP_MERIDIAN_TRANSIT ||
     	special_event == SP_HELIACAL) {
-//#else
+#else
     if (special_event == SP_OCCULTATION ||
     	special_event == SP_RISE_SET) {
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
       ipl = letter_to_ipl((int)plsel.charAt(0));
       if (plsel.charAt(0) == 'f') {
         ipl = SweConst.SE_FIXSTAR;
@@ -1122,11 +1181,11 @@ System.out.println("ET: "+dt.day+"."+dt.month+"."+dt.year+", "+dt.hour+":"+dt.mi
       if (special_event == SP_OCCULTATION && ipl == 1)
         ipl = 2; /* no occultation of moon by moon */
     }
-//#ifdef PRELOAD_FIXSTARS
+#ifdef PRELOAD_FIXSTARS
     if (plsel.indexOf('f') >= 0 && nstep > 3) {
       sw.preloadFixstarsFile(serr);
     }
-//#endif /* PRELOAD_FIXSTARS */
+#endif /* PRELOAD_FIXSTARS */
     geopos[0] = top_long;
     geopos[1] = top_lat;
     geopos[2] = top_elev;
@@ -1139,27 +1198,32 @@ System.out.print("swetest ");
       }
     }
     iflag = (iflag & ~SweConst.SEFLG_EPHMASK) | whicheph;
-//  if (strpbrk(fmt, "SsQ") != NULL)
-    if (fmt.indexOf("S")>=0 || fmt.indexOf("s")>=0 || fmt.indexOf("Q")>=0)
+//  if (strpbrk(fmt, "SsQ") != NULL && !(iflag & SEFLG_SPEED3)) 
+    if ((fmt.indexOf("S")>=0 || fmt.indexOf("s")>=0 || fmt.indexOf("Q")>=0) && (iflag & SweConst.SEFLG_SPEED3) == 0) {
       iflag |= SweConst.SEFLG_SPEED;
+    }
     String argv0=System.getProperties().getProperty("user.dir");
 //ephepath="./ephe";
-    if (ephepath.length()>0)
-      sw.swe_set_ephe_path(ephepath);
-    else if (make_ephemeris_path(iflag, argv0) == SweConst.ERR) {
-      iflag = (iflag & ~SweConst.SEFLG_EPHMASK) | SweConst.SEFLG_MOSEPH;
-      whicheph = SweConst.SEFLG_MOSEPH;
+    if (ephepath.length() == 0) {
+      StringBuffer sbEphepath = new StringBuffer();
+      if (make_ephemeris_path(iflag, argv[0], sbEphepath) == SweConst.ERR) {
+        iflag = (iflag & ~SweConst.SEFLG_EPHMASK) | SweConst.SEFLG_MOSEPH;
+        whicheph = SweConst.SEFLG_MOSEPH;
+      } else {
+        ephepath = sbEphepath.toString();
+      }
     }
-//#ifndef NO_JPL
+    sw.swe_set_ephe_path(ephepath);
+#ifndef NO_JPL
     if ((whicheph & SweConst.SEFLG_JPLEPH)!=0)
       sw.swe_set_jpl_file(fname);
-//#endif /* NO_JPL */
+#endif /* NO_JPL */
     while (true) {
       serr.setLength(0); serr_save.setLength(0); serr_warn.setLength(0);
       if (begindate == null) {
         System.out.print("\nDate ?");
         sdate = "";
-//      fgets(sdate, AS_MAXCH, stdin);
+//      if( !fgets(sdate, AS_MAXCH, stdin) ) goto end_main;
         try {
           InputStreamReader in=new InputStreamReader(System.in);
           BufferedReader bin=new BufferedReader(in);
@@ -1167,8 +1231,12 @@ System.out.print("swetest ");
         } catch (IOException ie) {
           System.out.println(ie.getMessage());
         }
+	if (sdate.length() <= 0) {	// goto end_main:
+          sw.swe_close();
+          return SweConst.OK;
+        }
       } else {
-        sdate=begindate;
+        sdate = begindate.substring(0, SMath.min(begindate.length(), AS_MAXCH-1));
         begindate = ".";  /* to exit afterwards */
       }
       if (sdate.equals("-bary")) {
@@ -1183,18 +1251,18 @@ System.out.print("swetest ");
         iflag = iflag & ~SweConst.SEFLG_BARYCTR;
         iflag = iflag & ~SweConst.SEFLG_HELCTR;
         sdate = "";
-//#ifndef NO_JPL
+#ifndef NO_JPL
       } else if (sdate.equals("-ejpl")) {
         iflag &= ~SweConst.SEFLG_EPHMASK;
         iflag |= SweConst.SEFLG_JPLEPH;
         sdate = "";
-//#endif /* NO_JPL */
-//#ifndef JAVAME
+#endif /* NO_JPL */
+#ifndef JAVAME
       } else if (sdate.equals("-eswe")) {
         iflag &= ~SweConst.SEFLG_EPHMASK;
         iflag |= SweConst.SEFLG_SWIEPH;
         sdate = "";
-//#endif /* JAVAME */
+#endif /* JAVAME */
       } else if (sdate.equals("-emos")) {
         iflag &= ~SweConst.SEFLG_EPHMASK;
         iflag |= SweConst.SEFLG_MOSEPH;
@@ -1204,6 +1272,7 @@ System.out.print("swetest ");
         sastno=sdate.substring(3);
         sdate = "";
       }
+//    swe_set_tid_acc((double) (iflag & SEFLG_EPHMASK));
       sp = sdate;
       if (sp.length()>0 && sp.charAt(0) == '.') {
 //      goto end_main;
@@ -1215,8 +1284,9 @@ System.out.print("swetest ");
       } else {
         sdate_save=sdate;
       }
-      if (sdate.length() == 0)
+      if ("".equals(sdate)) {
     	sdate = "j" + tjd;
+      }
       if (sp.length()>0 && sp.charAt(0) == 'j') {   /* it's a day number */
         if (sp.indexOf(',') >= 0)
           sp=sp.substring(0,sp.indexOf(','))+'.'+sp.substring(sp.indexOf(',')+1);
@@ -1334,21 +1404,17 @@ System.out.print("swetest ");
         jday=sd.getDay();
         jut=sd.getHour();
         if (with_header) {
-          sout="\ndate (dmy) "+jday+"."+jmon+"."+jyear;
-          System.out.print(sout);
+          System.out.print("\ndate (dmy) "+jday+"."+jmon+"."+jyear);
           if (gregflag)
             System.out.print(" greg.");
           else
             System.out.print(" jul.");
           t2 = jut;
-          sout="  "+f.fmt("% 2d",(int) t2)+":";
-          System.out.print(sout);
+          System.out.print("  "+f.fmt("% 2d",(int) t2)+":");
           t2 = (t2 - (int) t2) * 60;
-          sout=f.fmt("%02d",(int)t2)+":";
-          System.out.print(sout);
+          System.out.print(f.fmt("%02d",(int)t2)+":");
           t2 = (t2 - (int) t2) * 60;
-          sout=f.fmt("%02d",(int) t2);
-          System.out.print(sout);
+          System.out.print(f.fmt("%02d",(int) t2));
           if (universal_time)
             System.out.print(" UT");
           else
@@ -1358,12 +1424,10 @@ System.out.print("swetest ");
         delt = SweDate.getDeltaT(t);
         if (universal_time) {
           if (with_header) {
-            sout="\nUT: "+f.fmt("%.11f",t);
-            System.out.print(sout);
+            System.out.print("\nUT: "+f.fmt("%.11f",t));
           }
           if (with_header) {
-            sout="     delta t: "+f.fmt("%f",delt * 86400.0)+" sec";
-            System.out.print(sout);
+            System.out.print("     delta t: "+f.fmt("%f",delt * 86400.0)+" sec");
           }
           te = t + delt;
           tut = t;
@@ -1373,34 +1437,32 @@ System.out.print("swetest ");
         }
         iflgret = sw.swe_calc(te, SweConst.SE_ECL_NUT, iflag, xobl, serr);
         if (with_header) {
-          sout="\nET: "+f.fmt("%.11f",te);
-          System.out.print(sout);
+          System.out.print("\nET: "+f.fmt("%.11f",te));
           if ((iflag & SweConst.SEFLG_SIDEREAL)!=0) {
             daya = sw.swe_get_ayanamsa(te);
-            sout="   ayanamsa = "+dms(daya, round_flag);
-            System.out.print(sout);
+            System.out.print("   ayanamsa = "+dms(daya, round_flag));
           }
 	  if (have_geopos) {
 	    System.out.print("\ngeo. long "+f.fmt("%f",geopos[0])+
                              ", lat "+f.fmt("%f",geopos[1])+
                              ", alt "+f.fmt("%f",geopos[2]));
 	  }
-          if (iflag_f >=0)
+          if (iflag_f >=0) {
             iflag = iflag_f;
+          }
           if (plsel.indexOf('o') < 0) {
-            sout="\n"+f.fmt("%-15s","Epsilon (true)")+" "+dms(xobl[0],round_flag);
-            System.out.print(sout);
+            System.out.print("\n"+f.fmt("%-15s","Epsilon (true)")+" "+dms(xobl[0],round_flag));
           }
           if (plsel.indexOf('n') < 0) {
-            s1=dms(xobl[2], round_flag);
-            s2=dms(xobl[3], round_flag);
-//            sout="\nNutation        "+s1+gap+s2;
-            sout="\n"+f.fmt("%-15s","Nutation")+" "+s1+gap+s2;
-            System.out.print(sout);
+            System.out.print("\nNutation        ");
+            System.out.print(dms(xobl[2], round_flag));
+            System.out.print(gap);
+            System.out.print(dms(xobl[3], round_flag));
           }
           System.out.print("\n");
 
           if (do_houses) {
+	    String shsy = sw.swe_house_name((char)ihsy);
             if (!universal_time) {
               do_houses = false;
               System.out.print("option -house requires option -ut for "+
@@ -1408,9 +1470,7 @@ System.out.print("swetest ");
             } else {
               s1 = dms(top_long, round_flag);
               s2 = dms(top_lat, round_flag);
-              sout = "Houses system "+(char)ihsy+" for long="+s1+
-                                                             ", lat="+s2+"\n";
-              System.out.print(sout);
+              System.out.println("Houses system "+(char)ihsy+" (" + shsy + ") for long=" + s1 + ", lat=" + s2);
             }     
           }         
         }
@@ -1418,7 +1478,11 @@ System.out.print("swetest ");
           with_header = false;
         if (do_ayanamsa) {
           daya = sw.swe_get_ayanamsa(te);
-          System.out.print("Ayanamsa"+gap+dms(daya, round_flag)+"\n");
+          System.out.print("Ayanamsa");
+          System.out.print(gap);
+          System.out.print(dms(daya, round_flag));
+          System.out.println();
+	  /*printf("Ayanamsa%s%s\n", gap, dms(daya, round_flag));*/
           continue;
         }
         if (plsel.indexOf('e')>=0) {
@@ -1427,7 +1491,7 @@ System.out.print("swetest ");
         for (psp = plsel, p=0; p<plsel.length(); p++) {
           if (psp.charAt(p) == ' ' || // These deals with plsel == '' in C
             psp.charAt(p) == 'e') { continue; }
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
           ipl = letter_to_ipl((int) psp.charAt(p));
           if (psp.charAt(p) == 'f') {
             ipl = SweConst.SE_FIXSTAR;
@@ -1450,7 +1514,7 @@ System.out.print("swetest ");
             System.out.print("illegal parameter -p"+plsel+"\n");
             System.exit(1);
           }
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
           if ((iflag & SweConst.SEFLG_HELCTR)!=0) {
             if (ipl == SweConst.SE_SUN
                   || ipl == SweConst.SE_MEAN_NODE
@@ -1467,10 +1531,11 @@ System.out.print("swetest ");
             if (ipl == SweConst.SE_EARTH)
               continue;
           /* ecliptic position */
-          if (iflag_f >=0)
+          if (iflag_f >=0) {
             iflag = iflag_f;
-//#ifndef ASTROLOGY
-//#ifndef JAVAME
+          }
+#ifndef ASTROLOGY
+#ifndef JAVAME
           if (ipl == SweConst.SE_FIXSTAR) {
             StringBuffer sstar=new StringBuffer(star);
             iflgret = sw.swe_fixstar(sstar, te, iflag, x, serr);
@@ -1489,28 +1554,28 @@ System.out.print("swetest ");
             }
             se_pname=star;
           } else {
-//#endif /* JAVAME */
-//#endif /* ASTROLOGY */
+#endif /* JAVAME */
+#endif /* ASTROLOGY */
             iflgret = sw.swe_calc(te, ipl, iflag, x, serr);
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
             /* phase, magnitude, etc. */
             if (iflgret != SweConst.ERR && (fmt.indexOf("+")>=0 ||
                 fmt.indexOf("-")>=0 || fmt.indexOf("*")>=0 ||
                 fmt.indexOf("/")>=0 || fmt.indexOf("=")>=0)) {
               iflgret = sw.swe_pheno(te, ipl, iflag, attr, serr);
             }
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
             se_pname=sw.swe_get_planet_name(ipl);
-//#ifndef ASTROLOGY
-//#ifndef JAVAME
+#ifndef ASTROLOGY
+#ifndef JAVAME
           }
           if (psp.charAt(p) == 'q') {/* delta t */
             x[0] = SweDate.getDeltaT(te) * 86400;
             x[1] = x[2] = x[3] = 0;
             se_pname = "Delta T";
           }
-//#endif /* JAVAME */
-//#endif /* ASTROLOGY */
+#endif /* JAVAME */
+#endif /* ASTROLOGY */
           if (psp.charAt(p) == 'o') {/* ecliptic is wanted, remove nutation */
             x[2] = x[3] = 0;
             se_pname="Ecl. Obl.";
@@ -1521,16 +1586,23 @@ System.out.print("swetest ");
             x[2] = x[3] = 0;
             se_pname="Nutation";
           }
+	  if (psp.charAt(p) == 'y') {/* time equation */
+            double[] dtmp = new double[] {x[0]};
+	    iflgret = sw.swe_time_equ(tut, dtmp, serr);
+            x[0] = dtmp[0];
+	    x[0] *= 86400; /* in seconds */;
+	    x[1] = x[2] = x[3] = 0;
+	    se_pname = "Time Equ.";
+	  }
           if (iflgret < 0) {
             if (!serr.toString().equals(serr_save.toString())
               && (ipl == SweConst.SE_SUN || ipl == SweConst.SE_MOON
-                  || ipl == SweConst.SE_MEAN_NODE
-                  || ipl == SweConst.SE_TRUE_NODE || ipl == SweConst.SE_CHIRON
-                  || ipl == SweConst.SE_PHOLUS || ipl == SweConst.SE_CUPIDO
-                  || ipl >= SweConst.SE_AST_OFFSET
-                  || ipl == SweConst.SE_FIXSTAR)) {
-              sout="error: "+serr.toString()+"\n";
-              System.out.print(sout);
+                  || ipl == SweConst.SE_MEAN_NODE || ipl == SweConst.SE_TRUE_NODE
+                  || ipl == SweConst.SE_CHIRON || ipl == SweConst.SE_PHOLUS || ipl == SweConst.SE_CUPIDO
+                  || ipl >= SweConst.SE_AST_OFFSET || ipl == SweConst.SE_FIXSTAR)) {
+              System.out.print("error: ");
+              System.out.print(serr.toString());
+              System.out.print("\n");
             }
             serr_save=new StringBuffer(serr.toString());
           } else if (serr.length()>0 && serr_warn.length()==0) {
@@ -1541,8 +1613,9 @@ System.out.print("swetest ");
           if (diff_mode != 0) {
             iflgret = sw.swe_calc(te, ipldiff, iflag, x2, serr);
             if (iflgret < 0) {
-              sout="error: "+serr.toString()+"\n";
-              System.out.print(sout);
+              System.out.print("error: ");
+              System.out.print(serr.toString());
+              System.out.print("\n");
             }
             if (diff_mode == DIFF_DIFF) {
               for (i = 1; i < 6; i++)
@@ -1554,14 +1627,14 @@ System.out.print("swetest ");
             } else {      /* DIFF_MIDP */
               for (i = 1; i < 6; i++)
                 x[i] = (x[i] + x2[i]) / 2;
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
               if ((iflag & SweConst.SEFLG_RADIANS) == 0)
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
                 x[0] = sl.swe_deg_midp(x[0], x2[0]);
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
               else
                 x[0] = sl.swe_rad_midp(x[0], x2[0]);
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
             }
           }
           /* equator position */
@@ -1570,21 +1643,21 @@ System.out.print("swetest ");
               fmt.indexOf("D")>=0 || fmt.indexOf("d")>=0 ||
               fmt.indexOf("Q")>=0) {
             iflag2 = iflag | SweConst.SEFLG_EQUATORIAL;
-//#ifndef ASTROLOGY
-//#ifndef JAVAME
+#ifndef ASTROLOGY
+#ifndef JAVAME
             if (ipl == SweConst.SE_FIXSTAR) {
               StringBuffer sstar=new StringBuffer(star);
               iflgret = sw.swe_fixstar(sstar, te, iflag2, xequ, serr);
               star=sstar.toString();
             } else {
-//#endif /* JAVAME */
-//#endif /* ASTROLOGY */
+#endif /* JAVAME */
+#endif /* ASTROLOGY */
               iflgret = sw.swe_calc(te, ipl, iflag2, xequ, serr);
-//#ifndef ASTROLOGY
-//#ifndef JAVAME
+#ifndef ASTROLOGY
+#ifndef JAVAME
             }
-//#endif /* ASTROLOGY */
-//#endif /* JAVAME */
+#endif /* ASTROLOGY */
+#endif /* JAVAME */
             if (diff_mode != 0) {
               iflgret = sw.swe_calc(te, ipldiff, iflag2, x2, serr);
               if (diff_mode == DIFF_DIFF) {
@@ -1611,22 +1684,22 @@ System.out.print("swetest ");
               fmt.indexOf("K")>=0 || fmt.indexOf("k")>=0) {
             /* first, get topocentric equatorial positions */
             iflgt = whicheph | SweConst.SEFLG_EQUATORIAL | SweConst.SEFLG_TOPOCTR;
-//#ifndef ASTROLOGY
-//#ifndef JAVAME
+#ifndef ASTROLOGY
+#ifndef JAVAME
             if (ipl == SweConst.SE_FIXSTAR) {
               StringBuffer sstar=new StringBuffer(star);
               iflgret = sw.swe_fixstar(sstar, te, iflgt, xt, serr);
               star=sstar.toString();
             } else {
-//#endif /* JAVAME */
-//#endif /* ASTROLOGY */
+#endif /* JAVAME */
+#endif /* ASTROLOGY */
               iflgret = sw.swe_calc(te, ipl, iflgt, xt, serr);
-//#ifndef JAVAME
-//#ifndef ASTROLOGY
+#ifndef JAVAME
+#ifndef ASTROLOGY
             }
-//#endif /* ASTROLOGY */
-//#endif /* JAVAME */
-//#ifndef NO_RISE_TRANS
+#endif /* ASTROLOGY */
+#endif /* JAVAME */
+#ifndef NO_RISE_TRANS
             /* to azimuth/height */
             /* atmospheric pressure "0" has the effect that a value
              * of 1013.25 mbar is assumed at 0 m above sea level.
@@ -1652,27 +1725,27 @@ System.out.print("swetest ");
                   xaz[0] = sl.swe_rad_midp(xaz[0], x2[0]);
               }
             }
-//#endif /* NO_RISE_TRANS */
+#endif /* NO_RISE_TRANS */
           }
           /* ecliptic cartesian position */
 //        if (strpbrk(fmt, "XU") != null) { ... }
           if (fmt.indexOf("X")>=0 || fmt.indexOf("U")>=0) {
             iflag2 = iflag | SweConst.SEFLG_XYZ;
-//#ifndef ASTROLOGY
-//#ifndef JAVAME
+#ifndef ASTROLOGY
+#ifndef JAVAME
             if (ipl == SweConst.SE_FIXSTAR) {
               StringBuffer sstar=new StringBuffer(star);
               iflgret = sw.swe_fixstar(sstar, te, iflag2, xcart, serr);
               star=sstar.toString();
             } else {
-//#endif /* JAVAME */
-//#endif /* ASTROLOGY */
+#endif /* JAVAME */
+#endif /* ASTROLOGY */
               iflgret = sw.swe_calc(te, ipl, iflag2, xcart, serr);
-//#ifndef JAVAME
-//#ifndef ASTROLOGY
+#ifndef JAVAME
+#ifndef ASTROLOGY
             }
-//#endif /* JAVAME */
-//#endif /* ASTROLOGY */
+#endif /* JAVAME */
+#endif /* ASTROLOGY */
             if (diff_mode != 0) {
               iflgret = sw.swe_calc(te, ipldiff, iflag2, x2, serr);
               if (diff_mode == DIFF_DIFF) {
@@ -1687,21 +1760,21 @@ System.out.print("swetest ");
 //        if (strpbrk(fmt, "xu") != null) { ... }
           if (fmt.indexOf("x")>=0 || fmt.indexOf("u")>=0) {
             iflag2 = iflag | SweConst.SEFLG_XYZ | SweConst.SEFLG_EQUATORIAL;
-//#ifndef ASTROLOGY
-//#ifndef JAVAME
+#ifndef ASTROLOGY
+#ifndef JAVAME
             if (ipl == SweConst.SE_FIXSTAR) {
               StringBuffer sstar=new StringBuffer(star);
               iflgret = sw.swe_fixstar(sstar, te, iflag2, xcartq, serr);
               star=sstar.toString();
             } else {
-//#endif /* JAVAME */
-//#endif /* ASTROLOGY */
+#endif /* JAVAME */
+#endif /* ASTROLOGY */
               iflgret = sw.swe_calc(te, ipl, iflag2, xcartq, serr);
-//#ifndef JAVAME
-//#ifndef ASTROLOGY
+#ifndef JAVAME
+#ifndef ASTROLOGY
             }
-//#endif /* ASTROLOGY */
-//#endif /* JAVAME */
+#endif /* ASTROLOGY */
+#endif /* JAVAME */
             if (diff_mode != 0) {
               iflgret = sw.swe_calc(te, ipldiff, iflag2, x2, serr);
               if (diff_mode == DIFF_DIFF) {
@@ -1724,17 +1797,17 @@ System.out.print("swetest ");
                 star2=star;
               else
                 star2 = "";
-//#ifndef NO_RISE_TRANS
+#ifndef NO_RISE_TRANS
             if (hpos_meth >= 2 && Character.toLowerCase((char)ihsy) == 'g') {
               StringBuffer sstar2=new StringBuffer(star2);
               sw.swe_gauquelin_sector(tut, ipl, sstar2, iflag, hpos_meth, geopos, 0, 0, hposj, serr);
               star2=sstar2.toString();
             } else {
-//#endif /* NO_RISE_TRANS */
+#endif /* NO_RISE_TRANS */
               hposj.val = sw.swe_house_pos(armc, geopos[1], xobl[0], ihsy, xsv, serr);
-//#ifndef NO_RISE_TRANS
+#ifndef NO_RISE_TRANS
             }
-//#endif /* NO_RISE_TRANS */
+#endif /* NO_RISE_TRANS */
             if (Character.toLowerCase((char)ihsy) == 'g')
               hpos = (hposj.val - 1) * 10;
             else
@@ -1766,8 +1839,7 @@ System.out.print("swetest ");
           print_line(0);
           line_count++;
           if (line_count >= line_limit) {
-            sout="****** line count "+line_limit+" was exceeded\n";
-            System.out.print(sout);
+            System.out.print("****** line count "+line_limit+" was exceeded\n");
             break;
           }
         }         /* for psp */
@@ -1780,8 +1852,9 @@ System.out.print("swetest ");
           iflgret = sw.swe_houses(t,iflag, top_lat, top_long, ihsy, cusp, cusp, iofs);
           if (iflgret < 0) {
             if (!serr.toString().equals(serr_save.toString())) {
-              sout="error: "+serr.toString()+"\n";
-              System.out.print(sout);
+              System.out.print("error: ");
+              System.out.print(serr.toString());
+              System.out.print("\n");
             }
             serr_save=new StringBuffer(serr.toString());
           } else {
@@ -1809,6 +1882,9 @@ System.out.print("swetest ");
         System.out.print("\n");
       }
     }             /* while 1 */
+// end_main:
+//    sw.swe_close();
+//    return SweConst.OK;
   }
 
   /*
@@ -1817,7 +1893,7 @@ System.out.print("swetest ");
    * sparated by the gap string.
    */
   int print_line(int mode) {
-    String sp, sp2, sout = "";
+    String sp, sp2;
     double t2, ju2 = 0;
     double y_frac;
     double ar, sinp;
@@ -1833,114 +1909,101 @@ System.out.print("swetest ");
       if (c != 0)
         System.out.print(gap);
       switch((int)sp.charAt(c)) {
-      case (int)'y':
+      case 'y':
           if (is_label) { System.out.println("year"); break; }
-          sout=""+jyear;
-          System.out.print(sout);
+          System.out.print(jyear);
           break;
-      case (int)'Y':
+      case 'Y':
           if (is_label) { System.out.println("year"); break; }
           t2 = sd.getJulDay(jyear,1,1,ju2,gregflag);
           y_frac = (t - t2) / 365.0;
-          sout=f.fmt("%.2f",jyear + y_frac);
-          System.out.print(sout);
+          System.out.print(f.fmt("%.2f",jyear + y_frac));
           break;
-      case (int)'p':
+      case 'p':
           if (is_label) { System.out.println("obj.nr"); break; }
-          if (!is_house && diff_mode == DIFF_DIFF)
-            sout=""+ipl+"-"+ipldiff;
-          else if (!is_house && diff_mode == DIFF_MIDP)
-            sout=""+ipl+"/"+ipldiff;
-          else
-            sout=""+ipl;
-          System.out.print(sout);
+	  if (! is_house && diff_mode == DIFF_DIFF) {
+	    System.out.print(ipl + "-" + ipldiff);
+	  } else if (! is_house && diff_mode == DIFF_MIDP) {
+	    System.out.print(ipl + "/" + ipldiff);
+	  } else {
+	    System.out.print(ipl);
+	  }
           break;
-      case (int)'P':
+      case 'P':
           if (is_label) { System.out.println("name           "); break; }
           if (is_house) {
-            if (ipl <= nhouses)
-              sout="house "+f.fmt("%2d",ipl)+"       ";
-            else
-              sout=f.fmt("%-15s",hs_nam[ipl - nhouses]);
-          } else if (diff_mode == DIFF_DIFF)
-            sout=f.fmt("%.3s",spnam)+"-"+f.fmt("%.3s",spnam2);
-//                  sout=spnam.substring(0,SMath.min(3,spnam.length()))+"-"+
-//                       spnam2.substring(0,SMath.min(3,spnam2.length()));
-          else if (diff_mode == DIFF_MIDP)
-                sout=f.fmt("%.3s",spnam)+"/"+f.fmt("%.3s",spnam2);
-//              sout=spnam.substring(0,SMath.min(3,spnam.length()))+"/"+
-//                   spnam2.substring(0,SMath.min(3,spnam2.length()));
-          else {
-            sout=f.fmt("%-15s",spnam);
-//                  sout=(spnam+"               ").substring(0,SMath.max(spnam.length(),15));
-          }
-          System.out.print(sout);
+	    if (ipl <= nhouses) {
+	      System.out.print("house " + f.fmt("%2d", ipl) + "       ");
+	    } else {
+	      System.out.print(f.fmt("%-15s", hs_nam[ipl - nhouses]));
+	    }
+	  } else if (diff_mode == DIFF_DIFF) {
+	    System.out.print(f.fmt("%.3s", spnam) + "-" + f.fmt("%.3s", spnam2));
+	  } else if (diff_mode == DIFF_MIDP) {
+	    System.out.print(f.fmt("%.3s", spnam) + "/" + f.fmt("%.3s", spnam2));
+	  } else {
+	    System.out.print(f.fmt("%-15s", spnam));
+	  }
           break;
-      case (int)'J':
+      case 'J':
           if (is_label) { System.out.println("julday"); break; }
           y_frac = (t - (int)(t)) * 100;
-          if ((int)(y_frac) != y_frac)
-            sout=f.fmt("%.5f", t);
-          else
-            sout=f.fmt("%.2f", t);
-          System.out.print(sout);
+	  if (SMath.floor(y_frac) != y_frac) {
+	    System.out.print(f.fmt("%.5f", t));
+	  } else {
+	    System.out.print(f.fmt("%.2f", t));
+	  }
           break;
-      case (int)'T':
+      case 'T':
           if (is_label) { System.out.println("date"); break; }
-          sout=f.fmt("%02d",jday)+"."+f.fmt("%02d",jmon)+"."+jyear;
+          System.out.print(f.fmt("%02d",jday)+"."+f.fmt("%02d",jmon)+"."+jyear);
           if (jut != 0) {
             int h, m, s;
             s = (int) (jut * 3600 + 0.5);
             h = (int) (s / 3600.0);
             m = (int) ((s % 3600) / 60.0);
             s %= 60;
-            sout+=" "+f.fmt("%d",h)+":"+f.fmt("%02d",m)+":"+
-                  f.fmt("%02d",s);
+	    System.out.print(" " + h + ":" + f.fmt("%02d", m) + ":" + f.fmt("%02d", s));
             if (universal_time)
-              sout+=" UT";
+              System.out.print(" UT");
             else
-              sout+=" ET";
+              System.out.print(" ET");
           }
           System.out.print(sout);
           break;
-      case (int)'t':
+      case 't':
           if (is_label) { System.out.println("date"); break; }
-          sout=f.fmt("%02d",jyear % 100)+f.fmt("%02d",jmon)+
-               f.fmt("%02d",jday);
-          System.out.print(sout);
+          System.out.print(f.fmt("%02d",jyear % 100)+f.fmt("%02d",jmon)+f.fmt("%02d",jday));
           break;
-      case (int)'L':
+      case 'L':
           if (is_label) { System.out.println("long."); break; }
-          if (p >= psp.length() || (p < psp.length() && psp.charAt(p) != 'q')) { /* != delta t */
+          if (p >= psp.length() || (p < psp.length() && psp.charAt(p) != 'q' && psp.charAt(p) != 'y')) { /* != (delta t or time equation) */
             System.out.print(dms(x[0], round_flag));
             break;
           }
           // Fall through else...
-      case (int)'l':
-          if (is_label && sp.charAt(c) != 'l') { System.out.println("long"); break; }
-          sout=f.fmt("%# 11.7f", x[0]);
-          System.out.print(sout);
+      case 'l':
+          if (is_label && sp.charAt(c) == 'l') { System.out.println("long"); break; }
+          System.out.print(f.fmt("%# 11.7f", x[0]));
           break;
-      case (int)'G':
+      case 'G':
           if (is_label) { System.out.println("housPos"); break; }
           System.out.print(dms(hpos, round_flag));
           break;
-      case (int)'g':
+      case 'g':
           if (is_label) { System.out.println("housPos"); break; }
-          sout=f.fmt("%# 11.7f", hpos);
-          System.out.print(sout);
+          System.out.print(f.fmt("%# 11.7f", hpos));
           break;
-      case (int)'j':
+      case 'j':
           if (is_label) { System.out.println("houseNr"); break; }
-          sout=f.fmt("%# 11.7f", hposj.val);
-          System.out.print(sout);
+          System.out.print(f.fmt("%# 11.7f", hposj.val));
           break;
-      case (int)'Z':
+      case 'Z':
           if (is_label) { System.out.println("long"); break; }
           System.out.print(dms(x[0], round_flag|BIT_ZODIAC));
           break;
-      case (int)'S':
-      case (int)'s':
+      case 'S':
+      case 's':
           if (fmt.indexOf("X")>=0 || fmt.indexOf("U")>=0 ||
               fmt.indexOf("x")>=0 || fmt.indexOf("u")>=0 ||
               (sp.length()>c+1 &&
@@ -1950,77 +2013,84 @@ System.out.print("swetest ");
               if (c2 != 0)
                 System.out.print(gap);
               switch((int)sp2.charAt(c2)) {
-                case (int)'L':   /* speed! */
-                case (int)'Z':   /* speed! */
+                case 'L':   /* speed! */
+                case 'Z':   /* speed! */
                   if (is_label) { System.out.println("lon/day"); break; }
                   System.out.print(dms(x[3], round_flag));
                   break;
-                case (int)'l':   /* speed! */
+                case 'l':   /* speed! */
                   if (is_label) { System.out.println("lon/day"); break; }
-                  sout=f.fmt("%11.7f", x[3]);
-                  System.out.print(sout);
+                  System.out.print(f.fmt("%11.7f", x[3]));
                   break;
-                case (int)'B':   /* speed! */
+                case 'B':   /* speed! */
                   if (is_label) { System.out.println("lat/day"); break; }
                   System.out.print(dms(x[4], round_flag));
                   break;
-                case (int)'b':   /* speed! */
+                case 'b':   /* speed! */
                   if (is_label) { System.out.println("lat/day"); break; }
-                  sout=f.fmt("%11.7f", x[4]);
-                  System.out.print(sout);
+                  System.out.print(f.fmt("%11.7f", x[4]));
                   break;
-                case (int)'A':   /* speed! */
+                case 'A':   /* speed! */
                   if (is_label) { System.out.println("RA/day"); break; }
                   System.out.print(dms(xequ[3]/15,
                                    round_flag|SweConst.SEFLG_EQUATORIAL));
                   break;
-                case (int)'a':   /* speed! */
+                case 'a':   /* speed! */
                   if (is_label) { System.out.println("RA/day"); break; }
-                  sout=f.fmt("%11.7f", xequ[3]);
-                  System.out.print(sout);
+                  System.out.print(f.fmt("%11.7f", xequ[3]));
                   break;
-                case (int)'D':   /* speed! */
+                case 'D':   /* speed! */
                   if (is_label) { System.out.println("dcl/day"); break; }
                   System.out.print(dms(xequ[4], round_flag));
                   break;
-                case (int)'d':   /* speed! */
+                case 'd':   /* speed! */
                   if (is_label) { System.out.println("dcl/day"); break; }
-                  sout=f.fmt("%11.7f", xequ[4]);
-                  System.out.print(sout);
+                  System.out.print(f.fmt("%11.7f", xequ[4]));
                   break;
-                case (int)'R':   /* speed! */
-                case (int)'r':   /* speed! */
+                case 'R':   /* speed! */
+                case 'r':   /* speed! */
                   if (is_label) { System.out.println("AU/day"); break; }
-                  sout=f.fmt("%# 14.9f", x[5]);
-                  System.out.print(sout);
+                  System.out.print(f.fmt("%# 14.9f", x[5]));
                   break;
-                case (int)'U':   /* speed! */
-                case (int)'X':   /* speed! */
-		  if (is_label) { System.out.println("speed_0"+gap+"speed_1"+gap+"speed_2"); break; }
+                case 'U':   /* speed! */
+                case 'X':   /* speed! */
+		  if (is_label) { 
+		    System.out.print("speed_0");
+		    System.out.print(gap);
+		    System.out.print("speed_1");
+		    System.out.print(gap);
+		    System.out.print("speed_2");
+		    break; 
+		  }
                   if (sp.charAt(c) =='U')
                     ar = SMath.sqrt(square_sum(xcart));
                   else
                     ar = 1;
-                  sout=f.fmt("%# 14.9f", xcart[3]/ar)+gap;
-                  System.out.print(sout);
-                  sout=f.fmt("%# 14.9f", xcart[4]/ar)+gap;
-                  System.out.print(sout);
-                  sout=f.fmt("%# 14.9f", xcart[5]/ar);
-                  System.out.print(sout);
+                  System.out.print(f.fmt("%# 14.9f", xcart[3]/ar));
+		  System.out.print(gap);
+                  System.out.print(f.fmt("%# 14.9f", xcart[4]/ar));
+		  System.out.print(gap);
+                  System.out.print(f.fmt("%# 14.9f", xcart[5]/ar));
                   break;
-                case (int)'u':   /* speed! */
-                case (int)'x':   /* speed! */
-		  if (is_label) { System.out.println("speed_0"+gap+"speed_1"+gap+"speed_2"); break; }
+                case 'u':   /* speed! */
+                case 'x':   /* speed! */
+		  if (is_label) { 
+		    System.out.print("speed_0");
+		    System.out.print(gap);
+		    System.out.print("speed_1");
+		    System.out.print(gap);
+		    System.out.print("speed_2");
+		    break; 
+		  }
                   if (sp.charAt(c) =='u')
                     ar = SMath.sqrt(square_sum(xcartq));
                   else
                     ar = 1;
-                  sout=f.fmt("%# 14.9f", xcartq[3]/ar)+gap;
-                  System.out.print(sout);
-                  sout=f.fmt("%# 14.9f", xcartq[4]/ar)+gap;
-                  System.out.print(sout);
-                  sout=f.fmt("%# 14.9f", xcartq[5]/ar);
-                  System.out.print(sout);
+                  System.out.print(f.fmt("%# 14.9f", xcartq[3]/ar));
+		  System.out.print(gap);
+                  System.out.print(f.fmt("%# 14.9f", xcartq[4]/ar));
+		  System.out.print(gap);
+                  System.out.print(f.fmt("%# 14.9f", xcartq[5]/ar));
                   break;
                 default:
                   break;
@@ -2036,33 +2106,30 @@ System.out.print("swetest ");
             System.out.print(f.fmt("%# 11.7f", x[3]));
           }
           break;
-      case (int)'B':
+      case 'B':
           if (is_label) { System.out.println("lat"); break; }
           System.out.print(dms(x[1], round_flag));
           break;
-      case (int)'b':
+      case 'b':
           if (is_label) { System.out.println("lat"); break; }
-          sout=f.fmt("%# 11.7f", x[1]);
-          System.out.print(sout);
+          System.out.print(f.fmt("%# 11.7f", x[1]));
           break;
-      case (int)'A':     /* rectascensio */
+      case 'A':     /* right ascension */
           if (is_label) { System.out.println("RA"); break; }
           System.out.print(dms(xequ[0]/15,
                                round_flag|SweConst.SEFLG_EQUATORIAL));
           break;
-      case (int)'a':     /* rectascensio */
+      case 'a':     /* right ascension */
           if (is_label) { System.out.println("RA"); break; }
-          sout=f.fmt("%# 11.7f", xequ[0]);
-          System.out.print(sout);
+          System.out.print(f.fmt("%# 11.7f", xequ[0]));
           break;
-      case (int)'D':     /* declination */
+      case 'D':     /* declination */
           if (is_label) { System.out.println("decl"); break; }
           System.out.print(dms(xequ[1], round_flag));
           break;
-      case (int)'d':     /* declination */
+      case 'd':     /* declination */
           if (is_label) { System.out.println("decl"); break; }
-          sout=f.fmt("%# 11.7f", xequ[1]);
-          System.out.print(sout);
+          System.out.print(f.fmt("%# 11.7f", xequ[1]));
           break;
       case 'I':     /* azimuth */
           if (is_label) { System.out.println("azimuth"); break; }
@@ -2070,8 +2137,7 @@ System.out.print("swetest ");
           break;
       case 'i':     /* azimuth */
           if (is_label) { System.out.println("azimuth"); break; }
-          sout=f.fmt("%# 11.7f", xaz[0]);
-          System.out.print(sout);
+          System.out.print(f.fmt("%# 11.7f", xaz[0]));
           break;
       case 'H':     /* height */
           if (is_label) { System.out.println("height"); break; }
@@ -2079,8 +2145,7 @@ System.out.print("swetest ");
           break;
       case 'h':     /* height */
           if (is_label) { System.out.println("height"); break; }
-          sout=f.fmt("%# 11.7f", xaz[1]);
-          System.out.print(sout);
+          System.out.print(f.fmt("%# 11.7f", xaz[1]));
           break;
       case 'K':     /* height (apparent) */
           if (is_label) { System.out.println("hgtApp"); break; }
@@ -2088,16 +2153,14 @@ System.out.print("swetest ");
           break;
       case 'k':     /* height (apparent) */
           if (is_label) { System.out.println("hgtApp"); break; }
-          sout=f.fmt("%# 11.7f", xaz[2]);
-          System.out.print(sout);
+          System.out.print(f.fmt("%# 11.7f", xaz[2]));
           break;
-      case (int)'R':
+      case 'R':
           if (is_label) { System.out.println("distAU"); break; }
-          sout=f.fmt("%# 14.9f", x[2]);
-          System.out.print(sout);
+          System.out.print(f.fmt("%# 14.9f", x[2]));
           break;
 #ifndef ASTROLOGY
-      case (int)'r':
+      case 'r':
           if (is_label) { System.out.println("dist"); break; }
           if ( ipl == SweConst.SE_MOON ) { /* for moon print parallax */
 //            /* geocentric horizontal parallax: */
@@ -2105,64 +2168,62 @@ System.out.print("swetest ");
 //              sinp = 8.794 / x[2];    /* in seconds of arc */
 //              ar = sinp * (1 + sinp * sinp * 3.917402e-12);
 //              /* the factor is 1 / (3600^2 * (180/pi)^2 * 6) */
-//              sprintf(sout, "%# 13.5f\" %# 13.5f'", ar, ar/60.0);
+//	        printf("%# 13.5f\" %# 13.5f'", ar, ar/60.0);
 //            }
             sw.swe_pheno(te, ipl, iflag, dret, serr);
-            sout += f.fmt("%# 13.5f", dret[5] * 3600) + "\"";
+            System.out.print(f.fmt("%# 13.5f", dret[5] * 3600) + "\"");
           } else {
-            sout=f.fmt("%# 14.9f", x[2]);
+            System.out.print(f.fmt("%# 14.9f", x[2]));
           }
-          System.out.print(sout);
           break;
 #endif /* ASTROLOGY */
-      case (int)'U':
-      case (int)'X':
+      case 'U':
+      case 'X':
           if (sp.charAt(c) =='U')
             ar = SMath.sqrt(square_sum(xcart));
           else
             ar = 1;
-          sout=f.fmt("%# 14.9f", xcart[0]/ar)+gap;
-          System.out.print(sout);
-          sout=f.fmt("%# 14.9f", xcart[1]/ar)+gap;
-          System.out.print(sout);
-          sout=f.fmt("%# 14.9f", xcart[2]/ar);
-          System.out.print(sout);
+	  System.out.print(f.fmt("%# 14.9f", xcart[0]/ar));
+	  System.out.print(gap);
+	  System.out.print(f.fmt("%# 14.9f", xcart[1]/ar));
+	  System.out.print(gap);
+	  System.out.print(f.fmt("%# 14.9f", xcart[2]/ar));
           break;
-      case (int)'u':
-      case (int)'x':
-	  if (is_label) { System.out.println("x0"+gap+"x1"+gap+"x2"); break; }
+      case 'u':
+      case 'x':
+	  if (is_label) { 
+	    System.out.print("x0");
+	    System.out.print(gap);
+	    System.out.print("x1");
+	    System.out.print(gap);
+	    System.out.print("x2");
+	    break; 
+	  }
           if (sp.charAt(c) =='u')
             ar = SMath.sqrt(square_sum(xcartq));
           else
             ar = 1;
-          sout=f.fmt("%# 14.9f", xcartq[0]/ar)+gap;
-          System.out.print(sout);
-          sout=f.fmt("%# 14.9f", xcartq[1]/ar)+gap;
-          System.out.print(sout);
-          sout=f.fmt("%# 14.9f", xcartq[2]/ar);
-          System.out.print(sout);
+	  System.out.print(f.fmt("%# 14.9f", xcartq[0]/ar));
+	  System.out.print(gap);
+	  System.out.print(f.fmt("%# 14.9f", xcartq[1]/ar));
+	  System.out.print(gap);
+	  System.out.print(f.fmt("%# 14.9f", xcartq[2]/ar));
           break;
-      case (int)'Q':
+      case 'Q':
 	  if (is_label) { System.out.println("Q"); break; }
-//                sout=f.fmt("%-15s", spnam);
-          sout=(spnam+"               ").substring(0,SMath.max(15,spnam.length()));
-          System.out.print(sout);
-          System.out.print(dms(x[0], round_flag));
-          System.out.print(dms(x[1], round_flag));
-          sout="  "+f.fmt("%# 14.9f", x[2]);
-          System.out.print(sout);
-          System.out.print(dms(x[3], round_flag));
-          System.out.print(dms(x[4], round_flag));
-          sout="  "+f.fmt("%# 14.9f", x[5])+"\n";
-          System.out.print(sout);
-          sout="               "+dms(xequ[0], round_flag);
-          System.out.print(sout);
-          System.out.print(dms(xequ[1], round_flag));
-          sout="                "+dms(xequ[3], round_flag);
-          System.out.print(sout);
-          System.out.print(dms(xequ[4], round_flag));
+	  System.out.print(f.fmt("%-15s", spnam));
+	  System.out.print(dms(x[0], round_flag));
+	  System.out.print(dms(x[1], round_flag));
+	  System.out.print("  " + f.fmt("%# 14.9f", x[2]));
+	  System.out.print(dms(x[3], round_flag));
+	  System.out.print(dms(x[4], round_flag));
+	  System.out.print("  " + f.fmt("%# 14.9f\n", x[5]));
+	  System.out.print("               " + dms(xequ[0], round_flag));
+	  System.out.print(dms(xequ[1], round_flag));
+	  System.out.print("                " + dms(xequ[3], round_flag));
+	  System.out.print(dms(xequ[4], round_flag));
           break;
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
       case 'N':
       case 'n': {
           double xasc[]=new double[6], xdsc[]=new double[6];
@@ -2172,7 +2233,12 @@ System.out.print("swetest ");
                                    xdsc, null, null, serr);
           if (iflgret >= 0 &&
               (ipl <= SweConst.SE_NEPTUNE || sp.charAt(c) == 'N') ) {
-	    if (is_label) { System.out.println("nodAsc"+gap+"nodDesc"); break; }
+	    if (is_label) { 
+	      System.out.print("nodAsc");
+	      System.out.print(gap);
+	      System.out.print("nodDesc");
+	      break; 
+	    }
             System.out.print(f.fmt("%# 11.7f",xasc[0]));
             System.out.print(gap);
             System.out.print(f.fmt("%# 11.7f",xdsc[0]));
@@ -2190,7 +2256,12 @@ System.out.print("swetest ");
                                    xper, xaph, serr);
           if (iflgret >= 0 && (ipl <= SweConst.SE_NEPTUNE ||
               sp.charAt(c) == 'F') ) {
-	    if (is_label) { System.out.println("peri"+gap+"apo"); break; }
+	    if (is_label) { 
+	      System.out.print("peri");
+	      System.out.print(gap);
+	      System.out.print("apo");
+	      break; 
+	    }
             System.out.print(f.fmt("%# 11.7f", xper[0]));
             System.out.print(gap);
             System.out.print(f.fmt("%# 11.7f", xaph[0]));
@@ -2200,13 +2271,17 @@ System.out.print("swetest ");
                                    xper, xfoc, serr);
           if (iflgret >= 0 && (ipl <= SweConst.SE_NEPTUNE ||
               sp.charAt(c) == 'F') ) {
-	    if (is_label) { System.out.println(gap+"focus"); break; }
-            System.out.print(gap);
+	    if (is_label) { 
+	      System.out.print(gap);
+	      System.out.print("focus");
+	      break; 
+	    }
+	    System.out.print(gap);
             System.out.print(f.fmt("%# 11.7f", xfoc[0]));
           }
         };
         break;
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
       case '+':
           if (is_house) break;
           if (is_label) { System.out.println("phase"); break; }
@@ -2232,32 +2307,51 @@ System.out.print("swetest ");
           if (is_house) break;
           System.out.print("  "+f.fmt("%# 6.1f", attr[4])+"m");
           break;
+      case 'V': /* human design gates */
+      case 'v': {
+          double xhds;
+          int igate, iline, ihex;
+          final int hexa[] = new int[]{1, 43, 14, 34, 9, 5, 26, 11, 10, 58, 38, 54, 61, 60, 41, 19, 13, 49, 30, 55, 37, 63, 22, 36, 25, 17, 21, 51, 42, 3, 27, 24, 2, 23, 8, 20, 16, 35, 45, 12, 15, 52, 39, 53, 62, 56, 31, 33, 7, 4, 29, 59, 40, 64, 47, 6, 46, 18, 48, 57, 32, 50, 28, 44};
+          if (is_label) { System.out.print("hds"); break; }
+          if (is_house) break;
+          xhds = sl.swe_degnorm(x[0] - 223.25);
+          ihex = (int) SMath.floor(xhds / 5.625);
+          iline = ((int) (SMath.floor(xhds / 0.9375))) % 6 + 1 ;
+          igate = hexa[ihex];
+          System.out.print(f.fmt("%2d", igate) + "." + f.fmt("%d", iline));
+	  if (sp.charAt(c) == 'V')
+	    System.out.print(" " + f.fmt("%2d", sl.swe_d2l(100 * ((xhds / 0.9375) % 1))) + "%");
+          break;
+        }
       }     /* switch */
     }       /* for sp */
     System.out.print("\n");
     return SweConst.OK;
   }
 
-  private String dms(double xv, int iflag) {
+#undef OUTPUT_EXTRA_PRECISION
+  private String dms(double xv, int iflg) {
     int izod;
     int k, kdeg, kmin, ksec;
-    String c = swed.ODEGREE_CHAR;
+    String c = swed.ODEGREE_STRING;
     String s1;
     String s;
     int sgn;
+    if (Double.isNaN(xv))
+      return "nan";
     s = "";
-    if ((iflag & SweConst.SEFLG_EQUATORIAL)!=0)
+    if ((iflg & SweConst.SEFLG_EQUATORIAL)!=0)
       c = "h";
     if (xv < 0) {
       xv = -xv;
       sgn = -1;
     } else
       sgn = 1;
-    if ((iflag & BIT_ROUND_MIN)!=0)
+    if ((iflg & BIT_ROUND_MIN)!=0)
       xv = sl.swe_degnorm(xv + 0.5/60);
-    if ((iflag & BIT_ROUND_SEC)!=0)
+    if ((iflg & BIT_ROUND_SEC)!=0)
       xv = sl.swe_degnorm(xv + 0.5/3600);
-    if ((iflag & BIT_ZODIAC)!=0) {
+    if ((iflg & BIT_ZODIAC)!=0) {
       izod = (int) (xv / 30)%12;
       xv%=30.;
       kdeg = (int) xv;
@@ -2269,31 +2363,38 @@ System.out.print("swetest ");
     xv -= kdeg;
     xv *= 60;
     kmin = (int) xv;
-    if ((iflag & BIT_ZODIAC)!=0 && (iflag & BIT_ROUND_MIN)!=0)
+    if ((iflg & BIT_ZODIAC)!=0 && (iflg & BIT_ROUND_MIN)!=0) {
       s1=f.fmt("%2ld", kmin);
-    else
+    } else {
       s1=f.fmt("%2ld", kmin)+"'";
+    }
     s+=s1;
-    if ((iflag & BIT_ROUND_MIN)!=0)
-      return return_dms(sgn,s);
+    if ((iflg & BIT_ROUND_MIN)!=0)
+      return dms_label_return_dms(sgn,s,iflg);
     xv -= kmin;
     xv *= 60;
     ksec = (int) xv;
-    if ((iflag & BIT_ROUND_SEC)!=0)
+    if ((iflg & BIT_ROUND_SEC)!=0) {
       s1=f.fmt("%2ld", ksec)+"\"";
-    else
+    } else {
       s1=f.fmt("%2ld", ksec);
+    }
     s+=s1;
-    if ((iflag & BIT_ROUND_SEC)!=0)
-      return return_dms(sgn,s);
+    if ((iflg & BIT_ROUND_SEC)!=0)
+      return dms_label_return_dms(sgn,s,iflg);
     xv -= ksec;
-    k = (int) (xv * 10000);
+#if OUTPUT_EXTRA_PRECISION
+    k = (int) (xv * 100000 + 0.5);
+    s1="."+f.fmt("%05ld", k);
+#else
+    k = (int) (xv * 10000 + 0.5);
     s1="."+f.fmt("%04ld", k);
+#endif /* OUTPUT_EXTRA_PRECISION */
     s+=s1;
-    return return_dms(sgn,s);
+    return dms_label_return_dms(sgn,s,iflg);
   }
 
-  private String return_dms(int sgn, String s) {
+  private String dms_label_return_dms(int sgn, String s, int iflg) {
     if (sgn < 0) {
       for (int i=0; i<s.length();i++) {
         if (Character.isDigit(s.charAt(i))) {
@@ -2302,34 +2403,39 @@ System.out.print("swetest ");
         }
       }
     }
+    if ((iflg & BIT_LZEROES) != 0) {
+      // while ((sp = strchr(s+2, ' ')) != NULL) *sp = '0';	// Replaces all spaces by '0'es
+      s = s.substring(0,2) + s.substring(2).replace(' ', '0');
+    }
     return(s);
   }
 
   private int letter_to_ipl(int letter) {
     if (letter >= (int)'0' && letter <= (int)'9')
       return letter - (int)'0' + SweConst.SE_SUN;
-//#ifdef ASTROLOGY
+#ifdef ASTROLOGY
     if (letter == (int)'A' || letter == (int)'D')
       return letter - (int)'A' + SweConst.SE_MEAN_APOG;
-//#else
+#else
     if (letter >= (int)'A' && letter <= (int)'I')
       return letter - (int)'A' + SweConst.SE_MEAN_APOG;
     if (letter >= (int)'J' && letter <= (int)'Z')
       return letter - (int)'J' + SweConst.SE_CUPIDO;
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
     switch (letter) {
-      case (int)'m': return SweConst.SE_MEAN_NODE;
-      case (int)'c': return SweConst.SE_INTP_APOG;
-      case (int)'g': return SweConst.SE_INTP_PERG;
-      case (int)'n':
-      case (int)'o': return SweConst.SE_ECL_NUT;
-      case (int)'t': return SweConst.SE_TRUE_NODE;
-//#ifndef ASTROLOGY
-      case (int)'f': return SweConst.SE_FIXSTAR;
-//#endif /* ASTROLOGY */
-      case (int)'w': return SweConst.SE_WALDEMATH;
+      case 'm': return SweConst.SE_MEAN_NODE;
+      case 'c': return SweConst.SE_INTP_APOG;
+      case 'g': return SweConst.SE_INTP_PERG;
+      case 'n':
+      case 'o': return SweConst.SE_ECL_NUT;
+      case 't': return SweConst.SE_TRUE_NODE;
+#ifndef ASTROLOGY
+      case 'f': return SweConst.SE_FIXSTAR;
+#endif /* ASTROLOGY */
+      case 'w': return SweConst.SE_WALDEMATH;
       case 'e': /* swetest: a line of labels */
       case 'q': /* swetest: delta t */
+      case 'y': /* swetest: time equation */
       case 's': /* swetest: an asteroid, with number given in -xs[number] */
       case 'z': /* swetest: a fictitious body, number given in -xz[number] */
       case 'd': /* swetest: default (main) factors 0123456789mtABC */
@@ -2342,10 +2448,27 @@ System.out.print("swetest ");
   }
 
 
+  private int ut_to_lmt_lat(double t_ut, double[] geopos, double[] t_ret, StringBuffer serr) {
+    int iflgret = SweConst.OK;
+    if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+      t_ut += geopos[0] / 360.0;
+      if ((time_flag & BIT_TIME_LAT) != 0) {
+        double[] ar_t_ut = new double[] { t_ut };
+        iflgret = sw.swe_lmt_to_lat(t_ut, geopos[0], ar_t_ut, null);
+	t_ut = ar_t_ut[0];
+      }
+    }
+    t_ret[0] = t_ut;
+    return iflgret;
+  }
+
+
   private int call_rise_set(double t_ut, int ipl, StringBuffer star, int whicheph, int special_mode, double[] geopos, StringBuffer serr) {
     int ii;
     int rsmi = 0;
     double tret[] = new double[10];
+    double t0, t1;
+    int retc = SweConst.OK;
     DblObj tret_out = new DblObj(); // used as a temporary output double value
     sw.swe_set_topo(geopos[0], geopos[1], geopos[2]); 
     do_printf("\n");
@@ -2375,10 +2498,20 @@ System.out.print("swetest ");
           System.exit(0);
         }
         tret[1] = tret_out.val;
+        if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+          double[] dtmp = new double[] { tret[0] }; // temporary assignment to have an output variable
+	  retc = ut_to_lmt_lat(tret[0], geopos, dtmp, serr);
+          tret[0] = dtmp[0];
+          dtmp[0] = tret[1]; // temporary assignment to have an output variable
+	  retc = ut_to_lmt_lat(tret[1], geopos, dtmp, serr);
+          tret[1] = dtmp[0];
+        }
+        t0 = 0; t1 = 0;
         sout = "rise     ";
         if (tret[0] == 0 || tret[0] > tret[1]) {
           sout += "         -                     ";
         } else {
+	  t0 = tret[0];
 //          swe_revjul(tret[0], gregflag, &jyear, &jmon, &jday, &jut);
           sd.setJulDay(tret[0]);
           sd.setCalendarType(gregflag,SweDate.SE_KEEP_JD); // Keep JulDay!
@@ -2386,18 +2519,17 @@ System.out.print("swetest ");
           jmon=sd.getMonth();
           jday=sd.getDay();
           jut=sd.getHour();
-//          sprintf(sout + strlen(sout), "%2d.%2d.%4d\t%s    ",
-//                  jday, jmon, jyear, hms(jut,0));
 #ifdef JAVAME
-          sout += f.fmt("%2d", jday) + "." + f.fmt("%2d", jmon) + "." + f.fmt("%4d", jyear) + "\t" + f.fmt("%s", hms(jut,0)) + "    ";
+          sout += f.fmt("%2d", jday) + "." + f.fmt("%02d", jmon) + "." + f.fmt("%04d", jyear) + "\t" + f.fmt("%s", hms(jut,BIT_LZEROES)) + "    ";
 #else
-          sout += String.format("%2d.%2d.%4d\t%s    ", jday, jmon, jyear, hms(jut,0));
+          sout += String.format(Locale.US, "%2d.%02d.%04d\t%s    ", jday, jmon, jyear, hms(jut,BIT_LZEROES));
 #endif /* JAVAME */
         }
         sout += "set      ";
         if (tret[1] == 0) {
           sout += "         -                     \n";
         } else {
+	  t1 = tret[1];
 //          swe_revjul(tret[1], gregflag, &jyear, &jmon, &jday, &jut);
           sd.setJulDay(tret[1]);
           sd.setCalendarType(gregflag,SweDate.SE_KEEP_JD); // Keep JulDay!
@@ -2405,14 +2537,17 @@ System.out.print("swetest ");
           jmon=sd.getMonth();
           jday=sd.getDay();
           jut=sd.getHour();
-//          sprintf(sout + strlen(sout), "%2d.%2d.%4d\t%s\n",
-//                    jday, jmon, jyear, hms(jut,0));
 #ifdef JAVAME
-          sout += f.fmt("%2d", jday) + "." + f.fmt("%2d", jmon) + "." + f.fmt("%4d", jyear) + "\t" + f.fmt("%s", hms(jut,0)) + "\n";
+          sout += f.fmt("%2d", jday) + "." + f.fmt("%02d", jmon) + "." + f.fmt("%04d", jyear) + "\t" + f.fmt("%s", hms(jut,BIT_LZEROES)) + "    ";
 #else
-          sout += String.format("%2d.%2d.%4d\t%s\n", jday, jmon, jyear, hms(jut,0));
+          sout += String.format(Locale.US, "%2d.%02d.%04d\t%s    ", jday, jmon, jyear, hms(jut,BIT_LZEROES));
 #endif /* JAVAME */
         }
+        if (t0 != 0 && t1 != 0) {
+          t0 = (t1 - t0) * 24;
+	    sout += "dt = " + hms(t0, BIT_LZEROES);
+        }
+        sout += "\n";
         do_printf(sout);
       }
 #ifndef ASTROLOGY
@@ -2433,6 +2568,14 @@ System.out.print("swetest ");
           do_printf(serr);
           return SweConst.ERR;
         }
+        if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+          double[] dtmp = new double[] { tret[0] }; // temporary assignment to have an output variable
+	  retc = ut_to_lmt_lat(tret[0], geopos, dtmp, serr);
+          tret[0] = dtmp[0];
+          dtmp[0] = tret[1]; // temporary assignment to have an output variable
+	  retc = ut_to_lmt_lat(tret[1], geopos, dtmp, serr);
+          tret[1] = dtmp[0];
+        }
         tret[1] = tret_out.val;
         sout = "mtransit ";
         if (tret[0] == 0) sout += "         -                     ";
@@ -2444,12 +2587,10 @@ System.out.print("swetest ");
           jmon=sd.getMonth();
           jday=sd.getDay();
           jut=sd.getHour();
-//          sprintf(sout + strlen(sout), "%2d.%2d.%4d\t%s    ",
-//                    jday, jmon, jyear, hms(jut,0));
 #ifdef JAVAME
-          sout += f.fmt("%2d", jday) + "." + f.fmt("%2d", jmon) + "." + f.fmt("%4d", jyear) + "\t" + f.fmt("%s", hms(jut,0)) + "    ";
+          sout += f.fmt("%2d", jday) + "." + f.fmt("%02d", jmon) + "." + f.fmt("%04d", jyear) + "\t" + f.fmt("%s", hms(jut,BIT_LZEROES)) + "    ";
 #else
-          sout += String.format("%2d.%2d.%4d\t%s    ", jday, jmon, jyear, hms(jut,0));
+          sout += String.format(Locale.US, "%2d.%02d.%04d\t%s    ", jday, jmon, jyear, hms(jut,BIT_LZEROES));
 #endif /* JAVAME */
         }
         sout += "itransit ";
@@ -2462,33 +2603,33 @@ System.out.print("swetest ");
           jmon=sd.getMonth();
           jday=sd.getDay();
           jut=sd.getHour();
-//          sprintf(sout + strlen(sout), "%2d.%2d.%4d\t%s\n",
-//                    jday, jmon, jyear, hms(jut,0));
 #ifdef JAVAME
-          sout += f.fmt("%2d", jday) + "." + f.fmt("%2d", jmon) + "." + f.fmt("%4d", jyear) + "\t" + f.fmt("%s", hms(jut,0)) + "\n";
+          sout += f.fmt("%2d", jday) + "." + f.fmt("%02d", jmon) + "." + f.fmt("%04d", jyear) + "\t" + f.fmt("%s", hms(jut,BIT_LZEROES)) + "\n";
 #else
-          sout += String.format("%2d.%2d.%4d\t%s\n", jday, jmon, jyear, hms(jut,0));
+          sout += String.format(Locale.US, "%2d.%02d.%04d\t%s\n", jday, jmon, jyear, hms(jut,BIT_LZEROES));
 #endif /* JAVAME */
         }
         do_printf(sout);
       }
 #endif /* ASTROLOGY */
     }
-    return SweConst.OK;
+    return retc;
   }
 
   private int call_lunar_eclipse(double t_ut, int whicheph, int special_mode, double[] geopos, StringBuffer serr) {
-    int ii, eclflag, ecl_type = 0;
-//	int ihou[] = new int[1], imin[] = new int[1], isec[] = new int[1], isgn[] = new int[1]; // int used as output parameters
-//	double dfrc[] = new double[1] /* output par. */;
+    int i, ii, retc, eclflag, ecl_type = 0;
+//    int ihou[] = new int[1], imin[] = new int[1], isec[] = new int[1], isgn[] = new int[1]; // int used as output parameters
+//    double dfrc[] = new double[1] /* output par. */;
     double attr[] = new double[30];
-	/* no selective eclipse type set, set all */
-	if ((search_flag & SweConst.SE_ECL_ALLTYPES_LUNAR) == 0)
-	    search_flag |= SweConst.SE_ECL_ALLTYPES_LUNAR;
+    double dt;
+    String s1, sout_short, sfmt;
+    /* no selective eclipse type set, set all */
+    if ((search_flag & SweConst.SE_ECL_ALLTYPES_LUNAR) == 0)
+      search_flag |= SweConst.SE_ECL_ALLTYPES_LUNAR;
     do_printf("\n");
     for (ii = 0; ii < nstep; ii++, t_ut += direction) {
       sout = "";
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
       /* swetest -lunecl -how 
        * type of lunar eclipse and percentage for a given time: */
       if ((special_mode & SP_MODE_HOW) != 0) {
@@ -2496,29 +2637,125 @@ System.out.print("swetest ");
           do_printf(serr);
           return SweConst.ERR;
         } else {
-          ecl_type = 0;
           if ((eclflag & SweConst.SE_ECL_TOTAL)!=0) {
-            sout="total lunar eclipse: "+f.fmt("%f",attr[0])+" o/o\n";
             ecl_type = ECL_LUN_TOTAL;
+	    sfmt = "total lunar eclipse: %f o/o \n";
           } else if ((eclflag & SweConst.SE_ECL_PARTIAL)!=0)  {
-            sout="partial lunar eclipse: "+f.fmt("%f",attr[0])+" o/o\n";
             ecl_type = ECL_LUN_PARTIAL;
+	    sfmt = "partial lunar eclipse: %f o/o \n";
           } else if ((eclflag & SweConst.SE_ECL_PENUMBRAL)!=0)  {
-            sout="penumbral lunar eclipse: "+f.fmt("%f",attr[0])+" o/o\n";
             ecl_type = ECL_LUN_PENUMBRAL;
+	    sfmt = "penumbral lunar eclipse: %f o/o \n";
           } else {
-            sout="no lunar eclipse\n";
+	    sfmt = "no lunar eclipse \n";
           }
-        do_printf(sout);
+	  sout = sfmt;
+	  if (sfmt.indexOf('%') >= 0) {
+#ifdef JAVAME
+            sout = sfmt.replaceFirst("%[^f]*f", ""+attr[0]);
+#else
+            sout = String.format(Locale.US, sfmt, attr[0]);
+#endif /* JAVAME */
+	  }
+          do_printf(sout);
         }
+        continue;
       }
-//#endif /* ASTROLOGY */
-//#ifndef ASTROLOGY
+#endif /* ASTROLOGY */
+#ifndef ASTROLOGY
       /* swetest -lunecl 
        * find next lunar eclipse: */
-      if ((special_mode & SP_MODE_HOW) == 0) {
+      /* locally visible lunar eclipse */
+      if ((special_mode & SP_MODE_LOCAL) != 0) {
+        if ((eclflag = sw.swe_lun_eclipse_when_loc(t_ut, whicheph, geopos, 
+                  tret, attr, direction_flag ? 1 : 0, serr)) == SweConst.ERR) {
+          do_printf(serr);
+          return SweConst.ERR;
+        } 
+        if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+	  for (i = 0; i < 10; i++) {
+            double[] dtmp = new double[1];
+	    if (tret[i] != 0) {
+              dtmp[0] = tret[i];
+	      retc = ut_to_lmt_lat(tret[i], geopos, dtmp, serr);
+              tret[i] = dtmp[0];
+	    }
+	  }
+        }
+        t_ut = tret[0];
+        if ((eclflag & SweConst.SE_ECL_TOTAL) != 0) {
+          sout = "total   ";
+	  ecl_type = ECL_LUN_TOTAL;
+        }
+        if ((eclflag & SweConst.SE_ECL_PENUMBRAL) != 0) {
+          sout = "penumb. ";
+	  ecl_type = ECL_LUN_PENUMBRAL;
+        }
+        if ((eclflag & SweConst.SE_ECL_PARTIAL) != 0) {
+          sout = "partial ";
+	  ecl_type = ECL_LUN_PARTIAL;
+        }
+        sout += "lunar eclipse\t";
+//        swe_revjul(t_ut, gregflag, &jyear, &jmon, &jday, &jut);
+        sd.setJulDay(t_ut);
+        sd.setCalendarType(gregflag,SweDate.SE_KEEP_JD); // Keep JulDay!
+        jyear=sd.getYear();
+        jmon=sd.getMonth();
+        jday=sd.getDay();
+        jut=sd.getHour();
+        /*if ((eclflag = swe_lun_eclipse_how(t_ut, whicheph, geopos, attr, serr)) == ERR) {
+          do_printf(serr);
+          return ERR;
+        }*/
+        dt = (tret[3] - tret[2]) * 24 * 60;
+//        sprintf(s1, "%d min %4.2f sec", (int) dt, fmod(dt, 1) * 60);
+#ifdef JAVAME
+        s1 = f.fmt("%d", (int) dt) + " min " + f.fmt("%4.2f", (dt % 1) * 60) + " sec";
+#else
+        s1 = String.format(Locale.US, "%d min %4.2f sec", (int) dt, (dt % 1) * 60);
+#endif /* JAVAME */
+        /* short output: 
+         * date, time of day, umbral magnitude, umbral duration, saros series, member number */
+//      sprintf(sout_short, "%s\t%2d.%2d.%4d\t%s\t%.3f\t%s\t%d\t%d\n", sout, jday, jmon, jyear, hms(jut,0), attr[8],s1, (int) attr[9], (int) attr[10]);
+//      sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s\t%.4f/%.4f\tsaros %d/%d\t%.6f\n", jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[0],attr[1], (int) attr[9], (int) attr[10], t_ut);
+#ifdef JAVAME
+        sout_short = sout + "\t" + f.fmt("%2d", jday) + "." + f.fmt("%2d", jmon) + "." + f.fmt("%4d", jyear) + "\t" + hms(jut,0) + "\t" + f.fmt("%.3f", attr[8]) + "\t" + s1 + "\t" + (int) attr[9] + "\t" + (int) attr[10] + "\n";
+        sout += f.fmt("%2d", jday) + "." + f.fmt("%02d", jmon) + "." + f.fmt("%04d", jyear) + "\t" + hms(jut,BIT_LZEROES) + "\t" + f.fmt("%.4f", attr[0]) + "/" + f.fmt("%.4f", attr[1]) + "\tsaros " + (int) attr[9] + "/" + (int) attr[10] + "\t" + f.fmt("%.6f", t_ut) + "\n";
+#else
+        sout_short = String.format(Locale.US, "%s\t%2d.%2d.%4d\t%s\t%.3f\t%s\t%d\t%d\n", sout, jday, jmon, jyear, hms(jut,0), attr[8],s1, (int) attr[9], (int) attr[10]);
+        sout += String.format(Locale.US, "%2d.%02d.%04d\t%s\t%.4f/%.4f\tsaros %d/%d\t%.6f\n", jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[0],attr[1], (int) attr[9], (int) attr[10], t_ut);
+#endif /* JAVAME */
+        /* second line:
+         * eclipse times, penumbral, partial, total begin and end */
+        if ((eclflag & SweConst.SE_ECL_PENUMBBEG_VISIBLE) != 0)
+	  sout += "  " + hms_from_tjd(tret[6]) + " "; 
+        else
+	  sout += "      -         ";
+        if ((eclflag & SweConst.SE_ECL_PARTBEG_VISIBLE) != 0)
+	  sout += hms_from_tjd(tret[2]) + " "; 
+        else
+	  sout += "    -         ";
+        if ((eclflag & SweConst.SE_ECL_TOTBEG_VISIBLE) != 0)
+	  sout += hms_from_tjd(tret[4]) + " "; 
+        else
+	  sout += "    -         ";
+        if ((eclflag & SweConst.SE_ECL_TOTEND_VISIBLE) != 0)
+	  sout += hms_from_tjd(tret[5]) + " "; 
+        else
+	  sout += "    -         ";
+        if ((eclflag & SweConst.SE_ECL_PARTEND_VISIBLE) != 0)
+	  sout += hms_from_tjd(tret[3]) + " "; 
+        else
+	  sout += "    -         ";
+        if ((eclflag & SweConst.SE_ECL_PENUMBEND_VISIBLE) != 0)
+	  sout += hms_from_tjd(tret[7]) + " "; 
+        else
+	  sout += "    -         ";
+        sout += "\n";
+      /* global lunar eclipse */
+      } else {
         if ((eclflag = sw.swe_lun_eclipse_when(t_ut, whicheph, search_flag, 
-                  tret, direction_flag?-1:0, serr)) == SweConst.ERR) {
+                  tret, direction_flag?1:0, serr)) == SweConst.ERR) {
           do_printf(serr);
           return SweConst.ERR;
         } 
@@ -2535,22 +2772,54 @@ System.out.print("swetest ");
           sout="partial ";
           ecl_type = ECL_LUN_PARTIAL;
         }
-        sout+="lunar eclipse ";
-//        swe_revjul(t_ut, gregflag, &jyear, &jmon, &jday, &jut);
+        sout+="lunar eclipse\t";
+        if ((eclflag = sw.swe_lun_eclipse_how(t_ut, whicheph, geopos, attr, serr)) == SweConst.ERR) {
+          do_printf(serr);
+          return SweConst.ERR;
+        }
+        if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+          double[] dtmp = new double[1];
+	  for (i = 0; i < 10; i++) {
+	    if (tret[i] != 0) {
+              dtmp[0] = tret[i];
+	      retc = ut_to_lmt_lat(tret[i], geopos, dtmp, serr);
+              tret[i] = dtmp[0];
+            }
+	  }
+        }
+        t_ut = tret[0];
+//      swe_revjul(t_ut, gregflag, &jyear, &jmon, &jday, &jut);
         sd.setJulDay(t_ut);
         sd.setCalendarType(gregflag,SweDate.SE_KEEP_JD); // Keep JulDay!
         jyear=sd.getYear();
         jmon=sd.getMonth();
         jday=sd.getDay();
         jut=sd.getHour();
-        if ((eclflag = sw.swe_lun_eclipse_how(t_ut, whicheph, geopos, attr, serr)) == SweConst.ERR) {
-          do_printf(serr);
-          return SweConst.ERR;
-        }
-        /* eclipse times, penumbral, partial, total begin and end */
-        sout += f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+
-                f.fmt("%4d",jyear)+"\t"+hms(jut,0)+"\t"+f.fmt("%f",attr[0])+
-                " o/o\n";
+        dt = (tret[3] - tret[2]) * 24 * 60;
+#ifdef JAVAME
+          s1 = f.fmt("%d", (int)dt) + " min " + f.fmt("%4.2f", (dt %1) * 60) + " sec";
+#else
+          s1 = String.format(Locale.US, "%d min %4.2f sec", (int) dt, (dt % 1) * 60);
+#endif /* JAVAME */
+        /* short output: 
+         * date, time of day, umbral magnitude, umbral duration, saros series, member number */
+//        sprintf(sout_short, "%s\t%2d.%2d.%4d\t%s\t%.3f\t%s\t%d\t%d\n", sout, jday, jmon, jyear, hms(jut,0), attr[8],s1, (int) attr[9], (int) attr[10]);
+//        sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s\t%.4f/%.4f\tsaros %d/%d\t%.6f\n", jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[0],attr[1], (int) attr[9], (int) attr[10], t_ut);
+#ifdef JAVAME
+          sout_short = sout + "\t" + f.fmt("%2d", jday) + "." + f.fmt("%2d", jmon) + "." + f.fmt("%4d", jyear) + "\t" +
+              hms(jut,0) + "\t" + f.fmt("%.3f", attr[8]) + "\t" + s1 + "\t" +
+              f.fmt("%d", (int)attr[9]) + "\t" + f.fmt("%d", (int)attr[10]) + "\n";
+          sout += f.fmt("%2d", jday) + "." + f.fmt("%02d", jmon) + "." + f.fmt("%04d", jyear) + "\t" +
+              hms(jut,BIT_LZEROES) + "\t" + f.fmt("%.4f", attr[0]) + "/" + f.fmt("%.4f", attr[1]) +
+              "\tsaros " + f.fmt("%d", (int) attr[9]) + "/" + f.fmt("%d", (int) attr[10]) + "\t" + f.fmt("%.6f", t_ut) + "\n";
+#else
+          sout_short = String.format(Locale.US, "%s\t%2d.%2d.%4d\t%s\t%.3f\t%s\t%d\t%d\n",
+              sout, jday, jmon, jyear, hms(jut,0), attr[8],s1, (int) attr[9], (int) attr[10]);
+          sout += String.format(Locale.US, "%2d.%02d.%04d\t%s\t%.4f/%.4f\tsaros %d/%d\t%.6f\n",
+              jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[0],attr[1], (int) attr[9], (int) attr[10], t_ut);
+#endif /* JAVAME */
+        /* second line:
+         * eclipse times, penumbral, partial, total begin and end */
         sout += "  "+hms_from_tjd(tret[6])+" "; 
         if (tret[2] != 0)
           sout += hms_from_tjd(tret[2])+" "; 
@@ -2575,17 +2844,20 @@ System.out.print("swetest ");
           sl.swe_split_deg(jut, SweConst.SE_SPLIT_DEG_ROUND_MIN, ihou, imin, isec, dfrc, isgn);
           sout="\""+f.fmt("%04d",jyear)+" "+f.fmt("%02d",jmon)+" "+f.fmt("%02d",jday)+" "+f.fmt("%02d",ihou.val)+"."+f.fmt("%02d",imin.val)+" "+f.fmt("%d",ecl_type)+"\",\n";
         } 
-        do_printf(sout);
       }
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
+      if (short_output)
+        do_printf(sout_short);
+      else
+        do_printf(sout);
     }     
     return SweConst.OK;
   }
 
   private int call_solar_eclipse(double t_ut, int whicheph, int special_mode, double[] geopos, StringBuffer serr) {
-    int ii, eclflag, ecl_type = 0;
-    double dt, tret[] = new double[30], attr[] = new double[30];
-    String s1, s2;
+    int i, ii, retc, eclflag, ecl_type = 0;
+    double dt, tret[] = new double[30], attr[] = new double[30], geopos_max[] = new double[3];
+    String s1, s2, sout_short;
     boolean has_found = false;
     /* no selective eclipse type set, set all */
     if ((search_flag & SweConst.SE_ECL_ALLTYPES_SOLAR) == 0)
@@ -2596,11 +2868,11 @@ System.out.print("swetest ");
     do_printf("\n");
     for (ii = 0; ii < nstep; ii++, t_ut += direction) {
       sout = "";
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
       /* swetest -solecl -local -geopos...
        * find next solar eclipse observable from a given geographic position */
       if ((special_mode & SP_MODE_LOCAL) != 0) {
-        if ((eclflag = sw.swe_sol_eclipse_when_loc(t_ut, whicheph, geopos, tret, attr, direction_flag?-1:0, serr)) == SweConst.ERR) {
+        if ((eclflag = sw.swe_sol_eclipse_when_loc(t_ut, whicheph, geopos, tret, attr, direction_flag?1:0, serr)) == SweConst.ERR) {
           do_printf(serr);
           return SweConst.ERR;
         } else { 
@@ -2625,6 +2897,16 @@ System.out.print("swetest ");
             ii--;
           } else {
             sw.swe_calc(t_ut + SweDate.getDeltaT(t_ut), SweConst.SE_ECL_NUT, 0, x, serr);
+	    if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+              double[] dtmp = new double[1];
+	      for (i = 0; i < 10; i++) {
+	        if (tret[i] != 0)
+                  dtmp[0] = tret[i];
+		  retc = ut_to_lmt_lat(tret[i], geopos, dtmp, serr);
+                  tret[i] = dtmp[0];
+	      }
+	    }
+	    t_ut = tret[0];
 //          swe_revjul(t_ut, gregflag, &jyear, &jmon, &jday, &jut);
             sd.setJulDay(t_ut);
             sd.setCalendarType(gregflag,SweDate.SE_KEEP_JD); // Keep JulDay!
@@ -2632,9 +2914,19 @@ System.out.print("swetest ");
             jmon=sd.getMonth();
             jday=sd.getDay();
             jut=sd.getHour();
-            sout += f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+f.fmt("%4d",jyear)+"\t"+hms(jut,0)+"\t"+f.fmt("%f",attr[0])+"o/o\n";
             dt = (tret[3] - tret[2]) * 24 * 60;
+//	  sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s\t%.4f/%.4f/%.4f\tsaros %d/%d\t%.6f\n", jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[8], attr[0], attr[2], (int) attr[9], (int) attr[10], t_ut);
+//	  sprintf(sout + strlen(sout), "\t%d min %4.2f sec\t", (int) dt, fmod(dt, 1) * 60); 
+#ifdef JAVAME
+            sout += f.fmt("%2d", jday) + "." + f.fmt("%02d", jmon) + "." + f.fmt("%04d", jyear) + "\t" + hms(jut,BIT_LZEROES) + "\t" +
+                f.fmt("%.4f", attr[8]) + "/" + f.fmt("%.4f", attr[0]) + "/" + f.fmt("%.4f", attr[2]) +
+                "\tsaros " + f.fmt("%d", (int) attr[9]) + "/" + f.fmt("%d", (int) attr[10]) + "\t" + f.fmt("%.6f", t_ut) + "\n";
             sout += "\t"+(int)dt+" min "+f.fmt("%4.2f",(dt%1.) * 60)+" sec\t";
+#else
+            sout += String.format(Locale.US, "%2d.%02d.%04d\t%s\t%.4f/%.4f/%.4f\tsaros %d/%d\t%.6f\n",
+                jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[8], attr[0], attr[2], (int) attr[9], (int) attr[10], t_ut);
+            sout += String.format(Locale.US, "\t%d min %4.2f sec\t", (int) dt, (dt % 1.) * 60); 
+#endif /* JAVAME */
             if ((eclflag & SweConst.SE_ECL_1ST_VISIBLE)!=0)
               sout += hms_from_tjd(tret[1]) + " "; 
             else
@@ -2651,26 +2943,26 @@ System.out.print("swetest ");
               sout += hms_from_tjd(tret[4]) + " "; 
             else
               sout+="   -         ";
-//#if 0
+#if 0
 //          sprintf(sout + strlen(sout), "\t%d min %4.2f sec   %s %s %s %s", 
 //                (int) dt, fmod(dt, 1) * 60, 
-//                strcpy(s1, hms(fmod(tret[1] + 0.5, 1) * 24, 0)), 
-//                strcpy(s3, hms(fmod(tret[2] + 0.5, 1) * 24, 0)), 
-//                strcpy(s4, hms(fmod(tret[3] + 0.5, 1) * 24, 0)),
-//                strcpy(s2, hms(fmod(tret[4] + 0.5, 1) * 24, 0)));
-//#endif
+//                strcpy(s1, hms(fmod(tret[1] + 0.5, 1) * 24, BIT_LZEROES)), 
+//                strcpy(s3, hms(fmod(tret[2] + 0.5, 1) * 24, BIT_LZEROES)), 
+//                strcpy(s4, hms(fmod(tret[3] + 0.5, 1) * 24, BIT_LZEROES)),
+//                strcpy(s2, hms(fmod(tret[4] + 0.5, 1) * 24, BIT_LZEROES)));
+#endif
             sout+="\n";
             do_printf(sout);
           }
         }
       }   /* endif search_local */
-//#endif /* ASTROLOGY */
-//#ifndef ASTROLOGY
+#endif /* ASTROLOGY */
+#ifndef ASTROLOGY
       /* swetest -solecl
        * find next solar eclipse observable from anywhere on earth */
       if ((special_mode & SP_MODE_LOCAL) == 0) {
         if ((eclflag = sw.swe_sol_eclipse_when_glob(t_ut, whicheph, search_flag,
-                  tret, direction_flag?-1:0, serr)) == SweConst.ERR) {
+                  tret, direction_flag?1:0, serr)) == SweConst.ERR) {
           do_printf(serr);
           return SweConst.ERR;
         } 
@@ -2693,59 +2985,91 @@ System.out.print("swetest ");
         }
         if ((eclflag & SweConst.SE_ECL_NONCENTRAL)!=0 && (eclflag & SweConst.SE_ECL_PARTIAL)==0)
           sout+="non-central ";
-        sw.swe_sol_eclipse_where(t_ut, whicheph, geopos, attr, serr);
-//      swe_revjul(t_ut, gregflag, &jyear, &jmon, &jday, &jut);
-        sd.setJulDay(t_ut);
+        sw.swe_sol_eclipse_where(t_ut, whicheph, geopos_max, attr, serr);
+        if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+          double[] dtmp = new double[1];
+	  for (i = 0; i < 10; i++) {
+	    if (tret[i] != 0)
+              dtmp[0] = tret[i];
+	      retc = ut_to_lmt_lat(tret[i], geopos, dtmp, serr);
+              tret[i] = dtmp[0];
+	  }
+        }
+//      swe_revjul(tret[0], gregflag, &jyear, &jmon, &jday, &jut);
+        sd.setJulDay(tret[0]);
         sd.setCalendarType(gregflag,SweDate.SE_KEEP_JD); // Keep JulDay!
         jyear=sd.getYear();
         jmon=sd.getMonth();
         jday=sd.getDay();
         jut=sd.getHour();
-        sout += f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+f.fmt("%4d",jyear)+"\t"+hms(jut,0)+"\t"+f.fmt("%f",attr[3])+" km\t"+f.fmt("%f",attr[0])+" o/o\n";
-          sout += "\t" + hms_from_tjd(tret[2]) + " "; 
-        if (tret[4] != 0)
+#ifdef JAVAME
+        sout_short = sout + "\t"+f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+
+            f.fmt("%4d",jyear)+"\t"+hms(jut,0)+"\t"+f.fmt("%.3f",attr[8]);
+        sout += f.fmt("%2d",jday)+"."+f.fmt("%02d",jmon)+"."+f.fmt("%04d",jyear)+"\t"+
+            hms(jut,0)+"\t"+f.fmt("%f",attr[3])+" km\t"+
+            f.fmt("%.4f",attr[8])+"/"+f.fmt("%.4f",attr[0])+"/"+
+            f.fmt("%.4f",attr[2])+"\tsaros "+(int)attr[9]+"/"+
+            (int)attr[10]+"\t"+f.fmt("%.6f",tret[0])+"\n";
+#else
+        sout_short = String.format(Locale.US, "%s\t%2d.%2d.%4d\t%s\t%.3f", sout, jday, jmon, jyear, hms(jut,0), attr[8]);
+        sout += String.format(Locale.US, "%2d.%02d.%04d\t%s\t%f km\t%.4f/%.4f/%.4f\tsaros %d/%d\t%.6f\n", 
+                  jday, jmon, jyear, hms(jut,0), attr[3], attr[8], attr[0], attr[2], (int) attr[9], (int) attr[10], tret[0]);
+#endif /* JAVAME */
+        sout += "\t" + hms_from_tjd(tret[2]) + " ";
+        if (tret[4] != 0) {
           sout += hms_from_tjd(tret[4]) + " "; 
-        else
+        } else {
           sout+="   -         ";
-        if (tret[5] != 0)
+        }
+        if (tret[5] != 0) {
           sout += hms_from_tjd(tret[5]) + " "; 
-        else
+        } else {
           sout+="   -         ";
+        }
         sout += hms_from_tjd(tret[3]) + "\n"; 
-//#if 0
-//      swe_revjul(tret[1], gregflag, &jyear, &jmon, &jday, &jut);
-//      sprintf(sout + strlen(sout), "%2d.%2d.%4d\t%s\t%f km\n", 
-//                jday, jmon, jyear, hms(jut,0), attr[3]);
-//#endif
-        s1=dms(geopos[0], BIT_ROUND_MIN);
-        s2=dms(geopos[1], BIT_ROUND_MIN);
-        sout += "\t"+s1+"\t"+s2;
+        s1=dms(geopos_max[0], BIT_ROUND_MIN);
+        s2=dms(geopos_max[1], BIT_ROUND_MIN);
+        sout += "\t" + s1 + "\t" + s2;
+        sout += "\t";
+        sout_short += "\t";
         if ((eclflag & SweConst.SE_ECL_PARTIAL)==0 && (eclflag & SweConst.SE_ECL_NONCENTRAL)==0) {
-          if ((eclflag = sw.swe_sol_eclipse_when_loc(t_ut - 10, whicheph, geopos, tret, attr, 0, serr)) == SweConst.ERR) {
+          if ((eclflag = sw.swe_sol_eclipse_when_loc(t_ut - 10, whicheph, geopos_max, tret, attr, 0, serr)) == SweConst.ERR) {
             do_printf(serr);
             return SweConst.ERR;
           }
-          if (SMath.abs(tret[0] - t_ut) > 1) 
+          if (SMath.abs(tret[0] - t_ut) > 2) 
             do_printf("when_loc returns wrong date\n");
           dt = (tret[3] - tret[2]) * 24 * 60;
-          sout += "\t"+(int)dt+" min "+f.fmt("%4.2f",(dt%1.) * 60.)+" sec\t";
+#ifdef JAVAME
+          s1 = (int)dt + " min "+f.fmt("%4.2f", (dt % 1) * 60)+" sec";
+#else
+          s1 = String.format(Locale.US, "%d min %4.2f sec", (int) dt, (dt % 1) * 60);
+#endif /* JAVAME */
+          sout += s1;
+          sout_short += s1;
         }
-        sout+="\n";
+        sout_short += "\t" + (int) attr[9] + "\t" + (int) attr[10];
+        sout += "\n";
+        sout_short += "\n";
         if ((special_mode & SP_MODE_HOCAL)!= 0) {
           IntObj ihou=new IntObj(), imin=new IntObj(), isec=new IntObj(), isgn=new IntObj();
           DblObj dfrc=new DblObj();
           sl.swe_split_deg(jut, SweConst.SE_SPLIT_DEG_ROUND_MIN, ihou, imin, isec, dfrc, isgn);
           sout="\""+f.fmt("%04d",jyear)+" "+f.fmt("%02d",jmon)+" "+f.fmt("%02d",jday)+" "+f.fmt("%02d",ihou.val)+"."+f.fmt("%02d",imin.val)+" "+f.fmt("%d",ecl_type)+"\",\n";
         } 
-        do_printf(sout);
+        /*printf("len=%ld\n", strlen(sout));*/
+        if (short_output)
+	  do_printf(sout_short);
+        else
+	  do_printf(sout);
       }
     }
     return SweConst.OK;
   }
 
   private int call_lunar_occultation(double t_ut, int ipl, StringBuffer star, int whicheph, int special_mode, double[] geopos, StringBuffer serr) {
-    int ii, ecl_type = 0, eclflag;
-    double dt, tret[] = new double[30], attr[] = new double[30];
+    int i, ii, ecl_type = 0, eclflag, retc;
+    double dt, tret[] = new double[30], attr[] = new double[30], geopos_max[] = new double[3];
     String s1, s2;
     boolean has_found = false;
     /* no selective eclipse type set, set all */
@@ -2757,54 +3081,66 @@ System.out.print("swetest ");
     do_printf("\n");
     for (ii = 0; ii < nstep; ii++) {
       sout = "";
-//#endif /* ASTROLOGY */
-//#ifndef ASTROLOGY
       if ((special_mode & SP_MODE_LOCAL) != 0) {
         if ((eclflag = sw.swe_lun_occult_when_loc(t_ut, ipl, star, whicheph, geopos, tret, attr, direction_flag?1:0, serr)) == SweConst.ERR) {
           do_printf(serr);
           return SweConst.ERR;
         } else { 
-          has_found = false;
           t_ut = tret[0];
+	  if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+            double[] dtmp = new double[1];
+	    for (i = 0; i < 10; i++) {
+	      if (tret[i] != 0)
+                dtmp[0] = tret[i];
+	        retc = ut_to_lmt_lat(tret[i], geopos, dtmp, serr);
+                tret[i] = dtmp[0];
+	    }
+	  }
+	  has_found = false;
+	  sout = "";
           if ((search_flag & SweConst.SE_ECL_TOTAL) != 0 && (eclflag & SweConst.SE_ECL_TOTAL) != 0) {
-            sout = "total   ";
+            sout += "total";
             has_found = true;
             ecl_type = ECL_SOL_TOTAL;
           }
           if ((search_flag & SweConst.SE_ECL_ANNULAR) != 0 && (eclflag & SweConst.SE_ECL_ANNULAR) != 0) {
-            sout = "annular ";
+            sout += "annular";
             has_found = true;
             ecl_type = ECL_SOL_ANNULAR;
           }
           if ((search_flag & SweConst.SE_ECL_PARTIAL) != 0 && (eclflag & SweConst.SE_ECL_PARTIAL) != 0) {
-            sout = "partial ";
+            sout += "partial";
             has_found = true;
             ecl_type = ECL_SOL_PARTIAL;
           }
+	  if (ipl != SweConst.SE_SUN) {
+	    if ((eclflag & SweConst.SE_ECL_OCC_BEG_DAYLIGHT) != 0 && (eclflag & SweConst.SE_ECL_OCC_END_DAYLIGHT) != 0)
+	      sout += "(daytime)"; /* occultation occurs during the day */
+	    else if ((eclflag & SweConst.SE_ECL_OCC_BEG_DAYLIGHT) != 0)
+	      sout += "(sunset) "; /* occultation occurs during the day */
+	    else if ((eclflag & SweConst.SE_ECL_OCC_END_DAYLIGHT) != 0)
+	      sout += "(sunrise)"; /* occultation occurs during the day */
+	  }
+	  while (sout.length() < 17)
+	    sout += " ";
           if (!has_found) {
             ii--;
           } else {
-            sw.swe_calc(t_ut + SweDate.getDeltaT(t_ut), SweConst.SE_ECL_NUT, 0, x, serr);
-//            swe_revjul(t_ut, gregflag, &jyear, &jmon, &jday, &jut);
-            sd.setJulDay(t_ut);
+            sw.swe_calc_ut(t_ut, SweConst.SE_ECL_NUT, 0, x, serr);
+//            swe_revjul(tret[0], gregflag, &jyear, &jmon, &jday, &jut);
+            sd.setJulDay(tret[0]);
             sd.setCalendarType(gregflag,SweDate.SE_KEEP_JD); // Keep JulDay!
             jyear=sd.getYear();
             jmon=sd.getMonth();
             jday=sd.getDay();
             jut=sd.getHour();
+	    dt = (tret[3] - tret[2]) * 24 * 60;
 #ifdef JAVAME
-            sout += f.fmt("%2d", jday) + "." + f.fmt("%2d", jmon) + "." + f.fmt("%4d", jyear) + "\t" + f.fmt("%s", hms(jut,0)) + "\t" + f.fmt("%f", attr[0]) + "o/o\n";
-#else
-            // Locale.US?
-            sout += String.format(Locale.US, "%2d.%2d.%4d\t%s\t%fo/o\n", jday, jmon, jyear, hms(jut,0), attr[0]);
-#endif /* JAVAME */
-            dt = (tret[3] - tret[2]) * 24 * 60;
-#ifdef JAVAME
+            sout += f.fmt("%2d", jday) + "." + f.fmt("%02d", jmon) + "." + f.fmt("%04d", jyear) + "\t" + f.fmt("%s", hms(jut,BIT_LZEROES)) + "\t" + f.fmt("%f", attr[0]) + "o/o\n";
             sout += "\t" + f.fmt("%d", (int) dt) + " min " + f.fmt("%4.2f", (dt%1) * 60) + " sec\t";
 #else
-            // Locale.US?
-            sout += String.format(Locale.US, "\t%d min %4.2f sec\t",
-                  (int) dt, (dt%1) * 60);
+            sout += String.format(Locale.US, "%2d.%02d.%04d\t%s\t%fo/o\n", jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[0]);
+            sout += String.format(Locale.US, "\t%d min %4.2f sec\t", (int) dt, (dt%1) * 60);
 #endif /* JAVAME */
             if ((eclflag & SweConst.SE_ECL_1ST_VISIBLE) != 0)
               sout += hms_from_tjd(tret[1]) + " ";
@@ -2822,6 +3158,14 @@ System.out.print("swetest ");
               sout += hms_from_tjd(tret[4]) + " ";
             else
               sout += "   -         ";
+#if 0
+	  sprintf(sout + strlen(sout), "\t%d min %4.2f sec   %s %s %s %s", 
+                (int) dt, fmod(dt, 1) * 60, 
+                strcpy(s1, hms(fmod(tret[1] + 0.5, 1) * 24, BIT_LZEROES)), 
+                strcpy(s3, hms(fmod(tret[2] + 0.5, 1) * 24, BIT_LZEROES)), 
+                strcpy(s4, hms(fmod(tret[3] + 0.5, 1) * 24, BIT_LZEROES)),
+                strcpy(s2, hms(fmod(tret[4] + 0.5, 1) * 24, BIT_LZEROES)));
+#endif
             sout += "\n";
             do_printf(sout);
           }
@@ -2829,11 +3173,10 @@ System.out.print("swetest ");
       }   /* endif search_local */
       if ((special_mode & SP_MODE_LOCAL) == 0) {
       /* * global search for occultations */
-        if ((eclflag = sw.swe_lun_occult_when_glob(t_ut, ipl, star, whicheph, search_flag, tret, direction_flag?-1:0, serr)) == SweConst.ERR) {
+        if ((eclflag = sw.swe_lun_occult_when_glob(t_ut, ipl, star, whicheph, search_flag, tret, direction_flag?1:0, serr)) == SweConst.ERR) {
           do_printf(serr);
           return SweConst.ERR;
         } 
-        t_ut = tret[0];
         if ((eclflag & SweConst.SE_ECL_TOTAL)!=0) {
           sout="total   ";
           ecl_type = ECL_SOL_TOTAL;
@@ -2852,15 +3195,25 @@ System.out.print("swetest ");
         }
         if ((eclflag & SweConst.SE_ECL_NONCENTRAL)!=0 && (eclflag & SweConst.SE_ECL_PARTIAL)==0)
           sout+="non-central ";
-        sw.swe_lun_occult_where(t_ut, ipl, star, whicheph, geopos, attr, serr);
-//      swe_revjul(t_ut, gregflag, &jyear, &jmon, &jday, &jut);
-        sd.setJulDay(t_ut);
+        t_ut = tret[0];
+        sw.swe_lun_occult_where(t_ut, ipl, star, whicheph, geopos_max, attr, serr);
+        if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+          double[] dtmp = new double[1];
+	  for (i = 0; i < 10; i++) {
+	    if (tret[i] != 0)
+              dtmp[0] = tret[i];
+	      retc = ut_to_lmt_lat(tret[i], geopos, dtmp, serr);
+              tret[i] = dtmp[0];
+	  }
+        }
+//      swe_revjul(tret[0], gregflag, &jyear, &jmon, &jday, &jut);
+        sd.setJulDay(tret[0]);
         sd.setCalendarType(gregflag,SweDate.SE_KEEP_JD); // Keep JulDay!
         jyear=sd.getYear();
         jmon=sd.getMonth();
         jday=sd.getDay();
         jut=sd.getHour();
-        sout += f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+f.fmt("%4d",jyear)+"\t"+hms(jut,0)+"\t"+f.fmt("%f",attr[3])+" km\t"+f.fmt("%f",attr[0])+" o/o\n";
+        sout += f.fmt("%2d",jday)+"."+f.fmt("%02d",jmon)+"."+f.fmt("%04d",jyear)+"\t"+hms(jut,BIT_LZEROES)+"\t"+f.fmt("%f",attr[3])+" km\t"+f.fmt("%f",attr[0])+" o/o\n";
         sout += "\t" + hms_from_tjd(tret[2]) + " "; 
         if (tret[4] != 0)
           sout += hms_from_tjd(tret[4]) + " "; 
@@ -2871,25 +3224,15 @@ System.out.print("swetest ");
         else
           sout+="   -         ";
         sout += hms_from_tjd(tret[3]) + "\n"; 
-//#if 0
-//      swe_revjul(tret[1], gregflag, &jyear, &jmon, &jday, &jut);
-        sd.setJulDay(tret[1]);
-        sd.setCalendarType(gregflag,SweDate.SE_KEEP_JD); // Keep JulDay!
-        jyear=sd.getYear();
-        jmon=sd.getMonth();
-        jday=sd.getDay();
-        jut=sd.getHour();
-        sout += f.fmt("%2d",jday)+"."+f.fmt("%2d",jmon)+"."+f.fmt("%4d",jyear)+"\t"+hms(jut,0)+"\t"+f.fmt("%f",attr[3])+" km\n";
-//#endif
-        s1=dms(geopos[0], BIT_ROUND_MIN);
-        s2=dms(geopos[1], BIT_ROUND_MIN);
+        s1=dms(geopos_max[0], BIT_ROUND_MIN);
+        s2=dms(geopos_max[1], BIT_ROUND_MIN);
         sout += "\t"+s1+"\t"+s2;
         if ((eclflag & SweConst.SE_ECL_PARTIAL)==0 && (eclflag & SweConst.SE_ECL_NONCENTRAL)==0) {
-          if ((eclflag = sw.swe_lun_occult_when_loc(t_ut - 10, ipl, star, whicheph, geopos, tret, attr, 0, serr)) == SweConst.ERR) {
+          if ((eclflag = sw.swe_lun_occult_when_loc(t_ut - 10, ipl, star, whicheph, geopos_max, tret, attr, 0, serr)) == SweConst.ERR) {
             do_printf(serr);
             return SweConst.ERR;
           }
-          if (SMath.abs(tret[0] - t_ut) > 1) 
+          if (SMath.abs(tret[0] - t_ut) > 2) 
             do_printf("when_loc returns wrong date\n");
           dt = (tret[3] - tret[2]) * 24 * 60;
           sout += "\t"+(int)dt+" min "+f.fmt("%4.2f",(dt%1.)*60)+" sec\t";
@@ -2903,40 +3246,82 @@ System.out.print("swetest ");
         } 
         do_printf(sout);
       }
-//#endif /* ASTROLOGY */
+#endif /* ASTROLOGY */
       t_ut += direction;
     }
     return SweConst.OK;
   }
 
   private void do_print_heliacal(double[] dret, int event_type, String obj_name) {
-    String sevtname[] = new String[]{"", "heliacal rising ", "heliacal setting", "evening first   ", "morning last    "};
+    String sevtname[] = new String[] {"", 
+  	"heliacal rising ", 
+	"heliacal setting", 
+	"evening first   ", 
+	"morning last    ", 
+	"evening rising  ", 
+	"morning setting ",};
+    String stz = "UT";
+    String stim0, stim1, stim2;
+    if ((time_flag & BIT_TIME_LMT) != 0)
+      stz = "LMT";
+    if ((time_flag & BIT_TIME_LAT) != 0)
+      stz = "LAT";
     sout = "";
 //    swe_revjul(dret[0], gregflag, &jyear, &jmon, &jday, &jut);
     sd.setJulDay(dret[0]);
     sd.setCalendarType(gregflag,SweDate.SE_KEEP_JD); // Keep JulDay!
+    if (event_type <= 4) {
+      if (hel_using_AV) {
+        stim0 = hms_from_tjd(dret[0]); 
+        stim0 = remove_whitespace(stim0);
+        /* The following line displays only the beginning of visibility. */
 #ifdef JAVAME
-    sout += f.fmt("%s", obj_name) + " " + f.fmt("%s", sevtname[event_type]) + ": " + f.fmt("%d", sd.getYear()) + "/" + f.fmt("%02d", sd.getMonth()) + "/" + f.fmt("%02d", sd.getDay()) + " " + f.fmt("%s", hms_from_tjd(dret[0])) + "UT, visible for: " + f.fmt("%#4.1f", (dret[2] - dret[0]) * 1440) + " min\n";
+        sout += obj_name + " " + sevtname[event_type] + ": " + sd.getYear() + "/" + f.fmt("%02d", sd.getMonth()) + "/" + f.fmt("%02d", sd.getDay()) + " " + stim0 + " " + stz + " (" + f.fmt("%.5f", dret[0]) + ")\n";
 #else
-            // Locale.US?
-    sout += String.format(Locale.US, "%s %s: %d/%02d/%02d %sUT, visible for: %#4.1f min\n", obj_name, sevtname[event_type], sd.getYear(), sd.getMonth(), sd.getDay(), hms_from_tjd(dret[0]), (dret[2] - dret[0]) * 1440);
+        sout += String.format("%s %s: %d/%02d/%02d %s %s (%.5f)\n", obj_name, sevtname[event_type], sd.getYear(), sd.getMonth(), sd.getDay(), stim0, stz, dret[0]);
 #endif /* JAVAME */
+      } else {
+        /* display the moment of beginning and optimum visibility */
+        stim0 = hms_from_tjd(dret[0]); 
+        stim1 = hms_from_tjd(dret[1]); 
+        stim2 = hms_from_tjd(dret[2]); 
+        stim0 = remove_whitespace(stim0);
+        stim1 = remove_whitespace(stim1);
+        stim2 = remove_whitespace(stim2);
+#ifdef JAVAME
+        sout += obj_name + " " + sevtname[event_type] + ": " + sd.getYear() + "/" + f.fmt("%02d", sd.getMonth()) + "/" + f.fmt("%02d", sd.getDay()) + " " + stim0 + " " + stz + " (" + f.fmt("%.5f", dret[0]) + ", opt " + stim1 + ", end " + stim2 + ", dur " + f.fmt("%.1f", (dret[2] - dret[0]) * 1440) + " min\n";
+#else
+        sout += String.format("%s %s: %d/%02d/%02d %s %s (%.5f), opt %s, end %s, dur %.1f min\n", obj_name, sevtname[event_type], sd.getYear(), sd.getMonth(), sd.getDay(), stim0, stz, dret[0], stim1, stim2, (dret[2] - dret[0]) * 1440);
+#endif /* JAVAME */
+      }
+    } else {
+      stim0 = hms_from_tjd(dret[0]); 
+      stim0 = remove_whitespace(stim0);
+#ifdef JAVAME
+      sout += obj_name + " " + sevtname[event_type] + ": " + sd.getYear() + "/" + f.fmt("%02d", sd.getMonth()) + "/" + f.fmt("%02d", sd.getDay()) + " " + stim0 + " " + stz + " " + f.fmt("%f", dret[0]) + "\n";
+#else
+      sout += String.format(Locale.US, "%s %s: %d/%02d/%02d %s %s (%f)\n", obj_name, sevtname[event_type], sd.getYear(), sd.getMonth(), sd.getDay(), stim0, stz, dret[0]);
+#endif /* JAVAME */
+    }
     do_printf(sout);
   }
 
-//#ifndef NO_RISE_TRANS
-//#ifndef ASTROLOGY
-//#ifndef JAVAME
+#ifndef NO_RISE_TRANS
+#ifndef ASTROLOGY
+#ifndef JAVAME
   private int call_heliacal_event(double t_ut, int ipl, StringBuffer star, int whicheph, int special_mode, double[] geopos, double[] datm, double[] dobs, StringBuffer serr) {
-    int ii, event_type = 0, retflag, helflag = whicheph;
+    int ii, retc, event_type = 0, retflag;
     double dret[] = new double[40], tsave1, tsave2 = 0;
     StringBuffer obj_name = new StringBuffer();
+    helflag |= whicheph;
     /* if invalid heliacal event type was required, set 0 for any type */
-    if (search_flag < 0 || search_flag > 4)
+    if (search_flag < 0 || search_flag > 6)
       search_flag = 0;
     /* optical instruments used: */
     if (dobs[3] > 0) 
       helflag |= SweConst.SE_HELFLAG_OPTICAL_PARAMS;
+    if (hel_using_AV)
+      helflag |= SweConst.SE_HELFLAG_AV;
     if (ipl == SweConst.SE_FIXSTAR)
       obj_name.append(star);
     else
@@ -2955,6 +3340,18 @@ System.out.print("swetest ");
         do_printf(serr);
         return SweConst.ERR;
       }
+      if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+        double[] dtmp = new double[1];
+        dtmp[0] = dret[0];
+        retc = ut_to_lmt_lat(dret[0], geopos, dtmp, serr);
+        dret[0] = dtmp[0];
+        dtmp[0] = dret[1];
+        retc = ut_to_lmt_lat(dret[1], geopos, dtmp, serr);
+        dret[1] = dtmp[0];
+        dtmp[0] = dret[2];
+        retc = ut_to_lmt_lat(dret[2], geopos, dtmp, serr);
+        dret[2] = dtmp[0];
+      }
       do_print_heliacal(dret, event_type, obj_name.toString());
       /* list all events within synodic cycle */
       if (search_flag == 0) {
@@ -2965,6 +3362,18 @@ System.out.print("swetest ");
           if (retflag == SweConst.ERR) {
             do_printf(serr);
             return SweConst.ERR;
+          }
+          if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+            double[] dtmp = new double[1];
+            dtmp[0] = dret[0];
+            retc = ut_to_lmt_lat(dret[0], geopos, dtmp, serr);
+            dret[0] = dtmp[0];
+            dtmp[0] = dret[1];
+            retc = ut_to_lmt_lat(dret[1], geopos, dtmp, serr);
+            dret[1] = dtmp[0];
+            dtmp[0] = dret[2];
+            retc = ut_to_lmt_lat(dret[2], geopos, dtmp, serr);
+            dret[2] = dtmp[0];
           }
           do_print_heliacal(dret, event_type, obj_name.toString());
           tsave1 = dret[0];
@@ -2991,6 +3400,18 @@ System.out.print("swetest ");
           }
           if (ipl == SweConst.SE_MERCURY && dret[0] > tsave2)
             continue mercury_outer;
+          if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+            double[] dtmp = new double[1];
+            dtmp[0] = dret[0];
+            retc = ut_to_lmt_lat(dret[0], geopos, dtmp, serr);
+            dret[0] = dtmp[0];
+            dtmp[0] = dret[1];
+            retc = ut_to_lmt_lat(dret[1], geopos, dtmp, serr);
+            dret[1] = dtmp[0];
+            dtmp[0] = dret[2];
+            retc = ut_to_lmt_lat(dret[2], geopos, dtmp, serr);
+            dret[2] = dtmp[0];
+          }
           do_print_heliacal(dret, event_type, obj_name.toString());
         }
         while(true) {
@@ -3002,6 +3423,18 @@ System.out.print("swetest ");
               do_printf(serr);
               return SweConst.ERR;
             }
+            if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+              double[] dtmp = new double[1];
+              dtmp[0] = dret[0];
+              retc = ut_to_lmt_lat(dret[0], geopos, dtmp, serr);
+              dret[0] = dtmp[0];
+              dtmp[0] = dret[1];
+              retc = ut_to_lmt_lat(dret[1], geopos, dtmp, serr);
+              dret[1] = dtmp[0];
+              dtmp[0] = dret[2];
+              retc = ut_to_lmt_lat(dret[2], geopos, dtmp, serr);
+              dret[2] = dtmp[0];
+            }
             do_print_heliacal(dret, event_type, obj_name.toString());
           } else {
             /* heliacal setting (evening last) */
@@ -3011,8 +3444,20 @@ System.out.print("swetest ");
               do_printf(serr);
               return SweConst.ERR;
             }
+            if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+              double[] dtmp = new double[1];
+              dtmp[0] = dret[0];
+              retc = ut_to_lmt_lat(dret[0], geopos, dtmp, serr);
+              dret[0] = dtmp[0];
+              dtmp[0] = dret[1];
+              retc = ut_to_lmt_lat(dret[1], geopos, dtmp, serr);
+              dret[1] = dtmp[0];
+              dtmp[0] = dret[2];
+              retc = ut_to_lmt_lat(dret[2], geopos, dtmp, serr);
+              dret[2] = dtmp[0];
+            }
             do_print_heliacal(dret, event_type, obj_name.toString());
-            if (ipl == SweConst.SE_MERCURY) {
+            if (false && ipl == SweConst.SE_MERCURY) {
               tsave1 = dret[0];
 //              goto repeat_mercury;
               // quick hack by duplicating the code from the first part of the repeat_mercury: section
@@ -3025,6 +3470,18 @@ System.out.print("swetest ");
               }
               if (ipl == SweConst.SE_MERCURY && dret[0] > tsave2)
                 continue mercury_outer;
+              if ((time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) != 0) {
+                double[] dtmp = new double[1];
+                dtmp[0] = dret[0];
+                retc = ut_to_lmt_lat(dret[0], geopos, dtmp, serr);
+                dret[0] = dtmp[0];
+                dtmp[0] = dret[1];
+                retc = ut_to_lmt_lat(dret[1], geopos, dtmp, serr);
+                dret[1] = dtmp[0];
+                dtmp[0] = dret[2];
+                retc = ut_to_lmt_lat(dret[2], geopos, dtmp, serr);
+                dret[2] = dtmp[0];
+              }
               do_print_heliacal(dret, event_type, obj_name.toString());
             } else {
             	break;
@@ -3035,13 +3492,13 @@ System.out.print("swetest ");
     }
     return SweConst.OK;
   }
-//#endif /* NO_RISE_TRANS */
-//#endif /* ASTROLOGY */
-//#endif /* JAVAME */
+#endif /* NO_RISE_TRANS */
+#endif /* ASTROLOGY */
+#endif /* JAVAME */
 
   private int do_special_event(double tjd, int ipl, StringBuffer star, int special_event, int special_mode, double[] geopos, double[] datm, double[] dobs, StringBuffer serr) {
     int retc = 0;
-//#ifndef NO_RISE_TRANS
+#ifndef NO_RISE_TRANS
     /* risings, settings, meridian transits */
     if (special_event == SP_RISE_SET || 
         special_event == SP_MERIDIAN_TRANSIT)
@@ -3052,37 +3509,37 @@ System.out.print("swetest ");
     /* solar eclipses */
     if (special_event == SP_SOLAR_ECLIPSE)
       retc = call_solar_eclipse(tjd, whicheph, special_mode, geopos, serr);
-//#ifndef ASTROLOGY
+#ifndef ASTROLOGY
     /* occultations by the moon */
     if (special_event == SP_OCCULTATION)
       retc = call_lunar_occultation(tjd, ipl, star, whicheph, special_mode, geopos, serr);
-//#ifndef JAVAME
+#ifndef JAVAME
     /* heliacal event */
     if (special_event == SP_HELIACAL)
       retc = call_heliacal_event(tjd, ipl, star, whicheph, special_mode, geopos, datm, dobs, serr);
-//#endif /* JAVAME */
-//#endif /* ASTROLOGY */
-//#endif /* NO_RISE_TRANS */
+#endif /* JAVAME */
+#endif /* ASTROLOGY */
+#endif /* NO_RISE_TRANS */
     return retc;
   }
 
   private String hms_from_tjd(double x) {
     String s;
-    s=hms(((x + 1000000.5)%1.) * 24, 0)+" ";
+    s = hms(((x + 1000000.5)%1.) * 24, BIT_LZEROES)+" ";
     return s;
   }
   
   private String hms(double x, int iflag) {
     String s;
     int sp;
-    String c = swed.ODEGREE_CHAR;
-//TM//    x += 0.5 / 36000.0; /* round to 0.1 sec */
+    String c = swed.ODEGREE_STRING;
+    x += 0.5 / 36000.0; /* round to 0.1 sec */
     s=dms(x, iflag);
     sp = s.indexOf(c);
     if (sp >= 0) {
       s = s.substring(0,sp) + ":" + s.substring(sp+c.length());
-      s = s.replace('\'',':');
-      s = s.substring(0,s.lastIndexOf(':')+5);
+      s = s.substring(0,sp+3) + ":" + s.substring(sp+4);
+      s = s.substring(0,sp+8);
     }
     return s;
   }
@@ -3102,9 +3559,9 @@ System.out.print("swetest ");
    *   +                              on program drive
    *   +                              on drive C:
    */
-  private int make_ephemeris_path(int iflg, String argv0) {
-    String path="", s="";
+  private int make_ephemeris_path(int iflg, String argv0, StringBuffer opath) {	// path for output
     int sp;
+    String path = "";
     String dirglue = swed.DIR_GLUE;
     int pathlen = 0;
     /* moshier needs no ephemeris path */
@@ -3116,15 +3573,29 @@ System.out.print("swetest ");
     sp = argv0.lastIndexOf(dirglue);
     if (sp >= 0) {
       pathlen = sp;
-      if (path.length() + pathlen < AS_MAXCH-1) {
-        s=argv0.substring(0,pathlen);
-        path=path+s+swed.PATH_SEPARATOR.charAt(0);
+      if (path.length() + pathlen < AS_MAXCH-2) {
+        path += argv0.substring(0, SMath.min(argv0.length(), pathlen));
+        path += swed.PATH_SEPARATOR.charAt(0);
       }
     }
-    if (path.length() + pathlen < AS_MAXCH-1)
+    if (path.length() + SweConst.SE_EPHE_PATH.length() < AS_MAXCH-1)
       path+=SweConst.SE_EPHE_PATH;
+    // output path:
+    opath.setLength(0);
+    opath.append(path);
     return SweConst.OK;
   }
 
+  private String remove_whitespace(String s) {
+//    char *sp, s1[AS_MAXCH];
+//    if (s == NULL) return;
+//    for (sp = s; *sp == ' '; sp++)
+//      ;
+//    strcpy(s1, sp);
+//    while (*(sp = s1 + strlen(s1) - 1) == ' ')
+//      *sp = '\0';
+//    strcpy(s, s1);
+    return s.trim();
+  }
 
 } // End of class Swetest

@@ -5,7 +5,7 @@
 #ifndef JAVAME
 #undef DEBUG
 /*
-   This is a port of the Swiss Ephemeris Free Edition, Version 1.76.00
+   This is a port of the Swiss Ephemeris Free Edition, Version 2.00.00
    of Astrodienst AG, Switzerland from the original C Code to Java. For
    copyright see the original copyright notices below and additional
    copyright notes in the file named LICENSE, or - if this file is not
@@ -20,7 +20,7 @@
 
 */
 /* SWISSEPH 
- $Header: /home/dieter/sweph/RCS/swehel.c,v 1.74 2008/06/16 10:07:20 dieter Exp $
+ $Header: /home/dieter/sweph/RCS/swehel.c,v 1.1 2009/04/21 06:05:59 dieter Exp dieter $
 
   Heliacal risings and related calculations
   
@@ -250,7 +250,8 @@ public class SweHel implements java.io.Serializable {
       double[] dobs,
       double JDNDaysUT,
       String ObjectName /* unused parameter */,
-      int TypeFactor) {
+      int TypeFactor,
+      int helflag) {
     double Pst, CIb, CIi, ObjectSize, Fb, Fe, Fsc, Fci, Fcb, Ft, Fp, Fa, Fr, Fm;
     double Age = dobs[0];
     double SN = dobs[1], SNi;
@@ -284,7 +285,7 @@ public class SweHel implements java.io.Serializable {
     }
     Fb = 1;
     if (Binocular == 0) Fb = 1.41;
-    if (Bback <= BNIGHT) {
+    if (Bback <= BNIGHT && (helflag & SweConst.SE_HELFLAG_VISLIM_PHOTOPIC) == 0) {
       Fe = SMath.pow(10, (0.48 * kX));
       Fsc = SMath.min(1, (1 - SMath.pow(Pst / 124.4, 4)) / (1 - SMath.pow((OpticDia / OpticMag / 124.4), 4)));
       Fci = SMath.pow(10, (-0.4 * (1 - CIi / 2.0)));
@@ -443,7 +444,7 @@ StringBuffer call_swe_fixstar_mag__star_save = new StringBuffer();
 //       ist in der Praxis ein Eingabeparameter "dgeo[3] geograph. longitude, latitude, height above sea"
 //    datm: double*
 //       ist in der Praxis ein Eingabeparameter von "datm[] = new double[] {atpress, attemp}"
-//    trise: double* == Rckgabe eines einzelnen double "double[0] trise"
+//    trise: double* == Rückgabe eines einzelnen double "double[0] trise"
 //  RiseSet:
 //    retval = my_rise_trans(JDNDaysUT, Planet, "", eventtype, helflag, dgeo, datm, tret, serr);
 //    retval = my_rise_trans(JDNDaysUT, -1, ObjectName, eventtype, helflag, dgeo, datm, tret, serr);
@@ -533,7 +534,7 @@ StringBuffer call_swe_fixstar_mag__star_save = new StringBuffer();
       rdi = 0;
     /* true altitude of sun, when it appears at the horizon */
     /* refraction for a body visible at the horizon at 0m above sea,
-     * atmospheric temperature 10øC, atmospheric pressure 1013.25 is 34.5 arcmin*/
+     * atmospheric temperature 10 deg C, atmospheric pressure 1013.25 is 34.5 arcmin*/
     rh = -(34.5 / 60.0 + rdi);
     /* semidiurnal arc of sun */
     sda = SMath.acos(-SMath.tan(dgeo[1] * SwissData.DEGTORAD) * SMath.tan(xx[1] * SwissData.DEGTORAD)) * SwissData.RADTODEG;
@@ -611,15 +612,14 @@ private double sunRA_ralast;
   ' SunRA [deg]
   */
   private double SunRA(double JDNDaysUT, int helflag, StringBuffer serr) {
-    double tjd_tt;
     int imon, iday, iyar;
     boolean calflag = SweDate.SE_GREG_CAL;
     double dut;
-    tjd_tt = 0; 
     if (JDNDaysUT == sunRA_tjdlast)
       return sunRA_ralast;
 #ifndef SIMULATE_VICTORVB
     if (true) { /*helflag & SweConst.SE_HELFLAG_HIGH_PRECISION) */
+      double tjd_tt;
       double x[]=new double[6];
 #ifdef NO_JPL
       int epheflag = helflag & (SweConst.SEFLG_SWIEPH|SweConst.SEFLG_MOSEPH);
@@ -840,6 +840,57 @@ private double sunRA_ralast;
         }
       }
     }
+    return SweConst.OK;
+  }
+
+  /*###################################################################
+  ' JDNDaysUT [Days]
+  ' dgeo [array: longitude, latitude, eye height above sea m]
+  ' TempE [C]
+  ' PresE [mbar]
+  ' ObjectName [-]
+  ' Angle (0 = TopoAlt, 1 = Azi, 2=Topo Declination, 3=Topo Rectascension, 4=AppAlt,5=Geo Declination, 6=Geo Rectascension)
+  ' ObjectLoc [deg]
+   */
+  private int azalt_cart(double JDNDaysUT, double[] dgeo, double[] datm, StringBuffer ObjectName, int helflag, double[] dret, StringBuffer serr) {
+    return azalt_cart(JDNDaysUT, dgeo, datm, ObjectName, helflag, dret, 0, serr);
+  }
+  private int azalt_cart(double JDNDaysUT, double[] dgeo, double[] datm, StringBuffer ObjectName, int helflag, double[] dret, int dret_offset, StringBuffer serr) {
+    double x[] = new double[6], xin[] = new double[3], xaz[] = new double[3], tjd_tt;
+    int Planet;
+    int epheflag;
+    int iflag = SweConst.SEFLG_EQUATORIAL;
+#ifdef NO_JPL
+    epheflag = helflag & (SweConst.SEFLG_SWIEPH|SweConst.SEFLG_MOSEPH);
+#else
+    epheflag = helflag & (SweConst.SEFLG_JPLEPH|SweConst.SEFLG_SWIEPH|SweConst.SEFLG_MOSEPH);
+#endif /* NO_JPL */
+    iflag |= epheflag;
+    if ((helflag & SweConst.SE_HELFLAG_HIGH_PRECISION) == 0)
+      iflag |= SweConst.SEFLG_NONUT | SweConst.SEFLG_TRUEPOS;
+    iflag = iflag | SweConst.SEFLG_TOPOCTR;
+    tjd_tt = JDNDaysUT + DeltaT(JDNDaysUT, 0) / D2S;
+    Planet = DeterObject(ObjectName);
+    if (Planet != -1) {
+      if (sw.swe_calc(tjd_tt, Planet, iflag, x, serr) == SweConst.ERR)
+      return SweConst.ERR;
+    } else {
+      if (call_swe_fixstar(ObjectName, tjd_tt, iflag, x, serr) == SweConst.ERR)
+        return SweConst.ERR;
+    }
+    xin[0] = x[0];
+    xin[1] = x[1];
+    sc.swe_azalt(JDNDaysUT, SweConst.SE_EQU2HOR, dgeo, datm[0], datm[1], xin, xaz);
+    dret[dret_offset] = xaz[0];
+    dret[1+dret_offset] = xaz[1]; /* true altitude */
+    dret[2+dret_offset] = xaz[2]; /* apparent altitude */
+    /* also return cartesian coordinates, for apparent altitude */
+    xaz[1] = xaz[2];
+    xaz[2] = 1;
+    sl.swi_polcart(xaz, xaz);
+    dret[3+dret_offset] = xaz[0];
+    dret[4+dret_offset] = xaz[1];
+    dret[5+dret_offset] = xaz[2];
     return SweConst.OK;
   }
 
@@ -1419,10 +1470,10 @@ private int fast_magnitude(double tjd, double[] dgeo, StringBuffer ObjectName, i
     kX = Deltam(AltO, AltS, sunra, Lat, HeightEye, datm, helflag, serr);
     /* influence of age*/
     /*Fa = SMath.max(1, SMath.pow(p(23, Bsk) / p(Age, Bsk), 2)); */
-    CorrFactor1 = OpticFactor(Bsk, kX, dobs, JDNDaysUT, "", 1);
-    CorrFactor2 = OpticFactor(Bsk, kX, dobs, JDNDaysUT, "", 0);
+    CorrFactor1 = OpticFactor(Bsk, kX, dobs, JDNDaysUT, "", 1, helflag);
+    CorrFactor2 = OpticFactor(Bsk, kX, dobs, JDNDaysUT, "", 0, helflag);
     /* From Schaefer , Archaeoastronomy, XV, 2000, page 129*/
-    if (Bsk < BNIGHT) {
+    if (Bsk < BNIGHT && (helflag & SweConst.SE_HELFLAG_VISLIM_PHOTOPIC) == 0) {
       C1 = 1.5848931924611e-10; /*SMath.pow(10, -9.8);*/ /* C1 = 10 ^ (-9.8);*/
       C2 = 0.012589254117942; /*SMath.pow(10, -1.9);*/ /* C2 = 10 ^ (-1.9);*/
       if (scotopic_flag != null) 
@@ -1483,11 +1534,19 @@ private int fast_magnitude(double tjd, double[] dgeo, StringBuffer ObjectName, i
     }
     if (ObjectLoc(tjdut, dgeo, datm, ObjectName, 1, helflag, AziO, serr) == SweConst.ERR)
       return SweConst.ERR;
-    if (ObjectLoc(tjdut, dgeo, datm, "sun", 0, helflag, AltS, serr) == SweConst.ERR)
-      return SweConst.ERR;
-    if (ObjectLoc(tjdut, dgeo, datm, "sun", 1, helflag, AziS, serr) == SweConst.ERR)
-      return SweConst.ERR;
-    if (ObjectName.toString().startsWith("moon")) {
+    if ((helflag & SweConst.SE_HELFLAG_VISLIM_DARK) != 0) {
+      AltS[0] = -90;
+      AziS[0] = 0;
+    } else {
+      if (ObjectLoc(tjdut, dgeo, datm, "sun", 0, helflag, AltS, serr) == SweConst.ERR)
+        return SweConst.ERR;
+      if (ObjectLoc(tjdut, dgeo, datm, "sun", 1, helflag, AziS, serr) == SweConst.ERR)
+        return SweConst.ERR;
+    }
+    if (ObjectName.toString().startsWith("moon") ||
+      ((helflag & SweConst.SE_HELFLAG_VISLIM_DARK) != 0) ||
+      ((helflag & SweConst.SE_HELFLAG_VISLIM_NOMOON) != 0)
+       ) {
       AltM[0] = -90; AziM[0] = 0;
     } else {
       if (ObjectLoc(tjdut, dgeo, datm, "moon", 0, helflag, AltM, serr) == SweConst.ERR)
@@ -1833,7 +1892,7 @@ private int fast_magnitude(double tjd, double[] dgeo, StringBuffer ObjectName, i
     double[] MinTAVact = new double[1];
 // Attention: MinTAV does not get initialized in C but assigned to darr[] sometimes later
     double MinTAV = 0, Ta, Tc, TimeStep, TimePointer, MinTAVoud = 0, DeltaAltoud = 0, DeltaAlt, TvisVR, crosspoint;
-    double OldestDeltaAlt, OldestMinTAV, extrax, illum;
+    double OldestMinTAV, extrax, illum;
     double elong, attr[]=new double[30];
     double[] LocalminCheck = new double[1];
     double TimeCheck;
@@ -1935,7 +1994,6 @@ darr[30] = darr[26] + darr[27] + darr[28] + darr[29];
     /*te bepalen m.b.v. walkthrough*/
     MinTAVact[0] = 199;
     DeltaAlt = 0; 
-    OldestDeltaAlt = 0;
     OldestMinTAV = 0;
     Ta = 0;
     Tc = 0;
@@ -1945,7 +2003,6 @@ darr[30] = darr[26] + darr[27] + darr[28] + darr[29];
     TimePointer = RiseSetS[0] - TimeStep;
     do {
       TimePointer = TimePointer + TimeStep;
-      OldestDeltaAlt = DeltaAltoud;
       OldestMinTAV = MinTAVoud;
       MinTAVoud = MinTAVact[0];
       DeltaAltoud = DeltaAlt;
@@ -2119,7 +2176,7 @@ int FAR PASCAL_CONV HeliacalJDut(double JDNDaysUTStart, double Age, double SN, d
     double[] AltS = new double[1], AltO = new double[1];
     double DeltaAlt = 90;
     StringBuffer ObjectName = new StringBuffer();
-    int iflag, Daystep, eventtype, goingup, Planet, i, retval;
+    int iflag, Daystep, goingup, Planet, retval;
     int avkind = helflag & SweConst.SE_HELFLAG_AVKIND;
 #ifdef NO_JPL
     int epheflag = helflag & (SweConst.SEFLG_SWIEPH|SweConst.SEFLG_MOSEPH);
@@ -2157,19 +2214,18 @@ int FAR PASCAL_CONV HeliacalJDut(double JDNDaysUTStart, double Age, double SN, d
       TypeEvent = 1;
       Daystep = -Daystep;
     }
-    eventtype = TypeEvent + SweConst.SE_BIT_DISC_CENTER;
     /* check Synodic/phase Period */
     JDNDaysUT = JDNDaysUTStart;
     /* start 30 days later if TypeEvent=4 (1) */
     if (TypeEvent == 1) JDNDaysUT = JDNDaysUT + 30;
     /* determination of new moon date */
-    i = sw.swe_pheno_ut(JDNDaysUT, Planet, iflag, x, serr);
+    sw.swe_pheno_ut(JDNDaysUT, Planet, iflag, x, serr);
     phase2 = x[0];
     goingup = 0;
     do {
       JDNDaysUT = JDNDaysUT + Daystep;
       phase1 = phase2;
-      i = sw.swe_pheno_ut(JDNDaysUT, Planet, iflag, x, serr);
+      sw.swe_pheno_ut(JDNDaysUT, Planet, iflag, x, serr);
       phase2 = x[0];
       if (phase2 > phase1) 
         goingup = 1;
@@ -2225,13 +2281,13 @@ int FAR PASCAL_CONV HeliacalJDut(double JDNDaysUTStart, double Age, double SN, d
     double xin[]=new double[2];
     double xaz[]=new double[2];
     double dang[]=new double[3];
-    double objectmagn[] = new double[]{0}, maxlength, DayStep, DayStep0;
+    double objectmagn[] = new double[]{0}, maxlength, DayStep;
     double JDNDaysUT, JDNDaysUTfinal, JDNDaysUTstep, JDNDaysUTstepoud, JDNarcvisUT, tjd_tt, tret[] = new double[1], OudeDatum, JDNDaysUTinp = JDNDaysUTStart, JDNDaysUTtijd;
     double ArcusVis, ArcusVisDelta, ArcusVisPto, ArcusVisDeltaoud;
     double Trise, sunsangle, Theliacal, Tdelta, Angle;
     double TimeStep, TimePointer, OldestMinTAV[] = new double[1], MinTAVoud[] = new double[1], MinTAVact[] = new double[1], extrax, TbVR = 0;
     double AziS, AltS, AziO, AltO, DeltaAlt;
-    double direct, Pressure, Temperature, RH, VR, d;
+    double direct, Pressure, Temperature, d;
     int epheflag, retval = SweConst.OK;
     int iflag, Planet, eventtype;
     int TypeEvent = TypeEventIn;
@@ -2241,8 +2297,6 @@ int FAR PASCAL_CONV HeliacalJDut(double JDNDaysUTStart, double Age, double SN, d
     Planet = DeterObject(ObjectName);
     Pressure = datm[0];
     Temperature = datm[1];
-    RH = datm[2];
-    VR = datm[3];
     /* determine Magnitude of star*/
     if ((retval = Magnitude(JDNDaysUTStart, dgeo, ObjectName, helflag, objectmagn, 0, serr)) == SweConst.ERR)
 //    goto swe_heliacal_err;
@@ -2272,7 +2326,6 @@ int FAR PASCAL_CONV HeliacalJDut(double JDNDaysUTStart, double Age, double SN, d
       default:
         DayStep = 64; maxlength = 256; break;
     }
-    DayStep0 = DayStep;
     /* heliacal setting */
     eventtype = TypeEvent;
     if (eventtype == 2) DayStep = -DayStep;
@@ -2496,6 +2549,45 @@ int FAR PASCAL_CONV HeliacalJDut(double JDNDaysUTStart, double Age, double SN, d
 #else
     int epheflag = iflag & (SweConst.SEFLG_JPLEPH|SweConst.SEFLG_SWIEPH|SweConst.SEFLG_MOSEPH);
 #endif /* NO_JPL */
+    double x[] = new double[6], adp;
+    String s = "";
+    StringBuffer star2 = new StringBuffer(star);
+    if (ipl == -1) {
+      if ((retval = sw.swe_fixstar(star2, tjd, epheflag | SweConst.SEFLG_EQUATORIAL, x, serr)) == SweConst.ERR)
+        return SweConst.ERR;
+    } else {
+      if ((retval = sw.swe_calc(tjd, ipl, epheflag | SweConst.SEFLG_EQUATORIAL, x, serr)) == SweConst.ERR)
+        return SweConst.ERR;
+    }
+    adp = SMath.tan(dgeo[1] * SwissData.DEGTORAD) * SMath.tan(x[1] * SwissData.DEGTORAD);
+    if (SMath.abs(adp) > 1) {
+      if (star != null && star.length() > 0)
+        s = star.toString();
+      else
+        s = sw.swe_get_planet_name(ipl);
+      serr.setLength(0);
+      serr.append(s + " is circumpolar, cannot calculate heliacal event");
+      return -2;
+    }
+    adp = SMath.asin(adp) / SwissData.DEGTORAD;
+    if (desc_obl)
+      daop[0] = x[0] + adp;
+    else
+      daop[0] = x[0] - adp;
+    daop[0] = sl.swe_degnorm(daop[0]);
+    return SweConst.OK;
+  }
+#if 0
+  private int get_asc_obl_old(double tjd, int ipl, String star, int iflag, double[] dgeo, boolean desc_obl, double[] daop, StringBuffer serr) {
+    return get_asc_obl_old(tjd, ipl, new StringBuffer(star), iflag, dgeo, desc_obl, daop, serr);
+  }
+  private int get_asc_obl_old(double tjd, int ipl, StringBuffer star, int iflag, double[] dgeo, boolean desc_obl, double[] daop, StringBuffer serr) {
+    int retval;
+#ifdef NO_JPL
+    int epheflag = iflag & (SweConst.SEFLG_SWIEPH|SweConst.SEFLG_MOSEPH);
+#else
+    int epheflag = iflag & (SweConst.SEFLG_JPLEPH|SweConst.SEFLG_SWIEPH|SweConst.SEFLG_MOSEPH);
+#endif /* NO_JPL */
     double x[]=new double[6], adp;
     String s;
     if (star != null && star.length() != 0) {
@@ -2523,8 +2615,34 @@ int FAR PASCAL_CONV HeliacalJDut(double JDNDaysUTStart, double Age, double SN, d
     daop[0] = sl.swe_degnorm(daop[0]);
     return SweConst.OK;
   }
+#endif /* 0 */
 
-  private int get_asc_obl_diff(double tjd, int ipl, StringBuffer star, int iflag, double[] dgeo, boolean desc_obl, double[] dsunpl, StringBuffer serr) {
+  private int get_asc_obl_diff(double tjd, int ipl, StringBuffer star, int iflag, double[] dgeo, boolean desc_obl, boolean is_acronychal, double[] dsunpl, StringBuffer serr) {
+    int retval = SweConst.OK;
+    double[] aosun = new double[1], aopl = new double[1];
+    /* ascensio obliqua of sun */
+    retval = get_asc_obl(tjd, SweConst.SE_SUN, "", iflag, dgeo, desc_obl, aosun, serr);
+    if (retval != SweConst.OK)
+      return retval;
+    if (is_acronychal) {
+      if (desc_obl == true)	// desc_obl = !desc_obl;
+        desc_obl = false;
+      else
+        desc_obl = true;
+    }
+    /* ascensio obliqua of body */
+    retval = get_asc_obl(tjd, ipl, star, iflag, dgeo, desc_obl, aopl, serr);
+    if (retval != SweConst.OK)
+      return retval;
+    dsunpl[0] = sl.swe_degnorm(aosun[0] - aopl[0]);
+    if (is_acronychal)
+      dsunpl[0] = sl.swe_degnorm(dsunpl[0] - 180);
+    if (dsunpl[0] > 180) dsunpl[0] -= 360;
+    return SweConst.OK;
+  }
+
+#if 0
+  private int get_asc_obl_diff_old(double tjd, int ipl, StringBuffer star, int iflag, double[] dgeo, boolean desc_obl, double[] dsunpl, StringBuffer serr) {
     int retval = SweConst.OK;
     double aosun[] = new double[1], aopl[] = new double[1];
     /* ascensio obliqua of sun */
@@ -2538,6 +2656,7 @@ int FAR PASCAL_CONV HeliacalJDut(double JDNDaysUTStart, double Age, double SN, d
     dsunpl[0] = sl.swe_degnorm(aosun[0] - aopl[0]);
     return SweConst.OK;
   }
+#endif /* 0 */
 
   /* times of 
    * - superior and inferior conjunction (Mercury and Venus)
@@ -2585,8 +2704,89 @@ int FAR PASCAL_CONV HeliacalJDut(double JDNDaysUTStart, double Age, double SN, d
     return SweConst.OK;
   }
 
+  private int get_asc_obl_with_sun(double tjd_start, int ipl, StringBuffer star, int helflag, int evtyp, double dperiod, double[] dgeo, double[] tjdret, StringBuffer serr) {
+    int i, retval;
+    boolean is_acronychal = false;
+#ifdef NO_JPL
+    int epheflag = helflag & (SweConst.SEFLG_SWIEPH|SweConst.SEFLG_MOSEPH);
+#else
+    int epheflag = helflag & (SweConst.SEFLG_JPLEPH|SweConst.SEFLG_SWIEPH|SweConst.SEFLG_MOSEPH);
+#endif /* NO_JPL */
+    double dsunpl[] = new double[]{1}, dsunpl_save, dsunpl_test[] = new double[1], tjd, daystep;
+    boolean desc_obl = false, retro = false;
+    if (evtyp == SweConst.SE_EVENING_LAST || evtyp == SweConst.SE_EVENING_FIRST)
+      desc_obl = true;
+    if (evtyp == SweConst.SE_MORNING_FIRST || evtyp == SweConst.SE_EVENING_LAST)
+      retro = true;
+    if (evtyp == SweConst.SE_ACRONYCHAL_RISING)
+      desc_obl = true;
+    if (evtyp == SweConst.SE_ACRONYCHAL_RISING || evtyp ==  SweConst.SE_ACRONYCHAL_SETTING) {
+      is_acronychal = true;
+      if (ipl != SweConst.SE_MOON)
+        retro = true;
+    }
+    //  if (evtyp == 3 || evtyp == 4)
+    //    dangsearch = 180;
+    /* find date when sun and object have the same ascensio obliqua */
+    tjd = tjd_start;
+    dsunpl_save = -999999999;
+    retval = get_asc_obl_diff(tjd, ipl, star, epheflag, dgeo, desc_obl, is_acronychal, dsunpl, serr);
+    if (retval != SweConst.OK)  /* retval may be ERR or -2 */
+      return retval;
+    daystep = 20;
+    i = 0;
+    while (dsunpl_save == -999999999 ||
+        /*fabs(dsunpl - dsunpl_save) > 180 ||*/
+        SMath.abs(dsunpl[0]) + SMath.abs(dsunpl_save) > 180 ||
+        (retro && !(dsunpl_save < 0 && dsunpl[0] >= 0)) ||
+        (!retro && !(dsunpl_save >= 0 && dsunpl[0] < 0))) {
+      i++;
+      if (i > 5000) {
+        serr.setLength(0);
+        serr.append("loop in get_asc_obl_with_sun() (1)");
+        return SweConst.ERR;
+      }
+      dsunpl_save = dsunpl[0];
+      tjd += 10.0;
+      if (dperiod > 0 && tjd - tjd_start > dperiod)
+        return -2;
+      retval = get_asc_obl_diff(tjd, ipl, star, epheflag, dgeo, desc_obl, is_acronychal, dsunpl, serr);
+      if (retval != SweConst.OK)  /* retval may be ERR or -2 */
+        return retval;
+    }
+    tjd_start = tjd - daystep;
+    daystep /= 2.0;
+    tjd = tjd_start + daystep;
+    retval = get_asc_obl_diff(tjd, ipl, star, epheflag, dgeo, desc_obl, is_acronychal, dsunpl_test, serr);
+    if (retval != SweConst.OK)  /* retval may be ERR or -2 */
+      return retval;
+    i = 0;
+    while (SMath.abs(dsunpl[0]) > 0.00001) {
+      i++;
+      if (i > 5000) {
+        serr.setLength(0);
+        serr.append("loop in get_asc_obl_with_sun() (2)");
+        return SweConst.ERR;
+      }
+      if (dsunpl_save * dsunpl_test[0] >= 0) {
+        dsunpl_save = dsunpl_test[0];
+        tjd_start = tjd;
+      } else {
+        dsunpl[0] = dsunpl_test[0];
+      }
+      daystep /= 2.0;
+      tjd = tjd_start + daystep;
+      retval = get_asc_obl_diff(tjd, ipl, star, epheflag, dgeo, desc_obl, is_acronychal, dsunpl_test, serr);
+      if (retval != SweConst.OK)  /* retval may be ERR or -2 */
+        return retval;
+    }
+    tjdret[0] = tjd;
+    return SweConst.OK;
+  }
+
+#if 0
   /* works only for fixed stars */
-  private int get_asc_obl_with_sun(double tjd_start, int ipl, StringBuffer star, int helflag, int TypeEvent, double[] dgeo, double[] tjdret, StringBuffer serr) {
+  private int get_asc_obl_with_sun_old(double tjd_start, int ipl, StringBuffer star, int helflag, int TypeEvent, double[] dgeo, double[] tjdret, StringBuffer serr) {
     int retval;
 #ifdef NO_JPL
     int epheflag = helflag & (SweConst.SEFLG_SWIEPH|SweConst.SEFLG_MOSEPH);
@@ -2621,7 +2821,9 @@ int FAR PASCAL_CONV HeliacalJDut(double JDNDaysUTStart, double Age, double SN, d
     tjdret[0] = tjd;
     return SweConst.OK;
   }
+#endif /* 0 */
 
+#if 0
   /* works only for fixed stars */
   private int get_asc_obl_acronychal(double tjd_start, int ipl, StringBuffer star, int helflag, int TypeEvent, double[] dgeo, double[] tjdret, StringBuffer serr) {
     int retval;
@@ -2669,11 +2871,12 @@ int FAR PASCAL_CONV HeliacalJDut(double JDNDaysUTStart, double Age, double SN, d
     tjdret[0] = tjd;
     return SweConst.OK;
   }
+#endif /* 0 */
 
   private int get_heliacal_day(double tjd, double[] dgeo, double[] datm, double[] dobs, StringBuffer ObjectName, int helflag, int TypeEvent, double[] thel, StringBuffer serr) {
     int is_rise_or_set = 0, ndays, retval, retval_old;
-    double direct_day = 0, direct_time = 0, tfac, tend, daystep, tday, vdelta, tret[] = new double[1];
-    double darr[]=new double[30], tsave, vd, dmag[] = new double[1];
+    double direct_day = 0, direct_time = 0, tfac, tend, daystep, tday, vdelta, tret[] =new double[1];
+    double darr[] = new double[30], vd, dmag[] = new double[1];
     int ipl = DeterObject(ObjectName);
     /* 
      * find the day and minute on which the object becomes visible 
@@ -2699,7 +2902,7 @@ int FAR PASCAL_CONV HeliacalJDut(double JDNDaysUTStart, double Age, double SN, d
     tfac = 1;
     switch (ipl) {
       case SweConst.SE_MOON: 
-        ndays = 6; 
+        ndays = 16; 
         daystep = 1;
         break;
       case SweConst.SE_MERCURY: 
@@ -2733,6 +2936,9 @@ int FAR PASCAL_CONV HeliacalJDut(double JDNDaysUTStart, double Age, double SN, d
         tfac = 10;
         if (dmag[0] > 2) {
           daystep = 15;
+        }
+        if (dmag[0] < 0) {
+	  tfac = 3;
         }
         break;
       default:
@@ -2777,7 +2983,6 @@ int FAR PASCAL_CONV HeliacalJDut(double JDNDaysUTStart, double Age, double SN, d
         continue;
       vdelta = darr[0] - darr[7];
       /* find minute of object's becoming visible */
-      tsave = tret[0];
       while (retval != -2 && (vd = darr[0] - darr[7]) < 0) {
         if (vd < -1.0)
           tret[0] += 5.0 / 1440.0 * direct_time * tfac;
@@ -2830,7 +3035,8 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
 }
 #endif
 
-  private int get_acronychal_day(double tjd, double[] dgeo, double[] datm, double[] dobs, StringBuffer ObjectName, int helflag, int TypeEvent, double[] thel, StringBuffer serr) {
+#if 0
+  private int get_acronychal_day_old(double tjd, double[] dgeo, double[] datm, double[] dobs, StringBuffer ObjectName, int helflag, int TypeEvent, double[] thel, StringBuffer serr) {
     double tjdc = tjd, tret[] = new double[1], x[]=new double[6], xaz[]=new double[6], AltO = -10;
     int retval, is_rise_or_set, iter_day;
     int ipl = DeterObject(ObjectName);
@@ -2872,6 +3078,7 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
     thel[0] = tret[0];
     return SweConst.OK;
   }
+#endif /* 0 */
 
   private int time_optimum_visibility(double tjd, double[] dgeo, double[] datm, double[] dobs, StringBuffer ObjectName, int helflag, double[] tret, int tret_offset, StringBuffer serr) {
     int retval, retval_sv, i;
@@ -2922,9 +3129,8 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
   private int time_limit_invisible(double tjd, double[] dgeo, double[] datm, double[] dobs, StringBuffer ObjectName, int helflag, int direct, double[] tret, int tret_offset, StringBuffer serr) {
     int retval, retval_sv, i, ncnt = 3;
     double d = 0, darr[]=new double[10], phot_scot_opic, phot_scot_opic_sv;
-    double d0 = 100.0 / 86400.0, tjd_save;
+    double d0 = 100.0 / 86400.0;
     tret[tret_offset] = tjd;
-    tjd_save = tjd;
     if (ObjectName.toString().equals("moon")) {
       d0 *= 10;
       ncnt = 4;
@@ -2958,6 +3164,79 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
       if ((retval_sv & SweConst.SE_MIXEDOPIC_FLAG) != 0) {
         return -2;
       }
+    }
+    return SweConst.OK;
+  }
+
+  private int get_acronychal_day(double tjd, double[] dgeo, double[] datm, double[] dobs, StringBuffer ObjectName, int helflag, int TypeEvent, double[] thel, StringBuffer serr) {
+    double tjd_intern[] = new double[] {tjd};
+    double tret[] = new double[1], tret_dark[] = new double[1], darr[] = new double[30], dtret;
+    /* x[6], xaz[6], alto, azio, alto_dark, azio_dark;*/
+    int retval, is_rise_or_set, direct;
+    int ipl = DeterObject(ObjectName);
+    helflag |= SweConst.SE_HELFLAG_VISLIM_PHOTOPIC;
+    /*int32 epheflag = helflag & (SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH);*/
+    /* int32 iflag = epheflag | SEFLG_EQUATORIAL | SEFLG_TOPOCTR;*/
+    if (TypeEvent == 3 || TypeEvent == 5) {
+      is_rise_or_set = SweConst.SE_CALC_RISE; 
+      /* tret = tjdc - 3;
+      if (ipl >= SE_MARS)
+        tret = tjdc - 3;*/
+      direct = -1;
+    } else {
+      is_rise_or_set = SweConst.SE_CALC_SET; 
+      /*tret = tjdc + 3;
+      if (ipl >= SE_MARS)
+        tret = tjdc + 3;*/
+      direct = 1;
+    }
+    dtret = 999;
+#if 0
+    while (SMath.abs(dtret) > 0.5) {
+#else
+    while (SMath.abs(dtret) > 0.5 / 1440.0) {
+#endif /* 0 */
+      tjd_intern[0] += 0.7 * direct;
+      if (direct < 0) tjd_intern[0] -= 1;
+      retval = my_rise_trans(tjd_intern[0], ipl, ObjectName.toString(), is_rise_or_set, helflag, dgeo, datm, tjd_intern, serr);
+      if (retval == SweConst.ERR) return SweConst.ERR;
+      retval = swe_vis_limit_mag(tjd_intern[0], dgeo, datm, dobs, ObjectName, helflag, darr, serr);
+      while(darr[0] < darr[7]) {
+        tjd_intern[0] += 10.0 / 1440.0 * -direct;
+        retval = swe_vis_limit_mag(tjd_intern[0], dgeo, datm, dobs, ObjectName, helflag, darr, serr);
+      }
+      retval = time_limit_invisible(tjd_intern[0], dgeo, datm, dobs, ObjectName, helflag | SweConst.SE_HELFLAG_VISLIM_DARK, direct, tret_dark, 0, serr);
+      if (retval == SweConst.ERR) return SweConst.ERR;
+      retval = time_limit_invisible(tjd_intern[0], dgeo, datm, dobs, ObjectName, helflag | SweConst.SE_HELFLAG_VISLIM_NOMOON, direct, tret, 0, serr);
+      if (retval == SweConst.ERR) return SweConst.ERR;
+#if 0
+      if (azalt_cart(tret_dark[0], dgeo, datm, ObjectName, helflag, darr, serr) == SweConst.ERR)
+        return SweConst.ERR;
+      if (azalt_cart(tret[0], dgeo, datm, ObjectName, helflag, darr, 6, serr) == SweConst.ERR)
+        return SweConst.ERR;
+      dtret = SMath.acos(swi_dot_prod_unit(darr, 3, darr, 9)) / SwissData.DEGTORAD;
+#else
+      dtret = SMath.abs(tret[0] - tret_dark[0]);
+#endif /* 0 */
+    }
+    if (azalt_cart(tret[0], dgeo, datm, new StringBuffer("sun"), helflag, darr, serr) == SweConst.ERR)
+      return SweConst.ERR;
+    thel[0] = tret[0];
+    if (darr[1] < -12) {
+      serr.setLength(0);
+//#ifdef ORIGINAL
+      serr.append("acronychal rising/setting not available, " + sw.cv.fmt("%f",darr[1]));
+//#else
+      serr.append("acronychal rising/setting not available, " + darr[1]);
+//#endif /* ORIGINAL */
+      return SweConst.OK;
+    } else {
+      serr.setLength(0);
+//#ifdef ORIGINAL
+      serr.append("solar altitude, " + sw.cv.fmt("%f",darr[1]));
+//#else
+      serr.append("solar altitude, " + darr[1]);
+//#endif /* ORIGINAL */
     }
     return SweConst.OK;
   }
@@ -3037,8 +3316,11 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
     iflag = SweConst.SEFLG_TOPOCTR | SweConst.SEFLG_EQUATORIAL | epheflag;
     if ((helflag & SweConst.SE_HELFLAG_HIGH_PRECISION) == 0) 
       iflag |= SweConst.SEFLG_NONUT | SweConst.SEFLG_TRUEPOS;
-    tjd[0] = tjd_start - 50; /* -50 makes sure, that no event is missed, 
-                           * but may return an event before start date */
+    if (ipl == SweConst.SE_MERCURY)
+      tjd[0] = tjd_start - 30;
+    else
+      tjd[0] = tjd_start - 50; /* -50 makes sure, that no event is missed, 
+                              * but may return an event before start date */
     helflag2 = helflag;
     /*helflag2 &= ~SweConst.SE_HELFLAG_HIGH_PRECISION;*/
     /* 
@@ -3047,7 +3329,7 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
     if (ipl == SweConst.SE_MERCURY || ipl == SweConst.SE_VENUS || TypeEvent <= 2) {
       if (ipl == -1) {
         /* find date when star rises with sun (cosmic rising) */
-        retval = get_asc_obl_with_sun(tjd[0], ipl, ObjectName, helflag, TypeEvent, dgeo, tjd, serr);
+        retval = get_asc_obl_with_sun(tjd[0], ipl, ObjectName, helflag, TypeEvent, 0, dgeo, tjd, serr);
         if (retval != SweConst.OK)
 //        goto swe_heliacal_err; /* retval may be -2 or SweConst.ERR */
           return goto_swe_heliacal_err2(serr, serr_ret, retval);
@@ -3066,8 +3348,9 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
      * acronychal event
      */
     } else {
-      if (ipl == -1) {
-        retval = get_asc_obl_acronychal(tjd[0], ipl, ObjectName, helflag2, TypeEvent, dgeo, tjd, serr);
+      if (true || ipl == -1) {
+        /*retval = get_asc_obl_acronychal(tjd, ipl, ObjectName, helflag2, TypeEvent, dgeo, &tjd, serr);*/
+        retval = get_asc_obl_with_sun(tjd[0], ipl, ObjectName, helflag, TypeEvent, 0, dgeo, tjd, serr);
         if (retval != SweConst.OK)
 //        goto swe_heliacal_err;
           return goto_swe_heliacal_err2(serr, serr_ret, retval);
@@ -3077,6 +3360,7 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
 //        goto swe_heliacal_err;
           return goto_swe_heliacal_err2(serr, serr_ret, retval);
       }
+      tday = tjd;
       retval = get_acronychal_day(tjd[0], dgeo, datm, dobs, ObjectName, helflag2, TypeEvent, tday, serr); 
       if (retval != SweConst.OK)
         // goto swe_heliacal_err;
@@ -3092,8 +3376,8 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
         retval = get_heliacal_details(tday[0], dgeo, datm, dobs, ObjectName, TypeEvent, helflag2, dret, serr);
         if (retval == SweConst.ERR) // goto swe_heliacal_err;
           return goto_swe_heliacal_err2(serr, serr_ret, retval);
-      } else {
-        if (TypeEvent == 4) direct = -1;
+      } else if (false) {
+        if (TypeEvent == 4 || TypeEvent == 6) direct = -1;
         for (i = 0, d = 100.0 / 86400.0; i < 3; i++, d /= 10.0) {
           while((retval = swe_vis_limit_mag(dret[0] + d * direct, dgeo, datm, dobs, ObjectName, helflag, darr, serr)) == -2 || (retval >= 0 && darr[0] < darr[7])) { 
             dret[0] += d * direct; 
@@ -3118,7 +3402,7 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
     StringBuffer serr = new StringBuffer();
     //JAVA char ObjectName[30];
     StringBuffer ObjectName = new StringBuffer();
-    int iflag, Daystep, eventtype, ipl, retval, helflag2, direct;
+    int iflag, ipl, retval, helflag2, direct;
 #ifdef NO_JPL
     int epheflag = helflag & (SweConst.SEFLG_SWIEPH|SweConst.SEFLG_MOSEPH);
 #else
@@ -3139,10 +3423,8 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
       iflag |= SweConst.SEFLG_NONUT|SweConst.SEFLG_TRUEPOS;
     helflag2 = helflag;
     helflag2 &= ~SweConst.SE_HELFLAG_HIGH_PRECISION;
-    Daystep = 1;
-    eventtype = TypeEvent + SweConst.SE_BIT_DISC_CENTER;
     /* check Synodic/phase Period */
-    tjd[0] = tjdstart - 3; /* -50 makes sure, that no event is missed, 
+    tjd[0] = tjdstart - 30; /* -50 makes sure, that no event is missed, 
                            * but may return an event before start date */
     if ((retval = find_conjunct_sun(tjd[0], ipl, helflag, TypeEvent, tjd, serr)) == SweConst.ERR)
       return SweConst.ERR;
@@ -3228,7 +3510,7 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
   ' dgeo[3]           geogr. longitude, latitude, eye height (m above sea level)
   ' datm[4]           atm. pressure, temperature, RH, and VR
   ' - pressure        atmospheric pressure (mbar, =hPa) default 1013.25hPa
-  ' - temperature     øC, default 15øC (if at
+  ' - temperature      deg C, default 15 deg C (if at
   '                   If both attemp and atpress are 0, a temperature and
   '                   atmospheric pressure are estimated from the above-mentioned
   '                   default values and the height above sea level.
@@ -3247,7 +3529,10 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
   '                   2 evening last
   '                   3 evening first
   '                   4 morning last
-  ' dret		    output: time (tjd_ut) of heliacal event
+  ' dret              output: time (tjd_ut) of heliacal event
+  '                   dret[0]: beginning of visibility (Julian day number)
+  '                   dret[1]: optimum visibility (Julian day number; 0 if SE_HELFLAG_AV)
+  '                   dret[2]: end of visibility (Julian day number; 0 if SE_HELFLAG_AV)
   ' see http://www.iol.ie/~geniet/eng/atmoastroextinction.htm
   */
   public int swe_heliacal_ut(double JDNDaysUTStart, double[] dgeo, double[] datm, double[] dobs, StringBuffer ObjectNameIn, int TypeEvent, int helflag, double[] dret, StringBuffer serr_ret) {
@@ -3256,9 +3541,11 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
     String s;
     double tjd0 = JDNDaysUTStart, tjd, dsynperiod, tjdmax, tadd;
     int MaxCountSynodicPeriod = MAX_COUNT_SYNPER;
-    String sevent[] = new String[] {"", "morning first", "evening last", "evening first", "morning last"};
+    String sevent[] = new String[] {"", "morning first", "evening last", "evening first", "morning last", "acronychal rising", "acronychal setting"};
     if ((helflag & SweConst.SE_HELFLAG_LONG_SEARCH) != 0)
       MaxCountSynodicPeriod = MAX_COUNT_SYNPER_MAX;
+  /*  if (helflag & SE_HELFLAG_SEARCH_1_PERIOD)
+        MaxCountSynodicPeriod = 1; */
     serr.setLength(0);
     if (serr_ret != null)
       serr_ret.setLength(0);
@@ -3310,6 +3597,29 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
         }
       }
     }
+    /* arcus visionis method: set the TypeEvent for acronychal events */
+    if ((helflag & SweConst.SE_HELFLAG_AVKIND) != 0) {
+      if (Planet == -1 || Planet >= SweConst.SE_MARS) {
+        if (TypeEvent == SweConst.SE_ACRONYCHAL_RISING)
+	  TypeEvent = 3;
+        if (TypeEvent == SweConst.SE_ACRONYCHAL_SETTING)
+	  TypeEvent = 4;
+      }
+    /* acronychal rising and setting (cosmic setting) are ill-defined.
+     * We do not calculate them with the "visibility limit method" */
+    } else if (true) {
+      if (TypeEvent == SweConst.SE_ACRONYCHAL_RISING || TypeEvent == SweConst.SE_ACRONYCHAL_SETTING) {
+        if (serr_ret != null) {
+	  if (Planet == -1)
+            s = ObjectName.toString();
+	  else
+            s = sw.swe_get_planet_name(Planet);
+          serr_ret.setLength(0);
+          serr_ret.append(sevent[TypeEvent] + " (event type " + TypeEvent + ") is not provided for " + s + "\n");
+        }
+        return SweConst.ERR;
+      }
+    }
     dsynperiod = get_synodic_period(Planet);
     tjdmax = tjd0 + dsynperiod * MaxCountSynodicPeriod;
     tadd = dsynperiod * 0.6;
@@ -3337,7 +3647,11 @@ private int get_acronychal_day_new(double tjd, double[] dgeo, double[] datm, dou
     /* 
      * no event was found within MaxCountSynodicPeriod, return error
      */ 
-    if (retval == -2) {
+    if ((helflag & SweConst.SE_HELFLAG_SEARCH_1_PERIOD) != 0 && (retval == -2 || dret[0] > tjd0 + dsynperiod * 1.5)) {
+      serr.setLength(0);
+      serr.append("no heliacal date found within this synodic period");
+      retval = -2;
+    } else if (retval == -2) {
       serr.setLength(0);
       serr.append("no heliacal date found within " + MaxCountSynodicPeriod + " synodic periods");
       retval = SweConst.ERR;

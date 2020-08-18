@@ -67,7 +67,7 @@ class Extensions
   double getTransit(TransitCalculator tc, double jdET, boolean back,
                     double jdMax)
          throws IllegalArgumentException, SwissephException {
-//System.err.println(" -- " + (""+jdET).substring(0,SMath.min((""+jdET).length(),12)) + " - " + jdMax);
+    jdET = tc.preprocessDate(jdET, back);
     double max = tc.getMaxSpeed();
     double min = tc.getMinSpeed();
 
@@ -101,10 +101,10 @@ class Extensions
     iterateCount = 1;
 #endif /* TEST_ITERATIONS */
     val = tc.calc(jdET);
-    if (offset-val == 0.) { // If not 0.0 but "very small", then
+    if (tc.checkIdenticalResult(offset, val)) { // If not 0.0 but "very small", then
                             // interpolate after another calculation
                             // in the calculation loop below
-      return jdET;
+      return val;
     }
 
 
@@ -126,42 +126,7 @@ class Extensions
       //while (tc.rollover && val<offset) { val += tc.rolloverVal; }
       if (tc.rollover && !above) { val += tc.rolloverVal; }
 
-      // Find next reasonable point to probe.
-      if (tc.rollover) {
-        // In most cases here we cannot find out for sure if the distance
-        // is decreasing or increasing. We take the smaller one of these:
-        jdPlus  = SMath.min(val-offset,360-val+offset)/SMath.abs(max);
-        jdMinus = SMath.min(val-offset,360-val+offset)/SMath.abs(min);
-        if (back) {
-          jdET -= SMath.min(jdPlus,jdMinus);
-        } else {
-          jdET += SMath.min(jdPlus,jdMinus);
-        }
-      } else { // Latitude, distance and speed calculations...
-        //jdPlus = (back?(val-offset):(offset-val))/max;
-        //jdMinus = (back?(val-offset):(offset-val))/min;
-        jdPlus = (offset-val)/max;
-        jdMinus = (offset-val)/min;
-        if (back) {
-          if (jdPlus >= 0 && jdMinus >= 0) {
-            throw new SwissephException(jdET, SwissephException.OUT_OF_TIME_RANGE,
-                -1, "No transit in ephemeris time range."); // I mean: No transits possible...
-          } else if (jdPlus >= 0) {
-            jdET += jdMinus;
-          } else { // if (jdMinus >= 0)
-            jdET += jdPlus;
-          }
-        } else {
-          if (jdPlus <= 0 && jdMinus <= 0) {
-            throw new SwissephException(jdET, SwissephException.OUT_OF_TIME_RANGE,
-                -1, "No transit in ephemeris time range."); // I mean: No transits possible...
-          } else if (jdPlus <= 0) {
-            jdET += jdMinus;
-          } else { // if (jdMinus <= 0)
-            jdET += jdPlus;
-          }
-        }
-      }
+      jdET = tc.getNextJD(jdET, val, offset, min, max, back);
 
 
       // Add at least "timePrec" time to the last time:
@@ -169,20 +134,21 @@ class Extensions
         jdET = lastJD + (back?-timePrec:+timePrec);
       }
       if (jdET == lastJD) {
-//System.err.println(" =t " + (""+val).substring(0,SMath.min((""+val).length(),12)) + " " + jdET);
         return jdET;
       }
 #ifdef TEST_ITERATIONS
       iterateCount++;
 #endif /* TEST_ITERATIONS */
       val = tc.calc(jdET);
+      if (val == Double.POSITIVE_INFINITY) {
+        return jdET;
+      }
       if (tc.rollover && val >= tc.rolloverVal) { val %= tc.rolloverVal; }
       while (tc.rollover && val < 0.) { val += tc.rolloverVal; }
 
       // Hits the transiting point exactly...:
-      if (offset-val == 0.) {
-//System.err.println(" =v " + (""+val).substring(0,SMath.min((""+val).length(),12)) + " " + jdET);
-        return jdET;
+      if(tc.checkIdenticalResult(offset, val)) {
+        return val;
       }
 
       // The planet may have moved forward or backward, in one of these
@@ -201,28 +167,10 @@ class Extensions
         pxway = lastVal<=val;
       }
 
-      found = (// transits from higher deg. to lower deg.:
-               ( above && val<=offset && !pxway) ||
-               // transits from lower deg. to higher deg.:
-               (!above && val>=offset &&  pxway)) ||
-              (tc.rollover && (
-               // transits from above the transit degree via rollover over
-               // 0 degrees to a higher degree:
-               (offset<lastVal && val>340. && lastVal<20. && !pxway) ||
-               // transits from below the transit degree via rollover over
-               // 360 degrees to a lower degree:
-               (offset>lastVal && val<20. && lastVal>340. &&  pxway) ||
-               // transits from below the transit degree via rollover over
-               // 0 degrees to a higher degree:
-               (offset>val && val>340. && lastVal<20. && !pxway) ||
-               // transits from above the transit degree via rollover over
-               // 360 degrees to a lower degree:
-               (offset<val && val<20. && lastVal>340. &&  pxway))
-              );
+      found = tc.checkResult(offset, lastVal, val, above, pxway);
 
       if (found) { // Return an interpolated value, but not prior to (after)
                    // the initial time (if backward):
-//System.err.println(" :: (" + above + " && " + val + "<=" + offset + " && !" + pxway + ") || " );
         if (tc.rollover) {
           if (tc.rollover && SMath.abs(val - lastVal) > 300.) {   // How to do it formally correct???
             // Probably one value is about 359.99 and the other one is in the area of 0.01
@@ -237,7 +185,6 @@ class Extensions
           }
         }
         double jdRet = lastJD+(jdET-lastJD)*(offset-lastVal)/(val-lastVal);
-//System.err.println(" fd " + ("  "+val).substring(1).substring(0,12) + " " + SMath.min(jdRet,jdET));
         if (back) {
           return SMath.max(jdRet, jdET);
         } else {
@@ -246,7 +193,6 @@ class Extensions
       }
       if ((back && jdET < jdMax) ||
           (!back && jdET > jdMax)) {
-//System.err.println(" ex " + ("  "+val).substring(1).substring(0,12) + " " + jdET);
         throw new SwissephException(jdET, SwissephException.BEYOND_USER_TIME_LIMIT,
             -1, "User time limit of " + jdMax + " has been reached.");
       }
