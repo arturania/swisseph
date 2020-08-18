@@ -1,22 +1,22 @@
---- #YAML:1.0
-name:               SwissEph
-version:            1.80.00
-abstract:           The Swiss Ephemeris made accessible for Perl
+---
+abstract: "The Swiss Ephemeris made accessible for Perl \r"
 author:
-    - Dieter <dieter@astro.ch>
-license:            unknown
-distribution_type:  module
-configure_requires:
-    ExtUtils::MakeMaker:  0
+  - 'Dieter <dieter@astro.ch>'
 build_requires:
-    ExtUtils::MakeMaker:  0
-requires:  {}
-no_index:
-    directory:
-        - t
-        - inc
-generated_by:       ExtUtils::MakeMaker version 6.55_02
+  ExtUtils::MakeMaker: 0
+configure_requires:
+  ExtUtils::MakeMaker: 0
+dynamic_config: 1
+generated_by: 'ExtUtils::MakeMaker version 6.68, CPAN::Meta::Converter version 2.120921'
+license: unknown
 meta-spec:
-    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
-    version:  1.4
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: SwissEph
+no_index:
+  directory:
+    - t
+    - inc
+requires: {}
+version: v2.09.02
 

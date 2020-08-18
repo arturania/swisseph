@@ -32,6 +32,17 @@ CODE:
 OUTPUT:
   RETVAL
 
+# swe_get_library_path()
+SV*
+swe_get_library_path(ipl) 
+CODE:  
+  char spath[255];
+  RETVAL = newSVpvn("", 255);
+  swe_get_library_path(spath);
+  sv_setpvn(RETVAL, spath, strlen(spath)); 
+OUTPUT:
+  RETVAL
+
 ###############################################################3
 # functions from swephlib.c
 ###############################################################3
@@ -73,10 +84,35 @@ PPCODE:
 
  # See swe_deltat()
 double
-swe_deltat( tjd_et ) 
-  double tjd_et
+swe_deltat( tjd_ut ) 
+  double tjd_ut
 CODE:
-  RETVAL = swe_deltat( tjd_et );
+  RETVAL = swe_deltat( tjd_ut );
+OUTPUT:
+  RETVAL
+
+ # Delta T extended
+ # input:  $tjd_ut, $iflag
+ # output: $hp = {dt =>,      * Delta T value
+ #                serr =>,    * warning string, unless empty
+ #               }
+HV *
+swe_deltat_ex(tjd_ut,iflag)
+  double tjd_ut
+  int iflag
+PREINIT:
+  double dt = 0;
+  char serr[255];
+  HV* hp;
+CODE:
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  *serr = '\0';
+  dt = swe_deltat_ex(tjd_ut, iflag, serr); 
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  (void)hv_store(hp, "dt", 2, newSVnv(dt), 0);
+  RETVAL = hp;
 OUTPUT:
   RETVAL
 
@@ -126,6 +162,62 @@ CODE:
 OUTPUT:
   RETVAL
 
+ # conversion of Local Mean Time to Local Apparent Time
+ # input:  $tjd_lmt : tjd in Local Mean Time
+ #         $geolon  : geographic longitude
+ # output: $hp = {retval =>,     
+ #                tjd_lat =>,  *  tjd in Local Apparent Time
+ #                serr =>,     *  error message (on error only)
+ #               }
+HV *
+swe_lmt_to_lat(tjd_lmt, geolon)
+  double tjd_lmt
+  double geolon
+PREINIT:
+  int retval;
+  double tjd_lat;
+  char serr[255];
+  HV* hp;
+CODE:
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  retval = swe_lmt_to_lat(tjd_lmt, geolon, &tjd_lat, serr);
+  (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  (void)hv_store(hp, "tjd_lat", 7, newSVnv(tjd_lat), 0);
+  RETVAL = hp; 
+OUTPUT:
+  RETVAL
+
+ # conversion of Local Apparent Time to Local Mean Time
+ # input:  $tjd_lat : tjd in Local Apparent Time
+ #         $geolon  : geographic longitude
+ # output: $hp = {retval =>,     
+ #                tjd_lmt =>,  *  tjd in Local Mean Time
+ #                serr =>,     *  error message (on error only)
+ #               }
+HV *
+swe_lat_to_lmt(tjd_lat, geolon)
+  double tjd_lat
+  double geolon
+PREINIT:
+  int retval;
+  double tjd_lmt;
+  char serr[255];
+  HV* hp;
+CODE:
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  retval = swe_lat_to_lmt(tjd_lat, geolon, &tjd_lmt, serr);
+  (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  (void)hv_store(hp, "tjd_lmt", 7, newSVnv(tjd_lmt), 0);
+  RETVAL = hp; 
+OUTPUT:
+  RETVAL
+
  # tidal acceleration to be used in swe_deltat()
 double
 swe_get_tid_acc()
@@ -139,6 +231,12 @@ swe_set_tid_acc(tacc)
 double tacc
 CODE:
   swe_set_tid_acc(tacc);
+
+void
+swe_set_delta_t_userdef(dt)
+double dt
+CODE:
+  swe_set_delta_t_userdef(dt);
 
  # swe_degnorm
 double
@@ -258,26 +356,34 @@ HV *
 swe_revjul(tjd,...)
   double tjd
 PREINIT:
-  double dhou;
+  double dhou, dsec;
   int iyar, imon, iday, ihou, imin, isec;
   int gregflag;
+//  double half_second = 1 / 86400.0 / 2;
   HV* hp;
 CODE:
   hp = (HV *)sv_2mortal((SV *)newHV());
   if (items > 1) gregflag = (int)SvIV(ST(1));
   else gregflag = gregflag_from_jd(tjd);  
   swe_revjul(tjd, gregflag, &iyar, &imon, &iday, &dhou);
-  isec = swe_d2l(dhou * 3600);
-  ihou = isec / 3600;
-  isec = isec % 3600;
-  imin = isec / 60;
-  isec = isec % 60;
+//  if (24 - dhou < half_second) {
+//    tjd += half_second;
+//    swe_revjul(tjd, gregflag, &iyar, &imon, &iday, &dhou);
+//    dhou = 0;
+//  }
+  dsec = dhou * 3600.0 + 0.00005;
+  ihou = (int) (dsec / 3600.0);
+  dsec -= ihou * 3600.0;
+  imin = (int) (dsec / 60.0);
+  dsec -= imin * 60.0;
+  isec = (int) dsec;
   (void)hv_store(hp, "iyar", 4, newSViv(iyar), 0);
   (void)hv_store(hp, "imon", 4, newSViv(imon), 0);
   (void)hv_store(hp, "iday", 4, newSViv(iday), 0);
   (void)hv_store(hp, "ihou", 4, newSViv(ihou), 0);
   (void)hv_store(hp, "imin", 4, newSViv(imin), 0);
   (void)hv_store(hp, "isec", 4, newSViv(isec), 0);
+  (void)hv_store(hp, "dsec", 4, newSVnv(dsec), 0);
   (void)hv_store(hp, "dhou", 4, newSVnv(dhou), 0);
   RETVAL = hp; 
 OUTPUT:
@@ -522,6 +628,83 @@ CODE:
 OUTPUT:
   RETVAL
 
+ # houses_armc_ex2
+ # input:  $armc, $geolat, $eps, $hsys
+ # output: $hp = {cusps =>,    * array pointer, see swisseph docu
+ #                ascmc =>,    * array pointer, see swisseph docu
+ #                cusps_speed, * array pointer, see swisseph docu
+ #                ascmc_speed, * array pointer, see swisseph docu
+ #                asc =>, 
+ #                mc =>, 
+ #                armc =>, 
+ #                vertex =>,
+ #                equasc =>,   * "equatorial ascendant"
+ #                coasc1 =>,   * "co-ascendant 1" (M. Munkasey)
+ #                coasc2 =>,   * "co-ascendant 2" (M. Munkasey)
+ #                polasc =>,   * "polar ascendant" (M. Munkasey)
+ #                serr =>,     * error message or warning
+ #               }
+HV *
+swe_houses_armc_ex2(armc,geolat,eps,hsys)
+  double armc
+  double geolat
+  double eps
+  char* hsys
+PREINIT:
+  int i, retval;
+  double cusps[37], ascmc[10];
+  double cusps_speed[37], ascmc_speed[10];
+  char serr[255];
+  HV* hp;
+  AV* avcusps = newAV();
+  AV* avascmc = newAV();
+  AV* avcusps_speed = newAV();
+  AV* avascmc_speed = newAV();
+  SV* svcusps;
+  SV* svascmc;
+  SV* svcusps_speed;
+  SV* svascmc_speed;
+CODE:
+  *serr = '\0';
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  av_clear(avcusps);
+  av_clear(avascmc);
+  av_clear(avcusps_speed);
+  av_clear(avascmc_speed);
+  retval = swe_houses_armc_ex2(armc, geolat, eps, (char) *hsys, cusps, ascmc, cusps_speed, ascmc_speed, serr);
+  if( *hsys=='G' ) {
+    for (i=0;i<37;i++) av_push(avcusps,(newSVnv(cusps[i])));
+    for (i=0;i<37;i++) av_push(avcusps_speed,(newSVnv(cusps_speed[i])));
+  } else {
+    for (i=0;i<13;i++) av_push(avcusps,(newSVnv(cusps[i])));
+    for (i=0;i<13;i++) av_push(avcusps_speed,(newSVnv(cusps_speed[i])));
+  }
+  for (i=0;i<10;i++) av_push(avascmc,(newSVnv(ascmc[i])));
+  for (i=0;i<10;i++) av_push(avascmc_speed,(newSVnv(ascmc_speed[i])));
+  svcusps = newRV_noinc((SV*) avcusps);
+  svascmc = newRV_noinc((SV*) avascmc);
+  svcusps_speed = newRV_noinc((SV*) avcusps_speed);
+  svascmc_speed = newRV_noinc((SV*) avascmc_speed);
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
+  (void)hv_store(hp, "cusps", 5, newSVsv(svcusps), 0);
+  (void)hv_store(hp, "cusps_speed", 11, newSVsv(svcusps_speed), 0);
+  (void)hv_store(hp, "ascmc", 5, newSVsv(svascmc), 0);
+  (void)hv_store(hp, "ascmc_speed", 11, newSVsv(svascmc_speed), 0);
+  (void)hv_store(hp, "asc", 3, newSVnv(ascmc[0]), 0);
+  (void)hv_store(hp, "mc", 2, newSVnv(ascmc[1]), 0);
+  (void)hv_store(hp, "armc", 4, newSVnv(ascmc[2]), 0);
+  (void)hv_store(hp, "vertex", 6, newSVnv(ascmc[3]), 0);
+  (void)hv_store(hp, "equasc", 6, newSVnv(ascmc[4]), 0);
+  (void)hv_store(hp, "coasc1", 6, newSVnv(ascmc[5]), 0);
+  (void)hv_store(hp, "coasc2", 6, newSVnv(ascmc[6]), 0);
+  (void)hv_store(hp, "polasc", 6, newSVnv(ascmc[7]), 0);
+  RETVAL = hp; 
+OUTPUT:
+  RETVAL
+
  # houses_ex
  # input:  $tjd_ut, $iflag, $geolat, $geolon, $hsys
  # output: $hp = {cusps =>,    * array pointer, see swisseph docu
@@ -566,6 +749,82 @@ CODE:
   (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
   (void)hv_store(hp, "cusps", 5, newSVsv(svcusps), 0);
   (void)hv_store(hp, "ascmc", 5, newSVsv(svascmc), 0);
+  (void)hv_store(hp, "asc", 3, newSVnv(ascmc[0]), 0);
+  (void)hv_store(hp, "mc", 2, newSVnv(ascmc[1]), 0);
+  (void)hv_store(hp, "armc", 4, newSVnv(ascmc[2]), 0);
+  (void)hv_store(hp, "vertex", 6, newSVnv(ascmc[3]), 0);
+  (void)hv_store(hp, "equasc", 6, newSVnv(ascmc[4]), 0);
+  (void)hv_store(hp, "coasc1", 6, newSVnv(ascmc[5]), 0);
+  (void)hv_store(hp, "coasc2", 6, newSVnv(ascmc[6]), 0);
+  (void)hv_store(hp, "polasc", 6, newSVnv(ascmc[7]), 0);
+  RETVAL = hp; 
+OUTPUT:
+  RETVAL
+
+ # houses_ex2
+ # input:  $tjd_ut, $iflag, $geolat, $geolon, $hsys
+ # output: $hp = {cusps =>,    * array pointer, see swisseph docu
+ #                ascmc =>,    * array pointer, see swisseph docu
+ #                cusps_speed, * array pointer, see swisseph docu
+ #                ascmc_speed, * array pointer, see swisseph docu
+ #                asc =>, 
+ #                mc =>, 
+ #                armc =>, 
+ #                vertex =>,
+ #                equasc =>,   * "equatorial ascendant"
+ #                coasc1 =>,   * "co-ascendant 1" (M. Munkasey)
+ #                coasc2 =>,   * "co-ascendant 2" (M. Munkasey)
+ #                polasc =>,   * "polar ascendant" (M. Munkasey)
+ #                serr =>,     * error message or warning
+ #               }
+HV *
+swe_houses_ex2(tjd_ut,iflag,geolat,geolon,hsys)
+  double tjd_ut
+  int iflag
+  double geolat
+  double geolon
+  char* hsys
+PREINIT:
+  int i, retval;
+  double cusps[37], ascmc[10];
+  double cusps_speed[37], ascmc_speed[10];
+  char serr[255];
+  HV* hp;
+  AV* avcusps = newAV();
+  AV* avascmc = newAV();
+  AV* avcusps_speed = newAV();
+  AV* avascmc_speed = newAV();
+  SV* svcusps;
+  SV* svascmc;
+  SV* svcusps_speed;
+  SV* svascmc_speed;
+CODE:
+  *serr = '\0';
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  av_clear(avcusps);
+  av_clear(avascmc);
+  retval = swe_houses_ex2(tjd_ut, iflag, geolat, geolon, (char) *hsys, cusps, ascmc, cusps_speed, ascmc_speed, serr);
+  if( *hsys=='G' ) {
+    for (i=0;i<37;i++) av_push(avcusps,(newSVnv(cusps[i])));
+    for (i=0;i<37;i++) av_push(avcusps_speed,(newSVnv(cusps_speed[i])));
+  } else {
+    for (i=0;i<13;i++) av_push(avcusps,(newSVnv(cusps[i])));
+    for (i=0;i<13;i++) av_push(avcusps_speed,(newSVnv(cusps_speed[i])));
+  }
+  for (i=0;i<10;i++) av_push(avascmc,(newSVnv(ascmc[i])));
+  for (i=0;i<10;i++) av_push(avascmc_speed,(newSVnv(ascmc_speed[i])));
+  svcusps = newRV_noinc((SV*) avcusps);
+  svascmc = newRV_noinc((SV*) avascmc);
+  svcusps_speed = newRV_noinc((SV*) avcusps_speed);
+  svascmc_speed = newRV_noinc((SV*) avascmc_speed);
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
+  (void)hv_store(hp, "cusps", 5, newSVsv(svcusps), 0);
+  (void)hv_store(hp, "cusps_speed", 11, newSVsv(svcusps_speed), 0);
+  (void)hv_store(hp, "ascmc", 5, newSVsv(svascmc), 0);
+  (void)hv_store(hp, "ascmc_speed", 11, newSVsv(svascmc_speed), 0);
   (void)hv_store(hp, "asc", 3, newSVnv(ascmc[0]), 0);
   (void)hv_store(hp, "mc", 2, newSVnv(ascmc[1]), 0);
   (void)hv_store(hp, "armc", 4, newSVnv(ascmc[2]), 0);
@@ -739,6 +998,44 @@ CODE:
 OUTPUT:
   RETVAL
 
+ # fixstar2
+ # input:  $star, $tjd, $iflag
+ # output: $hp = {retval =>,   
+ #                serr =>,    * error string, on error only
+ #                xx =>,      * position array 
+ #                starname =>,      * fixed star name
+ #               }
+HV *
+swe_fixstar2(star,tjd,iflag)
+  char* star
+  double tjd
+  int iflag
+PREINIT:
+  int i, retval = 0;
+  char _star[255];
+  char serr[255];
+  double xx[6];
+  AV* avxx = newAV();
+  SV* svxx;
+  HV* hp;
+CODE:
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  av_clear(avxx);
+  strcpy(_star, star);
+  *serr = '\0';
+  retval = swe_fixstar2(_star, tjd, iflag, xx, serr);
+  for (i=0;i<6;i++) av_push(avxx,(newSVnv(xx[i])));
+  svxx = newRV_noinc((SV*) avxx);
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
+  (void)hv_store(hp, "xx", 2, newSVsv(svxx), 0);
+  (void)hv_store(hp, "starname", 8, newSVpvn(_star, strlen(_star)), 0);
+  RETVAL = hp; 
+OUTPUT:
+  RETVAL
+
  # fixstar_ut
  # input:  $star, $tjd, $iflag
  # output: $hp = {retval =>,   
@@ -765,6 +1062,44 @@ CODE:
   strcpy(_star, star);
   *serr = '\0';
   retval = swe_fixstar_ut(_star, tjd, iflag, xx, serr);
+  for (i=0;i<6;i++) av_push(avxx,(newSVnv(xx[i])));
+  svxx = newRV_noinc((SV*) avxx);
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
+  (void)hv_store(hp, "xx", 2, newSVsv(svxx), 0);
+  (void)hv_store(hp, "starname", 8, newSVpvn(_star, strlen(_star)), 0);
+  RETVAL = hp; 
+OUTPUT:
+  RETVAL
+
+ # fixstar2_ut
+ # input:  $star, $tjd, $iflag
+ # output: $hp = {retval =>,   
+ #                serr =>,    * error string, on error only
+ #                xx =>,      * position array 
+ #                starname =>,      * fixed star name
+ #               }
+HV *
+swe_fixstar2_ut(star,tjd,iflag)
+  char *star
+  double tjd
+  int iflag
+PREINIT:
+  int i, retval = 0;
+  char _star[255];
+  char serr[255];
+  double xx[6];
+  AV* avxx = newAV();
+  SV* svxx;
+  HV* hp;
+CODE:
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  av_clear(avxx);
+  strcpy(_star, star);
+  *serr = '\0';
+  retval = swe_fixstar2_ut(_star, tjd, iflag, xx, serr);
   for (i=0;i<6;i++) av_push(avxx,(newSVnv(xx[i])));
   svxx = newRV_noinc((SV*) avxx);
   if (*serr != '\0') {
@@ -804,6 +1139,121 @@ CODE:
   (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
   (void)hv_store(hp, "dmag", 4, newSVnv(dmag), 0);
   (void)hv_store(hp, "starname", 8, newSVpvn(_star, strlen(_star)), 0);
+  RETVAL = hp; 
+OUTPUT:
+  RETVAL
+
+ # fixstar2_mag
+ # input:  $star
+ # output: $hp = {retval =>,   
+ #                serr =>,    * error string, on error only
+ #                dmag =>,    * magnitude of fixed star
+ #                starname =>,      * fixed star name
+ #               }
+HV *
+swe_fixstar2_mag(star)
+  char *star
+PREINIT:
+  int retval = 0;
+  char _star[255];
+  char serr[255];
+  HV* hp;
+  double dmag;
+CODE:
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  strcpy(_star, star);
+  *serr = '\0';
+  retval = swe_fixstar2_mag(_star, &dmag, serr);
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
+  (void)hv_store(hp, "dmag", 4, newSVnv(dmag), 0);
+  (void)hv_store(hp, "starname", 8, newSVpvn(_star, strlen(_star)), 0);
+  RETVAL = hp; 
+OUTPUT:
+  RETVAL
+
+ # calc
+ # input:  $tjd, $ipl, $iflag
+ # output: $hp = {retval =>,   
+ #                serr =>,    * error string, on error only
+ #                dmax =>,    * maximum distance
+ #                dmin =>,    * minimum distance
+ #                dtrue =>,   * true distance
+ #               }
+HV *
+swe_orbit_max_min_true_distance(tjd,ipl,iflag)
+  double tjd
+  int ipl
+  int iflag
+PREINIT:
+  int retval = 0;
+  char serr[255];
+  double dmax, dmin, dtrue;
+  HV* hp;
+CODE:
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  *serr = '\0';
+  retval = swe_orbit_max_min_true_distance(tjd, ipl, iflag, &dmax, &dmin, &dtrue, serr);
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
+  (void)hv_store(hp, "dmax", 4, newSVnv(dmax), 0);
+  (void)hv_store(hp, "dmin", 4, newSVnv(dmin), 0);
+  (void)hv_store(hp, "dtrue", 4, newSVnv(dtrue), 0);
+  RETVAL = hp; 
+OUTPUT:
+  RETVAL
+
+ # calc
+ # input:  $tjd, $ipl, $iflag
+ # output: $hp = {retval =>,   
+ #                serr =>,    * error string, on error only
+ #                dret =>,    * array of data
+ #               }
+HV *
+swe_get_orbital_elements(tjd,ipl,iflag)
+  double tjd
+  int ipl
+  int iflag
+PREINIT:
+  int i, retval = 0;
+  char serr[255];
+  double dret[20];
+  AV* avxx = newAV();
+  SV* svxx;
+  HV* hp;
+CODE:
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  av_clear(avxx);
+  *serr = '\0';
+  retval = swe_get_orbital_elements(tjd, ipl, iflag, dret, serr);
+  for (i=0;i<20;i++) av_push(avxx,(newSVnv(dret[i])));
+  svxx = newRV_noinc((SV*) avxx);
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
+  (void)hv_store(hp, "dret", 4, newSVsv(svxx), 0);
+  (void)hv_store(hp, "sema", 4, newSVnv(dret[0]), 0);
+  (void)hv_store(hp, "ecce", 4, newSVnv(dret[1]), 0);
+  (void)hv_store(hp, "incl", 4, newSVnv(dret[2]), 0);
+  (void)hv_store(hp, "node", 4, newSVnv(dret[3]), 0);
+  (void)hv_store(hp, "parg", 4, newSVnv(dret[4]), 0);
+  (void)hv_store(hp, "peri", 4, newSVnv(dret[5]), 0);
+  (void)hv_store(hp, "mean_anom", 9, newSVnv(dret[6]), 0);
+  (void)hv_store(hp, "true_anom", 9, newSVnv(dret[7]), 0);
+  (void)hv_store(hp, "ecce_anom", 9, newSVnv(dret[8]), 0);
+  (void)hv_store(hp, "mean_long", 9, newSVnv(dret[9]), 0);
+  (void)hv_store(hp, "sid_period", 10, newSVnv(dret[10]), 0);
+  (void)hv_store(hp, "daily_motion", 12, newSVnv(dret[11]), 0);
+  (void)hv_store(hp, "trop_period", 11, newSVnv(dret[12]), 0);
+  (void)hv_store(hp, "synod_period", 12, newSVnv(dret[13]), 0);
+  (void)hv_store(hp, "perihelion_time", 15, newSVnv(dret[14]), 0);
+  (void)hv_store(hp, "perihelion_distance", 19, newSVnv(dret[15]), 0);
+  (void)hv_store(hp, "aphelion_distance", 17, newSVnv(dret[16]), 0);
   RETVAL = hp; 
 OUTPUT:
   RETVAL
@@ -866,6 +1316,62 @@ CODE:
   RETVAL = swe_get_ayanamsa_ut(tjd_ut);
 OUTPUT:
   RETVAL      
+
+ # Function calculates ayanamsa, depending on ephemeris flag
+ # input:  $tjd_et, $iflag
+ # output: $hp = {retval => 
+ #                daya =>,    * ayanamsa value
+ #                serr =>,    * warning string, unless empty
+ #               }
+HV *
+swe_get_ayanamsa_ex(tjd_et,iflag)
+  double tjd_et
+  int iflag
+PREINIT:
+  double daya;
+  int retval = 0;
+  char serr[255];
+  HV* hp;
+CODE:
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  *serr = '\0';
+  retval = swe_get_ayanamsa_ex(tjd_et, iflag, &daya, serr); 
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
+  (void)hv_store(hp, "daya", 4, newSVnv(daya), 0);
+  RETVAL = hp;
+OUTPUT:
+  RETVAL
+
+ # Function calculates ayanamsa, depending on ephemeris flag
+ # input:  $tjd_ut, $iflag
+ # output: $hp = {retval => 
+ #                daya =>,    * ayanamsa value
+ #                serr =>,    * warning string, unless empty
+ #               }
+HV *
+swe_get_ayanamsa_ex_ut(tjd_ut,iflag)
+  double tjd_ut
+  int iflag
+PREINIT:
+  double daya;
+  int retval = 0;
+  char serr[255];
+  HV* hp;
+CODE:
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  *serr = '\0';
+  retval = swe_get_ayanamsa_ex_ut(tjd_ut, iflag, &daya, serr); 
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
+  (void)hv_store(hp, "daya", 4, newSVnv(daya), 0);
+  RETVAL = hp;
+OUTPUT:
+  RETVAL
 
  # swe_get_ayanamsa_name()
 SV*
@@ -1025,6 +1531,13 @@ CODE:
 OUTPUT:
   RETVAL
 
+void
+swe_set_astro_models(samod, iflag)
+  char *samod
+  int  iflag
+CODE:
+  swe_set_astro_models(samod, iflag);
+
 # swe_sol_eclipse_when_loc
 # input:  $tjd         start date for search
 #         $iflag       ephemeris flag
@@ -1072,7 +1585,7 @@ CODE:
   swe_set_topo(gp[0], gp[1], gp[1]);
   retval = swe_sol_eclipse_when_loc(tjd,iflag,gp,tret,attr,backw,serr);
   for (i=0;i<7;i++) av_push(avtret,(newSVnv(tret[i])));
-  for (i=0;i<8;i++) av_push(avattr,(newSVnv(attr[i])));
+  for (i=0;i<11;i++) av_push(avattr,(newSVnv(attr[i])));
   svtret = newRV_noinc((SV*) avtret);
   svattr = newRV_noinc((SV*) avattr);
   if (*serr != '\0') {
@@ -1094,6 +1607,8 @@ CODE:
   (void)hv_store(hp, "sun_alt_true", 12, newSVnv(attr[5]), 0);
   /*(void)hv_store(hp, "body_alt_app", 12, newSVnv(attr[6]), 0);*/
   (void)hv_store(hp, "separation_angle", 16, newSVnv(attr[7]), 0);
+  (void)hv_store(hp, "saros_series", 12, newSVnv(attr[9]), 0);
+  (void)hv_store(hp, "saros_ecl_no", 12, newSVnv(attr[10]), 0);
   RETVAL = hp; 
 OUTPUT:
   RETVAL
@@ -1291,8 +1806,92 @@ CODE:
   (void)hv_store(hp, "ecl_partial_end", 15, newSVnv(tret[3]), 0);
   (void)hv_store(hp, "ecl_total_begin", 15, newSVnv(tret[4]), 0);
   (void)hv_store(hp, "ecl_total_end", 13, newSVnv(tret[5]), 0);
+  (void)hv_store(hp, "ecl_begin", 9, newSVnv(tret[6]), 0);
+  (void)hv_store(hp, "ecl_end", 7, newSVnv(tret[7]), 0);
   (void)hv_store(hp, "ecl_penumbral_begin", 19, newSVnv(tret[6]), 0);
   (void)hv_store(hp, "ecl_penumbral_end", 17, newSVnv(tret[7]), 0);
+  RETVAL = hp; 
+OUTPUT:
+  RETVAL
+
+# swe_lun_eclipse_when_loc
+# input:  $tjd         start date for search
+#         $iflag       ephemeris flag
+#         $backw       1, if backward search
+#         $geopos      pointer to array of geogr. long., lat., height
+# output: $hp = {retval =>,   
+#                serr =>,       * error string, on error only
+#                tret =>,       * pointer to tret array (see docu)
+#                attr =>,       * pointer to attr array (see docu)
+#                ecl_maximum =>,   * time of max. eclipse
+#                ecl_partial_begin =>,   
+#                ecl_partial_end =>,       
+#                ecl_total_begin =>,       
+#                ecl_total_end =>,       
+#                ecl_penumbral_begin =>,       
+#                ecl_penumbral_end =>,       
+#                ecl_tmoonrise =>, * time of moonrise during eclipse
+#                ecl_tmoonset =>,  * time of moonset during eclipse
+#                mag_umbral =>,  
+#                mag_penumbral =>, 
+#                moon_azimuth =>,      
+#                moon_alt_true =>,      
+#                moon_alt_app =>,      
+#                separation_angle =>, * of Moon from center of shadow
+#               }
+HV *
+swe_lun_eclipse_when_loc(tjd,iflag,backw,geopos)
+  double tjd
+  int iflag
+  int backw
+  SV* geopos  
+PREINIT:
+  int i, retval = 0;
+  double tret[20], attr[20], gp[3];
+  char serr[255];
+  HV* hp;
+  AV* avtret = newAV();
+  AV* avattr = newAV();
+  SV* svtret;
+  SV* svattr;
+  AV* _geopos = (AV*) SvRV(geopos);
+CODE:
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  for (i=0; i<3; i++) gp[i] = SvNV(*av_fetch(_geopos, i, TRUE));
+  *serr = '\0';
+  av_clear(avtret);
+  av_clear(avattr);
+  swe_set_topo(gp[0], gp[1], gp[1]);
+  retval = swe_lun_eclipse_when_loc(tjd,iflag,gp,tret,attr,backw,serr);
+  for (i=0;i<10;i++) av_push(avtret,(newSVnv(tret[i])));
+  for (i=0;i<11;i++) av_push(avattr,(newSVnv(attr[i])));
+  svtret = newRV_noinc((SV*) avtret);
+  svattr = newRV_noinc((SV*) avattr);
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
+  (void)hv_store(hp, "tret", 4, newSVsv(svtret), 0);
+  (void)hv_store(hp, "attr", 4, newSVsv(svattr), 0);
+  (void)hv_store(hp, "ecl_maximum", 11, newSVnv(tret[0]), 0);
+  (void)hv_store(hp, "ecl_partial_begin", 17, newSVnv(tret[2]), 0);
+  (void)hv_store(hp, "ecl_partial_end", 15, newSVnv(tret[3]), 0);
+  (void)hv_store(hp, "ecl_total_begin", 15, newSVnv(tret[4]), 0);
+  (void)hv_store(hp, "ecl_total_end", 13, newSVnv(tret[5]), 0);
+  (void)hv_store(hp, "ecl_begin", 9, newSVnv(tret[6]), 0);
+  (void)hv_store(hp, "ecl_end", 7, newSVnv(tret[7]), 0);
+  (void)hv_store(hp, "ecl_penumbral_begin", 19, newSVnv(tret[6]), 0);
+  (void)hv_store(hp, "ecl_penumbral_end", 17, newSVnv(tret[7]), 0);
+  (void)hv_store(hp, "ecl_tmoonrise", 13, newSVnv(tret[8]), 0);
+  (void)hv_store(hp, "ecl_tmoonset", 12, newSVnv(tret[9]), 0);
+  (void)hv_store(hp, "mag_umbral", 10, newSVnv(attr[0]), 0);
+  (void)hv_store(hp, "mag_penumbral", 13, newSVnv(attr[1]), 0);
+  (void)hv_store(hp, "moon_azimuth", 12, newSVnv(attr[4]), 0);
+  (void)hv_store(hp, "moon_alt_true", 13, newSVnv(attr[5]), 0);
+  (void)hv_store(hp, "moon_alt_app", 12, newSVnv(attr[6]), 0);
+  (void)hv_store(hp, "separation_angle", 16, newSVnv(attr[7]), 0);
+  (void)hv_store(hp, "saros_series", 12, newSVnv(attr[9]), 0);
+  (void)hv_store(hp, "saros_ecl_no", 12, newSVnv(attr[10]), 0);
   RETVAL = hp; 
 OUTPUT:
   RETVAL
@@ -1404,7 +2003,7 @@ CODE:
   av_clear(avattr);
   retval = swe_sol_eclipse_where(tjd,iflag,gp,attr,serr);
   for (i=0;i<3;i++) av_push(avgeopos,(newSVnv(gp[i])));
-  for (i=0;i<8;i++) av_push(avattr,(newSVnv(attr[i])));
+  for (i=0;i<11;i++) av_push(avattr,(newSVnv(attr[i])));
   svgeopos = newRV_noinc((SV*) avgeopos);
   svattr = newRV_noinc((SV*) avattr);
   if (*serr != '\0') {
@@ -1423,6 +2022,8 @@ CODE:
   (void)hv_store(hp, "sun_alt_true", 12, newSVnv(attr[5]), 0);
   /*(void)hv_store(hp, "body_alt_app", 12, newSVnv(attr[6]), 0);*/
   (void)hv_store(hp, "separation_angle", 16, newSVnv(attr[7]), 0);
+  (void)hv_store(hp, "saros_series", 12, newSVnv(attr[9]), 0);
+  (void)hv_store(hp, "saros_ecl_no", 12, newSVnv(attr[10]), 0);
   RETVAL = hp; 
 OUTPUT:
   RETVAL
@@ -1440,6 +2041,7 @@ OUTPUT:
 #                core_shadow_km =>,    * diameter of core shadow (km, negative)
 #                sun_azimuth =>,      
 #                sun_alt_true =>,      
+#                sun_alt_app =>,      
 #                separation_angle =>,      
 #               }
 HV *
@@ -1475,8 +2077,10 @@ CODE:
   (void)hv_store(hp, "core_shadow_km", 14, newSVnv(attr[3]), 0);
   (void)hv_store(hp, "sun_azimuth", 11, newSVnv(attr[4]), 0);
   (void)hv_store(hp, "sun_alt_true", 12, newSVnv(attr[5]), 0);
-  /*(void)hv_store(hp, "body_alt_app", 12, newSVnv(attr[6]), 0);*/
+  (void)hv_store(hp, "sun_alt_app", 11, newSVnv(attr[6]), 0);
   (void)hv_store(hp, "separation_angle", 16, newSVnv(attr[7]), 0);
+  (void)hv_store(hp, "saros_series", 12, newSVnv(attr[9]), 0);
+  (void)hv_store(hp, "saros_ecl_no", 12, newSVnv(attr[10]), 0);
   RETVAL = hp; 
 OUTPUT:
   RETVAL
@@ -1490,6 +2094,10 @@ OUTPUT:
 #                attr =>,       * pointer to attr array (see docu)
 #                mag_umbral =>,        * umbral magnitude
 #                mag_penumbral =>,     * penumbral magnitude
+#                moon_azimuth =>,      
+#                moon_alt_true =>,      
+#                moon_alt_app =>,      
+#                separation_angle =>, * of Moon from center of shadow
 #               }
 HV *
 swe_lun_eclipse_how(tjd,iflag,geopos)
@@ -1511,7 +2119,7 @@ CODE:
   av_clear(avattr);
   swe_set_topo(gp[0], gp[1], gp[1]);
   retval = swe_lun_eclipse_how(tjd,iflag,gp,attr,serr);
-  for (i=0;i<8;i++) av_push(avattr,(newSVnv(attr[i])));
+  for (i=0;i<11;i++) av_push(avattr,(newSVnv(attr[i])));
   svattr = newRV_noinc((SV*) avattr);
   if (*serr != '\0') {
     (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
@@ -1520,6 +2128,12 @@ CODE:
   (void)hv_store(hp, "attr", 4, newSVsv(svattr), 0);
   (void)hv_store(hp, "mag_umbral", 10, newSVnv(attr[0]), 0);
   (void)hv_store(hp, "mag_penumbral", 13, newSVnv(attr[1]), 0);
+  (void)hv_store(hp, "moon_azimuth", 12, newSVnv(attr[4]), 0);
+  (void)hv_store(hp, "moon_alt_true", 13, newSVnv(attr[5]), 0);
+  (void)hv_store(hp, "moon_alt_app", 12, newSVnv(attr[6]), 0);
+  (void)hv_store(hp, "separation_angle", 16, newSVnv(attr[7]), 0);
+  (void)hv_store(hp, "saros_series", 12, newSVnv(attr[9]), 0);
+  (void)hv_store(hp, "saros_ecl_no", 12, newSVnv(attr[10]), 0);
   RETVAL = hp; 
 OUTPUT:
   RETVAL
@@ -1949,6 +2563,57 @@ CODE:
 OUTPUT:
   RETVAL
 
+# swe_nod_aps_ut
+# input:  $tjd_ut
+#         $ipl
+#         $iflag
+#         $method     for explanation, see docu
+# output: $hp = {retval =>,   
+#                serr =>,       * error string, on error only
+#                xnasc =>,      * pointer to position array of ascending node
+#                xndsc =>,      * pointer to position array of descending node
+#                xperi =>,      * pointer to position array of perihelion
+#                xaphe =>,      * pointer to position array of aphelion
+#               }
+HV *
+swe_nod_aps_ut(tjd,ipl,iflag,method)
+  double tjd
+  int ipl
+  int iflag
+  int method
+PREINIT:
+  int i, retval;
+  double xnasc[6], xndsc[6], xperi[6], xaphe[6];
+  char serr[255];
+  HV* hp;
+  AV* avxnasc = newAV(); AV* avxndsc = newAV(); 
+  AV* avxperi = newAV(); AV* avxaphe = newAV();
+  SV* svxnasc; SV* svxndsc; SV* svxperi; SV* svxaphe;
+CODE:
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  av_clear(avxnasc); av_clear(avxndsc); av_clear(avxperi); av_clear(avxaphe);
+  *serr = '\0';
+  retval = swe_nod_aps_ut(tjd,ipl,iflag,method,xnasc,xndsc,xperi,xaphe,serr);
+  for (i=0;i<6;i++) av_push(avxnasc,(newSVnv(xnasc[i])));
+  for (i=0;i<6;i++) av_push(avxndsc,(newSVnv(xndsc[i])));
+  for (i=0;i<6;i++) av_push(avxperi,(newSVnv(xperi[i])));
+  for (i=0;i<6;i++) av_push(avxaphe,(newSVnv(xaphe[i])));
+  svxnasc = newRV_noinc((SV*) avxnasc);
+  svxndsc = newRV_noinc((SV*) avxndsc);
+  svxperi = newRV_noinc((SV*) avxperi);
+  svxaphe = newRV_noinc((SV*) avxaphe);
+  (void)hv_store(hp, "xnasc", 5, newSVsv(svxnasc), 0);
+  (void)hv_store(hp, "xndsc", 5, newSVsv(svxndsc), 0);
+  (void)hv_store(hp, "xperi", 5, newSVsv(svxperi), 0);
+  (void)hv_store(hp, "xaphe", 5, newSVsv(svxaphe), 0);
+  (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  RETVAL = hp; 
+OUTPUT:
+  RETVAL
+
 # swe_heliacal_ut
 HV *
 swe_heliacal_ut(tjdstart,dgeo,datm,dobs,objname,type_event,helflag)
@@ -2105,3 +2770,4 @@ CODE:
   RETVAL = hp; 
 OUTPUT:
   RETVAL
+

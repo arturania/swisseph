@@ -59,35 +59,45 @@ use warnings;
 
 require Exporter;
 
-our $VERSION = "1.80.00";
+our $VERSION = "2.09.02";
 
 our @ISA = qw(Exporter);
 
 our @SWE_FUNCTIONS = qw(
-        swe_utc_time_zone
-	swe_azalt swe_azalt_rev swe_calc swe_calc_ut swe_close 
+	swe_azalt swe_azalt_rev swe_calc swe_calc_ut swe_calc_utx swe_calc_ut_prv swe_close 
 	swe_cotrans swe_cotrans_sp swe_day_of_week swe_deg_midp 
-	swe_degnorm swe_deltat swe_difdegn swe_difdeg2n swe_difrad2n
-	swe_fixstar swe_fixstar_mag swe_fixstar_ut swe_gauquelin_sector
+	swe_degnorm swe_deltat swe_deltat_ex swe_difdegn swe_difdeg2n swe_difrad2n
+	swe_fixstar swe_fixstar_mag swe_fixstar_ut 
+	swe_fixstar2 swe_fixstar2_mag swe_fixstar2_ut 
+	swe_gauquelin_sector
+	swe_get_ayanamsa_ex swe_get_ayanamsa_ex_ut
 	swe_get_ayanamsa swe_get_ayanamsa_ut swe_get_ayanamsa_name
+	swe_get_library_path swe_get_orbital_elements swe_orbit_max_min_true_distance
 	swe_get_planet_name swe_get_tid_acc
 	swe_heliacal_ut swe_heliacal_pheno_ut swe_vis_limit_mag
-	swe_houses swe_houses_armc swe_houses_ex swe_house_pos swe_julday 
+	swe_houses swe_houses_armc swe_houses_ex swe_houses_armc_ex2 swe_houses_ex2
+	swe_house_pos swe_julday 
 	swe_house_name
+	swe_lat_to_lmt swe_lmt_to_lat
+	swe_lun_eclipse_when swe_lun_eclipse_when_loc swe_lun_eclipse_how
 	swe_lun_occult_when_glob swe_lun_occult_when_loc 
-	swe_lun_occult_where swe_nod_aps swe_pheno swe_pheno_ut swe_rad_midp
-	swe_radnorm swe_refrac swe_refrac_extended swe_revjul swe_rise_trans 
+	swe_lun_occult_where swe_nod_aps swe_nod_aps_ut swe_pheno swe_pheno_ut 
+	swe_rad_midp swe_radnorm 
+	swe_refrac swe_refrac_extended swe_revjul 
+	swe_rise_trans swe_rise_trans_true_hor
 	swe_set_ephe_path swe_set_jpl_file swe_set_sid_mode
+	swe_set_delta_t_userdef
 	swe_set_tid_acc swe_set_topo swe_sidtime swe_sidtime0
 	swe_sol_eclipse_how swe_sol_eclipse_when_glob 
 	swe_sol_eclipse_when_loc swe_sol_eclipse_where swe_time_equ
+        swe_utc_time_zone
 	swe_utc_to_jd swe_jdet_to_utc swe_jdut1_to_utc
 	swe_version swe_version0
 	swe_split_deg
 	);
-#	swe_rise_trans_true_hor
 
 our @SWE_CONSTANTS = qw(
+	    SE_AUNIT_TO_KM SE_AUNIT_TO_LIGHTYEAR SE_AUNIT_TO_PARSEC  
 	    SE_ECL_NUT SE_SUN SE_MOON SE_MERCURY SE_VENUS SE_MARS SE_JUPITER 
 	    SE_SATURN SE_URANUS SE_NEPTUNE SE_PLUTO SE_MEAN_NODE
 	    SE_TRUE_NODE SE_MEAN_APOG SE_OSCU_APOG
@@ -107,30 +117,54 @@ our @SWE_CONSTANTS = qw(
 	    SEFLG_J2000 SEFLG_NONUT SEFLG_SPEED3 SEFLG_SPEED SEFLG_NOGDEFL 
 	    SEFLG_NOABERR SEFLG_EQUATORIAL SEFLG_XYZ SEFLG_RADIANS 
 	    SEFLG_BARYCTR SEFLG_TOPOCTR SEFLG_SIDEREAL SEFLG_ICRS
-	    SEFLG_DEFAULTEPH
+	    SEFLG_ASTROMETRIC SEFLG_DEFAULTEPH
+	    SE_SIDBITS SE_SIDBIT_ECL_T0 SE_SIDBIT_SSY_PLANE SE_SIDBIT_USER_UT 
 	    SE_SIDM_FAGAN_BRADLEY SE_SIDM_LAHIRI SE_SIDM_DELUCE SE_SIDM_RAMAN 
 	    SE_SIDM_USHASHASHI SE_SIDM_KRISHNAMURTI SE_SIDM_DJWHAL_KHUL 
 	    SE_SIDM_YUKTESHWAR SE_SIDM_JN_BHASIN SE_SIDM_BABYL_KUGLER1 
 	    SE_SIDM_BABYL_KUGLER2 SE_SIDM_BABYL_KUGLER3 SE_SIDM_BABYL_HUBER 
 	    SE_SIDM_BABYL_ETPSC SE_SIDM_ALDEBARAN_15TAU SE_SIDM_HIPPARCHOS 
 	    SE_SIDM_SASSANIAN SE_SIDM_GALCENT_0SAG SE_SIDM_J2000 
-	    SE_SIDM_J1900 SE_SIDM_B1950 SE_SIDM_USER SE_NSIDM_PREDEF
+	    SE_SIDM_J1900 SE_SIDM_B1950 
+	    SE_SIDM_SURYASIDDHANTA SE_SIDM_SURYASIDDHANTA_MSUN
+	    SE_SIDM_ARYABHATA SE_SIDM_ARYABHATA_MSUN 
+	    SE_SIDM_SS_REVATI SE_SIDM_SS_CITRA
+	    SE_SIDM_TRUE_CITRA SE_SIDM_TRUE_REVATI SE_SIDM_TRUE_PUSHYA
+	    SE_SIDM_GALCENT_RGILBRAND SE_SIDM_GALEQU_IAU1958 SE_SIDM_GALEQU_TRUE
+	    SE_SIDM_GALEQU_MULA SE_SIDM_GALALIGN_MARDYKS SE_SIDM_TRUE_MULA 
+	    SE_SIDM_GALCENT_MULA_WILHELM SE_SIDM_ARYABHATA_522 SE_SIDM_BABYL_BRITTON
+	    SE_SIDM_TRUE_SHEORAN SE_SIDM_GALCENT_COCHRANE SE_SIDM_GALEQU_FIORENZA SE_SIDM_VALENS_MOON 
+	    SE_SIDM_LAHIRI_1940 SE_SIDM_LAHIRI_VP285 SE_SIDM_KRISHNAMURTI_VP291 SE_SIDM_LAHIRI_ICRC 
+	    SE_SIDM_USER SE_NSIDM_PREDEF
 	    SE_NODBIT_MEAN SE_NODBIT_OSCU SE_NODBIT_OSCU_BAR SE_NODBIT_FOPOINT
 	    SE_JUL_CAL SE_GREG_CAL
 	    SE_ECL_CENTRAL SE_ECL_NONCENTRAL SE_ECL_TOTAL SE_ECL_ANNULAR 
 	    SE_ECL_PARTIAL SE_ECL_ANNULAR_TOTAL SE_ECL_PENUMBRAL 
 	    SE_ECL_VISIBLE SE_ECL_1ST_VISIBLE SE_ECL_2ND_VISIBLE 
+	    SE_ECL_PARTBEG_VISIBLE SE_ECL_TOTBEG_VISIBLE
+	    SE_ECL_TOTEND_VISIBLE SE_ECL_PARTEND_VISIBLE
+	    SE_ECL_PENUMBBEG_VISIBLE SE_ECL_PENUMBEND_VISIBLE
 	    SE_ECL_3RD_VISIBLE SE_ECL_4TH_VISIBLE SE_ECL_ONE_TRY
+	    SE_ECL_OCC_BEG_DAYLIGHT SE_ECL_OCC_END_DAYLIGHT
 	    SE_CALC_RISE SE_CALC_SET SE_CALC_MTRANSIT SE_CALC_ITRANSIT 
 	    SE_BIT_DISC_CENTER SE_BIT_NO_REFRACTION SE_BIT_CIVIL_TWILIGHT 
+	    SE_BIT_DISC_BOTTOM SE_BIT_GEOCTR_NO_ECL_LAT SE_BIT_FIXED_DISC_SIZE
 	    SE_BIT_NAUTIC_TWILIGHT SE_BIT_ASTRO_TWILIGHT SE_ECL2HOR 
+	    SE_BIT_GEOCTR_NO_ECL_LAT SE_BIT_HINDU_RISING
 	    SE_EQU2HOR SE_HOR2ECL SE_HOR2EQU SE_TRUE_TO_APP SE_APP_TO_TRUE
 	    SE_SPLIT_DEG_ROUND_SEC SE_SPLIT_DEG_ROUND_MIN SE_SPLIT_DEG_ROUND_DEG
+	    SE_SPLIT_DEG_NAKSHATRA
 	    SE_SPLIT_DEG_ZODIACAL SE_SPLIT_DEG_KEEP_SIGN SE_SPLIT_DEG_KEEP_DEG
 	    SE_HELIACAL_RISING SE_HELIACAL_SETTING 
+            SE_MORNING_FIRST SE_EVENING_LAST
             SE_EVENING_FIRST SE_MORNING_LAST
 	    SE_HELFLAG_LONG_SEARCH SE_HELFLAG_HIGH_PRECISION
             SE_HELFLAG_OPTICAL_PARAMS SE_HELFLAG_NO_DETAILS
+	    SE_TIDAL_DE200 SE_TIDAL_DE403 SE_TIDAL_DE404 SE_TIDAL_DE405 SE_TIDAL_DE406 
+	    SE_TIDAL_DE421 SE_TIDAL_DE422 SE_TIDAL_DE430 SE_TIDAL_DE431 SE_TIDAL_26 
+	    SE_TIDAL_DEFAULT SE_TIDAL_AUTOMATIC 
+	    SE_TIDAL_MOSEPH SE_TIDAL_SWIEPH SE_TIDAL_JPLEPH
+	    SE_DELTAT_AUTOMATIC
             );
 
 our @EXPORT = qw();
@@ -239,16 +273,25 @@ use constant SEFLG_SPEED => 256;    # high precision speed
 use constant SEFLG_NOGDEFL => 512;  # turn off gravitational deflection
 use constant SEFLG_NOABERR => 1024; # turn off 'annual' aberration of light
 use constant SEFLG_EQUATORIAL => (2*1024);  # equatorial positions are wanted
+use constant SEFLG_ASTROMETRIC => (SEFLG_NOABERR+SEFLG_NOGDEFL);# astrometric positions
 use constant SEFLG_XYZ => (4*1024); # cartesian, not polar, coordinates
 use constant SEFLG_RADIANS => (8*1024);  # coordinates in radians, not degrees
 use constant SEFLG_BARYCTR => (16*1024); # barycentric positions
 use constant SEFLG_TOPOCTR => (32*1024); # topocentric positions
 use constant SEFLG_SIDEREAL => (64*1024);# sidereal positions
 use constant SEFLG_ICRS => (128*1024);   # ICRS (DE406 reference frame)
+use constant SEFLG_DPSIDEPS_1980 => (256*1024); # reproduce JPL Horizons
+                                                # 1962 - today to 0.002 arcsec.
+use constant SEFLG_JPLHOR => (256*1024);        # same
+use constant SEFLG_JPLHOR_APPROX => (512*1024); # approximate JPL Horizons 1962 - today
 
 use constant SE_SIDBITS => 256;  
 use constant SE_SIDBIT_ECL_T0 => 256;   # projection onto ecliptic of t0
 use constant SE_SIDBIT_SSY_PLANE => 512;# projection onto solar system plane
+use constant SE_SIDBIT_USER_UT => 1024; # user-defined ayanamsha with t0 as UT
+use constant SE_SIDBIT_ECL_DATE => 2048; # ayanamsha measured on ecliptic of date
+use constant SE_SIDBIT_NO_PREC_OFFSET => 4096; # test feature: don't apply constant offset to ayanamsha
+use constant SE_SIDBIT_PREC_ORIG => 8192; # test feature: calculate ayanamsha using its original precession model
 
 # ayanamsas
 use constant SE_SIDM_FAGAN_BRADLEY => 0;
@@ -272,8 +315,35 @@ use constant SE_SIDM_GALCENT_0SAG => 17;
 use constant SE_SIDM_J2000 => 18;
 use constant SE_SIDM_J1900 => 19;
 use constant SE_SIDM_B1950 => 20;
+use constant SE_SIDM_SURYASIDDHANTA => 21;
+use constant SE_SIDM_SURYASIDDHANTA_MSUN => 22;
+use constant SE_SIDM_ARYABHATA => 23;
+use constant SE_SIDM_ARYABHATA_MSUN => 40;
+use constant SE_SIDM_SS_REVATI => 25;
+use constant SE_SIDM_SS_CITRA => 26;
+use constant SE_SIDM_TRUE_CITRA => 27;
+use constant SE_SIDM_TRUE_REVATI => 28;
+use constant SE_SIDM_TRUE_PUSHYA => 29;
+use constant SE_SIDM_GALCENT_RGBRAND => 30;
+use constant SE_SIDM_GALEQU_IAU1958 => 31;
+use constant SE_SIDM_GALEQU_TRUE => 32;
+use constant SE_SIDM_GALEQU_MULA => 33;
+use constant SE_SIDM_GALALIGN_MARDYKS => 34;
+use constant SE_SIDM_TRUE_MULA => 35;
+use constant SE_SIDM_GALCENT_MULA_WILHELM => 36;
+use constant SE_SIDM_ARYABHATA_522 => 37;
+use constant SE_SIDM_BABYL_BRITTON => 38;
+use constant SE_SIDM_BABYL_SHEORAN => 39;
+use constant SE_SIDM_BABYL_COCHRANE => 40;
+use constant SE_SIDM_BABYL_FIORENZA => 41;
+use constant SE_SIDM_VALENS_MOON => 42;
+use constant SE_SIDM_LAHIRI_1940 => 43;
+use constant SE_SIDM_LAHIRI_VP285 => 44;
+use constant SE_SIDM_KRISHNAMURTI_VP291 => 45;
+use constant SE_SIDM_LAHIRI_ICRC => 46;
+#
 use constant SE_SIDM_USER => 255;
-use constant SE_NSIDM_PREDEF => 21;
+use constant SE_NSIDM_PREDEF => 47;
 
 # for swe_nod_aps()
 use constant SE_NODBIT_MEAN => 1; # mean nodes/apsides
@@ -290,10 +360,19 @@ use constant SE_ECL_PARTIAL => 16;
 use constant SE_ECL_ANNULAR_TOTAL => 32; 
 use constant SE_ECL_PENUMBRAL => 64; 
 use constant SE_ECL_VISIBLE => 128; 
+use constant SE_ECL_MAX_VISIBLE => 256; 
 use constant SE_ECL_1ST_VISIBLE => 512; 
+use constant SE_ECL_PARTBEG_VISIBLE => 512; 
 use constant SE_ECL_2ND_VISIBLE => 1024; 
+use constant SE_ECL_TOTBEG_VISIBLE => 1024; 
 use constant SE_ECL_3RD_VISIBLE => 2048; 
+use constant SE_ECL_TOTEND_VISIBLE => 2048; 
 use constant SE_ECL_4TH_VISIBLE => 4096; 
+use constant SE_ECL_PARTEND_VISIBLE => 4096; 
+use constant SE_ECL_PENUMBBEG_VISIBLE => 8192; 
+use constant SE_ECL_PENUMBEND_VISIBLE => 16384; 
+use constant SE_ECL_OCC_BEG_DAYLIGHT => 8192; 
+use constant SE_ECL_OCC_END_DAYLIGHT => 16384; 
 use constant SE_ECL_ONE_TRY => (32*1024); 
 
 # for swe_rise_transit() and swe_rise_trans_true_hor())
@@ -303,10 +382,14 @@ use constant SE_CALC_MTRANSIT => 4;
 use constant SE_CALC_ITRANSIT => 8;
 # | the following to SE_CALC_RISE (or _SET) ...
 use constant SE_BIT_DISC_CENTER => 256;     # for rise (set) of _disc center_ 
+use constant SE_BIT_DISC_BOTTOM => 8192;    # for rise (set) of _disc bottom_ 
+use constant SE_BIT_GEOCTR_NO_ECL_LAT => 128;    # geocentric perspective, ignore geo. lat.
 use constant SE_BIT_NO_REFRACTION => 512;   # to neglect refraction
+use constant SE_BIT_FIXED_DISC_SIZE => 16384;# instead of apparent disc size
 use constant SE_BIT_CIVIL_TWILIGHT => 1024; # sun reaches alt -6° 
 use constant SE_BIT_NAUTIC_TWILIGHT => 2048;# sun reaches alt -12°
 use constant SE_BIT_ASTRO_TWILIGHT => 4096; # sun reaches alt -18°
+use constant SE_BIT_HINDU_RISING => 896;    # use Hindu method for rising/setting
 
 # for swe_azalt() and swe_azalt_rev()
 use constant SE_ECL2HOR => 0; # ecliptic to horizon
@@ -321,6 +404,8 @@ use constant SE_APP_TO_TRUE => 1;
 # for swe_heliacal_ut()
 use constant SE_HELIACAL_RISING => 1;
 use constant SE_HELIACAL_SETTING => 2;
+use constant SE_MORNING_FIRST => 1;
+use constant SE_EVENING_LAST => 2;
 use constant SE_EVENING_FIRST => 3;
 use constant SE_MORNING_LAST => 4;
 use constant SE_HELFLAG_LONG_SEARCH => 128;
@@ -328,18 +413,40 @@ use constant SE_HELFLAG_HIGH_PRECISION => 256;
 use constant SE_HELFLAG_OPTICAL_PARAMS => 512;
 use constant SE_HELFLAG_NO_DETAILS => 1024;
 
-# for swe_split_deg
-use constant SE_SPLIT_DEG_ROUND_SEC => 1;
-use constant SE_SPLIT_DEG_ROUND_MIN => 2;
-use constant SE_SPLIT_DEG_ROUND_DEG => 4;
-use constant SE_SPLIT_DEG_ZODIACAL  => 8;
-use constant SE_SPLIT_DEG_KEEP_SIGN =>16;   # don't round to next sign,
-					    # e.g. 29.9999999 will be rounded
-					    # to 29°59'59" (or 29°59' or 29°) 
-use constant SE_SPLIT_DEG_KEEP_DEG  =>32;   # don't round to next degree
-					    # e.g. 13.9999999 will be rounded
-					    # to 13°59'59" (or 13°59' or 13°) 
+# for swe_set_tid_acc()
+use constant SE_TIDAL_DE200 => (-23.8946);
+use constant SE_TIDAL_DE403 => (-25.580);  # was (-25.8) until V. 1.76.2
+use constant SE_TIDAL_DE404 => (-25.580);  # was (-25.8) until V. 1.76.2
+use constant SE_TIDAL_DE405 => (-25.826);  # was (-25.7376) until V. 1.76.2
+use constant SE_TIDAL_DE406 => (-25.826);  # was (-25.7376) until V. 1.76.2
+use constant SE_TIDAL_DE421 => (-25.85);   # JPL Interoffice Memorandum 14-mar-2008 on DE421 Lunar Orbit
+use constant SE_TIDAL_DE422 => (-25.85);   # JPL Interoffice Memorandum 14-mar-2008 on DE421 Lunar Orbit
+use constant SE_TIDAL_DE430 => (-25.82);   # JPL Interoffice Memorandum 9-jul-2013 on DE430 Lunar Orbit
+use constant SE_TIDAL_DE431 => (-25.80);   # IPN Progress Report 42-196 • February 15, 2014, p. 15; was (-25.82) in V. 2.00.00
+use constant SE_TIDAL_26    => (-26.0);
+use constant SE_TIDAL_DEFAULT => SE_TIDAL_DE431;
+use constant SE_TIDAL_AUTOMATIC => 999999;
+use constant SE_TIDAL_MOSEPH => SE_TIDAL_DE404;
+use constant SE_TIDAL_SWIEPH => SE_TIDAL_DEFAULT;
+use constant SE_TIDAL_JPLEPH => SE_TIDAL_DEFAULT;
+use constant SE_DELTAT_AUTOMATIC => (-1E-10);
 
+# for swe_split_deg
+use constant SE_SPLIT_DEG_ROUND_SEC =>    1;
+use constant SE_SPLIT_DEG_ROUND_MIN =>    2;
+use constant SE_SPLIT_DEG_ROUND_DEG =>    4;
+use constant SE_SPLIT_DEG_ZODIACAL  =>    8;
+use constant SE_SPLIT_DEG_NAKSHATRA => 1024;
+use constant SE_SPLIT_DEG_KEEP_SIGN =>   16;   # don't round to next sign,
+					       # e.g. 29.9999999 will be rounded
+					       # to 29°59'59" (or 29°59' or 29°) 
+use constant SE_SPLIT_DEG_KEEP_DEG  =>   32;   # don't round to next degree
+					       # e.g. 13.9999999 will be rounded
+					       # to 13°59'59" (or 13°59' or 13°) 
+use constant SE_AUNIT_TO_KM        => (149597870.691);
+use constant SE_AUNIT_TO_LIGHTYEAR => (1.0/63241.077088071);
+use constant SE_AUNIT_TO_PARSEC    => (1.0/206264.8062471);
+#
 
 1;
 __END__
@@ -443,6 +550,11 @@ exports all constants required for the use of the Swiss Ephemeris.
 	  ->version_sweperl  Version number of Perl wrapper (from 
                              SwissEph.pm)
           ->version_swisseph Version of Swiss Ephemeris (from SE_VERSION)
+
+* $lpath = swe_get_library_path( );
+  
+  Function returns the library path in which the executable resides. 
+  If it is running with a DLL, then it returns the path of the DLL.
 
 =head2 Opening and Closing the Ephemeris
 
@@ -552,10 +664,33 @@ exports all constants required for the use of the Swiss Ephemeris.
 
 =head2 Delta T and Tidal Acceleration of the Moon
 
-* $dt = swe_deltat($tjd_et);
+* $dt = swe_deltat($tjd_ut);
   
   Function calculates Delta T for a given Julian day number in 
-  Ephemeris Time.
+  Ephemeris Time. 
+  Input:  $tjd_ut  Julian day number, Universal Time
+  Output: $dt      Delta T in days
+  Unless you use the Moshier ephemeris, do not use this
+  function before calling swe_set_ephe_path() or swe_set_jplfile().
+
+* $ref = swe_deltat_ex($tjd_ut, $ephe_flag);
+  
+  Function calculates Delta T for a given Julian day number in 
+  Ephemeris Time. Delta T value is adjusted to ephemeris chosen.
+  Input:  $tjd_ut   Julian day number, Universal Time
+       :  $epheflag Ephemeris flag SEFLG_SWIEPH, SEFLG_JPLEPH, or
+		    SEFLG_MOSEPH
+  Output: $dt       Delta T in days
+          $serr     warning (optional)
+  Unless you use the Moshier ephemeris, do not use this
+  function before calling swe_set_ephe_path() or swe_set_jplfile().
+
+* swe_set_delta_t_userdef($dt);
+
+  Function sets Delta T to a fixed user-defined value. After a call
+  of this function, swe_deltat() and swe_deltat_ex() always return
+  the value set by this function. In order to return to automatic
+  Delta T, call swe_set_delta_t_userdef(SE_DELTAT_AUTOMATIC). 
 
 * $tacc = swe_get_tid_acc( );
 
@@ -593,6 +728,28 @@ exports all constants required for the use of the Swiss Ephemeris.
   Output: $ref     Pointer to a hash, which contains:
           -> retval     OK or ERR
           -> time_equ   time equation in days
+          -> serr       error message (on error only)
+
+=head2 Conversions between LMT and LAT (Local Mean/Apparent Time)
+
+* $ref = swe_lmt_to_lat($tjd_lmt, $geolon);
+
+  Function converts Local Mean Time to Local Apparent Time
+  Input:  $tjd_lmt Julian day number, Local Mean Time
+          $geolon  geographic longitude
+  Output: $ref     Pointer to a hash, which contains:
+          -> retval     OK or ERR
+          -> tjd_lat   Julian day number, Local Apparent time
+          -> serr       error message (on error only)
+
+* $ref = swe_lat_to_lmt($tjd_lat, $geolon);
+
+  Function converts Local Apparent Time to Local Mean Time
+  Input:  $tjd_lat Julian day number, Local Apparent Time
+          $geolon  geographic longitude
+  Output: $ref     Pointer to a hash, which contains:
+          -> retval     OK or ERR
+          -> tjd_lmt   Julian day number, Local Mean time
           -> serr       error message (on error only)
 
 =head2 Positions of Celestial Bodies
@@ -699,15 +856,31 @@ exports all constants required for the use of the Swiss Ephemeris.
 * $daya = swe_get_ayanamsa_ut($tjd_ut);
 
   Function does the same as swe_get_ayanamsa( ), but input parameter
-  is Universal Time.
+  $tjd_ut is Universal Time.
 
-* $ayaname = swe_get_ayanamsa_name($isidmode);
+* $daya = swe_get_ayanamsa_ex($tjd_et, epheflag);
+
+  Function returns the ayanamsa for a Julian day number, depending on
+  ephemeris chosen.
+
+  Input:  $tjd_et  Julian day number in Ephemeris Time
+  Output: $retval  return value, either ERR or ephemeris flag
+          $daya    Ayanamsa in degrees
+	  $serr    error message, on error only
+
+* $daya = swe_get_ayanamsa_ex_ut($tjd_ut, epheflag);
+
+  Function does the same as swe_get_ayanamsa_ex(), but input parameter
+  $tjd_ut is Universal Time.
+
+* $ayanam = swe_get_ayanamsa_name($isidmode);
 
   Function returns the name of the ayanamsa.
 
 =head2 Positions of Fixed Stars
 
 * $ref = swe_fixstar($star, $tjd_et, $iflag);
+* $ref = swe_fixstar2($star, $tjd_et, $iflag);
 
   Function calculates the position of a fixed star.
 
@@ -722,10 +895,17 @@ exports all constants required for the use of the Swiss Ephemeris.
 		   in iflag.
           -> starname Corrected star name, e.g. like "Spica,alVir"
 
+  Function swe_fixstar2() has better performance with great numbers
+  of fixed star calculations.
+
 * $ref = swe_fixstar_ut($star, $tjd_ut, $iflag);
+* $ref = swe_fixstar2_ut($star, $tjd_ut, $iflag);
 
   Function does the same as swe_fixstar( ), but for a Universal Time
   Julian day number.
+
+  Function swe_fixstar2_ut() has better performance with great numbers
+  of fixed star calculations.
 
 =head2 Name, Magnitude, Phase, Elongation, Disc Diameter, etc.
 
@@ -761,6 +941,7 @@ exports all constants required for the use of the Swiss Ephemeris.
   Julian day number.
 
 * $ref = swe_fixstar_mag($star);
+* $ref = swe_fixstar2_mag($star);
 
   Function calculates the magnitude of a fixed star.
 
@@ -770,6 +951,9 @@ exports all constants required for the use of the Swiss Ephemeris.
           -> serr  Error string, on error only
           -> dmag  Magnitude of fixed star
           -> starname Corrected star name, e.g. like "Spica,alVir"
+
+  Function swe_fixstar2_mag() has better performance with great numbers
+  of fixed star calculations.
 
 =head2 Rising, Setting and Meridian Transits
 
@@ -788,7 +972,15 @@ exports all constants required for the use of the Swiss Ephemeris.
 		   SE_CALC_ITRANSIT.
 		   | SE_BIT_DISC_CENTER   to calculate risings and settings
 		                          for the disc center of the body
+		   | SE_BIT_DISC_BOTTOM   to calculate risings and settings
+		                          of lower limb of disc
 		   | SE_BIT_NO_REFRACTION to neglect refraction
+		   | SE_BIT_FIXED_DISC_SIZE (instead of apparent disc size)
+		   | SE_BIT_CIVIL_TWILIGHT  for begin/end of twilight
+		                            with $ipl = SE_SUN
+		   | SE_BIT_NAUTIC_TWILIGHT dito
+		   | SE_BIT_ASTRO_TWILIGHT  dito
+		   | SE_BIT_HINDU_RISING    Hindu method for rising/setting
           $geopos  Pointer ot array of geogr. long., lat., height
 	  $atpress Atmospheric pressure in hPa (mbar)
 	  $attemp  Atmospheric temperature in degree C
@@ -806,14 +998,16 @@ exports all constants required for the use of the Swiss Ephemeris.
           $horhgt  height of the horizon in degrees at the point
 	           where the body is expected to rise
 
-=head2 Nodes and Apsides
+=head2 Nodes and Apsides, orbital elements
 
 * $ref = swe_nod_aps($tjd_et, $ipl, $iflag, $method);
+* $ref = swe_nod_aps_ut($tjd_ut, $ipl, $iflag, $method);
 
   Function calculates the positions of the nodes and apsides of 
   planets.
 
-  Input:  $tjd_ut  Julian day number, Universal Time
+  Input:  $tjd_et  Julian day number, Ephemeris Time
+          ($tjd_ut  Julian day number, Universal Time)
           $ipl     Planet identification number
           $iflag   (same parameter as with swe_calc( ))
           $method  (see C Programmer's Manual)=
@@ -824,6 +1018,55 @@ exports all constants required for the use of the Swiss Ephemeris.
 	  -> xndsc Pointer to position array of descending node
 	  -> xperi Pointer to position array of perihelion
 	  -> xaphe Pointer to position array of aphelion
+
+* $ref = swe_get_orbital_elements($tjd_et, $ipl, $iflag);
+
+  Function calculates osculating Kepler elements relative to the
+  mean equinox J2000 and other orbital data.
+
+  Input:  $tjd_et  Julian day number, Ephemeris Time
+          $ipl     Planet identification number
+          $iflag   (same parameter as with swe_calc( ), although
+	           some values do not make sense)
+  Output: $ref     Pointer to a hash, which contains:
+          -> retval     ERR or $iflag; $iflag may have been corrected
+          -> serr  Error string, on error only
+          -> dret  Pointer to data array. The same data are also
+	           provided as follows (same order):
+          -> sema  semiaxis
+	  -> ecce  eccentricity
+	  -> incl  inclination
+	  -> node  longitude of ascending node
+	  -> parg  argument of perihelion
+	  -> peri  longitude of perihelion
+	  -> mean_anom    mean anomaly
+	  -> true_anom    mean anomaly
+	  -> ecce_anom    eccentric anomaly
+	  -> sid_period   sidereal period in tropical years
+	  -> daily_motion mean daily motion
+	  -> trop_period  tropical period
+	  -> synod_period synodic period
+	  -> perihelion_time time of perihelion passage 
+	  -> perihelion_distance 
+	  -> aphelion_distance
+
+* $ref = swe_orbit_max_min_true_distance($tjd_et, $ipl, $iflag);
+
+  Function calculates the maximum, minimum and true distance
+  of a planet from the EMB or the Sun, based on the osculating
+  ellipses of the moment.
+
+  Input:  $tjd_et  Julian day number, Ephemeris Time
+          $ipl     Planet identification number
+          $iflag   (same parameter as with swe_calc( ), although
+	           some values do not make sense)
+
+  Output: $ref     Pointer to a hash, which contains:
+          -> retval     ERR or $iflag; $iflag may have been corrected
+          -> serr  Error string, on error only
+          -> dmax  maximum distance
+          -> dmin  minimum distance
+          -> dtrue true distance at $tjd_et
 
 =head2 Eclipses and Occultations by the Moon
 
@@ -879,6 +1122,7 @@ exports all constants required for the use of the Swiss Ephemeris.
 	                       with total, positive with annular ecl.)
 	  -> sun_azimuth
 	  -> sun_alt_true
+	  -> sun_alt_app
 	  -> separation_angle
 
 * $ref = swe_sol_eclipse_where($tjd_ut, $iflag);
@@ -950,6 +1194,38 @@ exports all constants required for the use of the Swiss Ephemeris.
   There are the following eclipse types for lunar eclipses:
   SE_ECL_TOTAL, SE_ECL_PENUMBRAL, SE_ECL_PARTIAL
 
+* $ref = swe_lun_eclipse_when_loc($tjd_ut, $iflag, $backw, $geopos);
+
+  Finds the next lunar eclipse
+
+  Input:  $tjd_ut  Julian day number, Universal Time
+          $iflag   (specify ephemeris to be used, cf. swe_calc( ))
+          $backw   Search backward in time
+	  $geopos      pointer to array of geogr. long., lat., height
+  Output: $ref     Pointer to a hash, which contains:
+          -> retval     ERR or eclipse type
+          -> serr  Error string, on error only
+	  -> tret  Pointer to array, which contains the values fo the
+	           following hash members:
+	  -> ecl_maximum      time of maximum eclipse (UT)
+	  -> ecl_partial_begin
+	  -> ecl_partial_end
+	  -> ecl_total_begin
+	  -> ecl_total_end
+	  -> ecl_penumbral_begin
+	  -> ecl_penumbral_end
+	  -> ecl_tmoonrise    time of moonrise during eclipse
+	  -> ecl_tmoonset     time of moonset during eclipse
+	  -> mag_umbral 
+	  -> mag_penumbral 
+	  -> moon_azimuth 
+	  -> moon_alt_true
+	  -> moon_alt_app
+	  -> separation_angle
+
+  There are the following eclipse types for lunar eclipses:
+  SE_ECL_TOTAL, SE_ECL_PENUMBRAL, SE_ECL_PARTIAL
+
 * $ref = swe_lun_eclipse_how($tjd_ut, $iflag, $geopos);
 
   Function calculates the local character of an eclipse.
@@ -963,6 +1239,10 @@ exports all constants required for the use of the Swiss Ephemeris.
 	  -> attr              Pointer to array (s. Programmer's Manual)   
 	  -> mag_umbral        Umbral magnitude
 	  -> mag_penumbral     Penumbral magnitude
+	  -> moon_azimuth 
+	  -> moon_alt_true
+	  -> moon_alt_app
+	  -> separation_angle
 
 * $ref = swe_lun_occult_when_glob($tjd_ut, $ipl, $star, $iflag, $ifltype, $backw);
 
@@ -1128,6 +1408,16 @@ exports all constants required for the use of the Swiss Ephemeris.
   additional input parameter $iflag, which allows for the calculation
   of houses for sidereal zodiacs. Set $iflag |= SEFLG_SIDEREAL.
 
+* $ref = swe_houses_ex2($tjd_ut, $iflag, $geolat, $geolon, $hsys);
+  
+  Like swe_houses_ex(), this function calculates the astrological houses and related stuff.
+  The difference from swe_houses_ex( ) is that it provides the following
+  additional output:
+          ->retval       0 if OK and -1 if error
+          ->serr         error message or warning, by default undefined
+          ->cusps_speed  Pointer to an array: speeds of twelve house cusps
+          ->ascmc_speed  Pointer to an array: See the Programmer's Manual.
+
 * $ref = swe_houses_armc($tjd_ut, $geolat, $geolon, $hsys);
 
   Function calculates the astrological houses and related stuff, if 
@@ -1138,6 +1428,15 @@ exports all constants required for the use of the Swiss Ephemeris.
           $eps     Obliquity of true ecliptic of date
           $hsys    House system, a 1-char string; cf. swe_houses( )
   Output: same as with swe_houses( )
+
+* $ref = swe_houses_armc_ex2($tjd_ut, $geolat, $geolon, $hsys);
+
+  Function does the same as swe_houses_armc_ex(), however 
+  provides the following additional output:
+          ->retval       0 if OK and -1 if error
+          ->serr         error message or warning, by default undefined
+          ->cusps_speed  Pointer to an array: speeds of twelve house cusps
+          ->ascmc_speed  Pointer to an array: See the Programmer's Manual.
 
 * $ref = swe_house_pos($armc, $geolat, $eps, $hsys, $ecl_lon, $ecl_lat);
 

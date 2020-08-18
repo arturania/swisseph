@@ -1,5 +1,4 @@
 /*********************************************************
-  $Header: /home/dieter/sweph/RCS/swedate.h,v 1.74 2008/06/16 10:07:20 dieter Exp $
   version 15-feb-89 16:30
 *********************************************************/
 
@@ -62,17 +61,17 @@ extern "C" {
 #endif
 
 #ifndef _SWEDLL_H
-extern EXP32 int FAR PASCAL_CONV EXP16 swe_date_conversion (
+extern EXP32 int swe_date_conversion (
 	int y , int m , int d ,		/* year, month, day */
      	double utime, 	/* universal time in hours (decimal) */
      	char c,  	/* calendar g[regorian]|j[ulian]|a[stro = greg] */
  	double *tgmt);
 
-extern EXP32 double *FAR PASCAL_CONV EXP16 swe_julday(
+extern EXP32 double *swe_julday(
 	int year, int month, int day, double hour, 
 	int gregflag);
 
-extern EXP32 void FAR PASCAL_CONV EXP16 swe_revjul (
+extern EXP32 void swe_revjul (
 	double jd, 
 	int gregflag,
      	int *jyear, int *jmon, int *jday, double *jut);
