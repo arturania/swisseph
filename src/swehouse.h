@@ -1,5 +1,4 @@
 /*******************************************************
-$Header: /home/dieter/sweph/RCS/swehouse.h,v 1.74 2008/06/16 10:07:20 dieter Exp $
 module swehouse.h
 house and (simple) aspect calculation 
 
@@ -61,13 +60,27 @@ house and (simple) aspect calculation
 
 struct houses {
 	  double cusp[37];
+	  double cusp_speed[37];
 	  double ac;
+	  double ac_speed;	// speed of ac
 	  double mc;
+	  double mc_speed;	// speed of mc
+	  double armc_speed;	// speed of armc
 	  double vertex;
+	  double vertex_speed;	// speed of vertex
 	  double equasc;
+	  double equasc_speed;	// speed
 	  double coasc1;
+	  double coasc1_speed;	// speed
 	  double coasc2;
+	  double coasc2_speed;	// speed
 	  double polasc;
+	  double polasc_speed;	// speed
+	  double sundec;	// declination of Sun for Sunshine houses
+	  AS_BOOL do_speed;
+	  AS_BOOL do_hspeed;
+	  AS_BOOL do_interpol;
+	  char serr[AS_MAXCH];
 	};
 
 #define HOUSES 	struct houses
@@ -76,9 +89,9 @@ struct houses {
 #define degtocs(x)    (d2l((x) * DEG))
 #define cstodeg(x)    (double)((x) * CS2DEG)
 
-#define sind(x) sin(x * DEGTORAD)
-#define cosd(x) cos(x * DEGTORAD)
-#define tand(x) tan(x * DEGTORAD)
+#define sind(x) sin((x) * DEGTORAD)
+#define cosd(x) cos((x) * DEGTORAD)
+#define tand(x) tan((x) * DEGTORAD)
 #define asind(x) (asin(x) * RADTODEG)
 #define acosd(x) (acos(x) * RADTODEG)
 #define atand(x) (atan(x) * RADTODEG)

@@ -1,6 +1,5 @@
 
 /* 
-  $Header: /home/dieter/sweph/RCS/swemini.c,v 1.74 2008/06/16 10:07:20 dieter Exp $
 
   swemini.c	A minimal program to test the Swiss Ephemeris.
 
@@ -78,6 +77,7 @@ int main()
   double tjd, te, x2[6];
   int32 iflag, iflgret;
   int p;
+  swe_set_ephe_path(NULL);
   iflag = SEFLG_SPEED;
   while (TRUE) {
     printf("\nDate (d.m.y) ?");

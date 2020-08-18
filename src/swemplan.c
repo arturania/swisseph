@@ -1,5 +1,4 @@
 /* SWISSEPH
-   $Header: /home/dieter/sweph/RCS/swemplan.c,v 1.74 2008/06/16 10:07:20 dieter Exp $
    Moshier planet routines
 
    modified for SWISSEPH by Dieter Koch
@@ -63,7 +62,7 @@
 #include "swephexp.h"
 #include "sweph.h"
 #include "swephlib.h"
-#include "swemptab.c"
+#include "swemptab.h"
 
 #define TIMESCALE 3652500.0
 
@@ -82,11 +81,11 @@ static int read_elements_file(int32 ipl, double tjd,
   double *parg, double *node, double *incl,
   char *pname, int32 *fict_ifl, char *serr);
 
-static int pnoint2msh[]   = {2, 2, 0, 1, 3, 4, 5, 6, 7, 8, };
+static const int pnoint2msh[]   = {2, 2, 0, 1, 3, 4, 5, 6, 7, 8, };
 
 
 /* From Simon et al (1994)  */
-static double freqs[] =
+static const double freqs[] =
 {
 /* Arc sec per 10000 Julian years.  */
   53810162868.8982,
@@ -100,7 +99,7 @@ static double freqs[] =
   52272245.1795
 };
 
-static double phases[] =
+static const double phases[] =
 {
 /* Arc sec.  */
   252.25090552 * 3600.,
@@ -114,7 +113,7 @@ static double phases[] =
   860492.1546,
 };
 
-static struct plantbl *planets[] =
+static const struct plantbl *planets[] =
 {
   &mer404,
   &ven404,
@@ -127,19 +126,19 @@ static struct plantbl *planets[] =
   &plu404
 };
 
-static double FAR ss[9][24];
-static double FAR cc[9][24];
+static TLS double ss[9][24];
+static TLS double cc[9][24];
 
 static void sscc (int k, double arg, int n);
 
 int swi_moshplan2 (double J, int iplm, double *pobj)
 {
   int i, j, k, m, k1, ip, np, nt;
-  signed char FAR *p;
-  double FAR *pl, *pb, *pr;
+  signed char *p;
+  double *pl, *pb, *pr;
   double su, cu, sv, cv, T;
   double t, sl, sb, sr;
-  struct plantbl *plan = planets[iplm];
+  const struct plantbl *plan = planets[iplm];
 
   T = (J - J2000) / TIMESCALE;
   /* Calculate sin( i*MM ), etc. for needed multiple angles.  */
@@ -486,7 +485,7 @@ static void embofs_mosh(double tjd, double *xemb)
   /* Convert to equatorial */
   swi_coortrf2(xyz, xyz, -seps, ceps);
   /* Precess to equinox of J2000.0 */
-  swi_precess(xyz, tjd, J_TO_J2000);/**/
+  swi_precess(xyz, tjd, 0, J_TO_J2000);/**/
   /* now emb -> earth */
   for (i = 0; i <= 2; i++)
     xemb[i] -= xyz[i] / (EARTH_MOON_MRAT + 1.0);
@@ -504,7 +503,7 @@ static void embofs_mosh(double tjd, double *xemb)
  */
 #define SE_NEELY                /* use James Neely's revised elements 
                                  *      of Uranian planets*/
-static char *plan_fict_nam[SE_NFICT_ELEM] =
+static const char *plan_fict_nam[SE_NFICT_ELEM] =
   {"Cupido", "Hades", "Zeus", "Kronos", 
    "Apollon", "Admetos", "Vulkanus", "Poseidon",
    "Isis-Transpluto", "Nibiru", "Harrington",
@@ -520,7 +519,7 @@ char *swi_get_fict_name(int32 ipl, char *snam)
   return snam;
 }
 
-static double plan_oscu_elem[SE_NFICT_ELEM][8] = {
+static const double plan_oscu_elem[SE_NFICT_ELEM][8] = {
 #ifdef SE_NEELY
   {J1900, J1900, 163.7409, 40.99837, 0.00460, 171.4333, 129.8325, 1.0833},/* Cupido Neely */ 
   {J1900, J1900,  27.6496, 50.66744, 0.00245, 148.1796, 161.3339, 1.0500},/* Hades Neely */
@@ -665,13 +664,13 @@ int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, double *xearth, d
   xp[4] = pqr[3] * x[3] + pqr[4] * x[4];
   xp[5] = pqr[6] * x[3] + pqr[7] * x[4];
   /* transformation to equator */
-  eps = swi_epsiln(tequ);
+  eps = swi_epsiln(tequ, 0);
   swi_coortrf(xp, xp, -eps);
   swi_coortrf(xp+3, xp+3, -eps);
   /* precess to J2000 */
   if (tequ != J2000) {
-    swi_precess(xp, tequ, J_TO_J2000);
-    swi_precess(xp+3, tequ, J_TO_J2000);
+    swi_precess(xp, tequ, 0, J_TO_J2000);
+    swi_precess(xp+3, tequ, 0, J_TO_J2000);
   }
   /* to solar system barycentre */
   if (fict_ifl & FICT_GEO) {
@@ -759,7 +758,7 @@ static int read_elements_file(int32 ipl, double tjd,
       if (serr != NULL) {
         sprintf(serr, "%s nine elements required", serri);
       }
-      return ERR;
+      goto return_err;
     }
     iplan++;
     if (iplan != ipl)

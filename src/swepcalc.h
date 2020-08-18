@@ -103,9 +103,6 @@
  julian days.
 *************************************************************/
 extern int nacalc(double jd_ad, centisec *plon, centisec *pspe);
-extern int calcserv(int id, double t, int flag, int plalist, char *so);
-extern void helup(double jd_ad);
-extern void togeo(double le, double re, double l, double r, double z, double *alg, double *arg);
 extern int  calc(int p,
 		 double jd_ad,
 		 int flag, 
@@ -113,17 +110,6 @@ extern int  calc(int p,
 		 double *arad,
 		 double *alat,
 		 double *alngspeed);
-extern int rel_geo(int p, double rau);
-extern int hel( int	p,	/* planet index as defined by placalc.h */
-		double	jd_ad,	/* relative juliand date, ephemeris time */
-				/* Now come 6 pointers to return values. */
-		double	*al,	/* longitude in degrees */
-		double   *ar,	/* radius in AU */
-		double   *az,	/* distance from ecliptic in AU */
-		double   *alp, 	/* speed in longitude, degrees per day */
-		double   *arp,	/* speed in radius, AU per day */
-		double   *azp);   /* speed in z, AU per day */
-extern int  moon(double *al, double *ar, double *az);
 extern double fraction(double t);
 extern double sidtime(double jd_ad, double ecl, double nuta);
 extern double smod8360(double x);
@@ -131,9 +117,6 @@ extern double mod8360(double x);
 extern double diff8360(double x, double y);
 extern double test_near_zero(double x);
 extern double deltat(double jd_ad);
-extern void to_mean_ekl (double jd, double xyz[], double lrz[]);
-extern void placalc_close_files();
-extern int fixstar(char *star, double jd, double *lon, double *lat);
 extern char *placalc_get_errtext();
 extern char *placalc_set_ephepath(char *new_path);	/* sets ephepath;
 				if called with NULL, returns current path */
@@ -171,7 +154,7 @@ extern char *planet2abbr3(int planet);
  * planet index numbers, used to identify a planet in calc() and
  * other related functions.
  */
-#define CALC_ONLY_ECL_NUT -1	/* pseudo planet index for calls to calc */
+#define CALC_ONLY_ECL_NUT (-1)	/* pseudo planet index for calls to calc */
 #define SUN	0		/* used synonymously for earth too */
 #define EARTH	0
 #define MOON	1
@@ -188,15 +171,35 @@ extern char *planet2abbr3(int planet);
 #define TRUE_NODE  11
 #define CHIRON	   12
 #define LILITH	   13	
-#define CALC_N	   14	/* number of planets in placalc module */
+#define CALC_N	  14	/* number of planets in placalc module */
 
 #define CERES     14
 #define PALLAS    15
 #define JUNO      16
 #define VESTA     17
+#define EARTHHEL  18	/* heliocentric earth */
+#define PFORTUNAE 19
+/* next numbers after 19 are reserved for AC, MC, houses, signs;
+ * see further below */
+#define MEAN_NODE_S 46
+#define TRUE_NODE_S 47
 
 #define MAXPL_NACALC	(LILITH)	/* nacalc computes SUN..LILITH */
-# define PROG_PLANET_OFFSET  50      /* progressed sun */
+
+/*
+ * progressed planets have the same index (up to MC)
+ * but with offset 50
+ */
+# define PROG_PLANET_OFFSET	50	/* progressed sun */
+# define PROG_OFF	50	
+# define PROG_SUN	(SUN + PROG_OFF)
+# define PROG_MOON	(MOON + PROG_OFF)
+# define PROG_MERCURY	(MERCURY + PROG_OFF)
+# define PROG_VENUS	(VENUS + PROG_OFF)
+# define PROG_MARS	(MARS + PROG_OFF)
+# define PROG_AC	(AC + PROG_OFF)
+# define PROG_ASC	(AC + PROG_OFF)
+# define PROG_MC	(MC + PROG_OFF)
 
 /*
  * houses and axes get also a 'planet' index number, but they
@@ -206,15 +209,18 @@ extern char *planet2abbr3(int planet);
  * Axes and houses cannot be computed with calls to calc(); they must
  * be computed with the housasp module functions.
  */
-# define AC	   19
-# define ASC	   19
-# define MC	   20
-# define CALC_N_MC  21	/* number of normal natal factors */
+# define AC	   20
+# define ASC	   20
+# define MC	   21
+# define CALC_N_MC  22	/* number of normal natal factors */
 
-# define FIRST_HSNR 21
-# define LAST_HSNR 32
+# define FIRST_HSNR 22
+# define LAST_HSNR 33
+#define MAX_PL_INDEX (LAST_HSNR + 1)  /* don't reckon signs */
 # define NO_OF_HOUSES 12
-#define MAX_PL_INDEX 32
+# define FIRST_SGNR (LAST_HSNR + 1) 
+# define LAST_SGNR (FIRST_SGNR + 11)
+# define NO_OF_SIGNS 12
 /*
  * in a bitlist flag each planet is represented by a bit;
  * all 14 defined planets can be called at once with
@@ -288,43 +294,16 @@ extern char *planet2abbr3(int planet);
 
 
 /*
- * stuff from astrolib.h
- */
-
-#ifndef ADATE	/* this must be bracketed because users of swepcalc
-		   may also include astrolib.h for other reasons */
-#define ADATE struct adate
-
-/* makros for bit operations */
-# define clear_bit(v,bit_nr) 	((v) & ~(1L << (bit_nr)))
-# define set_bit(v,bit_nr) 	((v) | (1L << (bit_nr)))
-# define bit(bit_nr)		(1L << (bit_nr))
-# define check_bit(v,bit_nr)	((v) & (1L << (bit_nr)))
-
-ADATE {	/* date structure used by revjuls and juldays */
-       int day, month, year;
-       centisec csec;
-       };
-
-#endif	/* ADATE */
-
-/*
  * functions exported by swepdate.c
  */
 extern double julday(int month, int day, int year, double hour, int gregflag);
-extern double juldays(int gregflag, ADATE *adp); 
 extern void revjul (double u, int gregflag,
 	      int *jmon, int *jday, int *jyear, double *jut);
-extern void revjuls(double u, int gregflag, ADATE *adp); 
 extern int day_of_week(double t);
 /*
  * end swpdate.c
  */
 
-/*
- * stuff from housasp.h
- */
-#ifndef ASP_144		/* allow including housasp wihout conflict */
 #define MAXPLANETS  16
 
 /*
@@ -375,6 +354,8 @@ extern int day_of_week(double t);
  * and so on. asp_bit(asp) deleivers the mask.
  */
 #define ALL_ASP_BITS	1022	/* bit mask with all aspect bits set */
+#define ALL_ASP_BITSQ	(1022|bit(ASP_QINT)|bit(ASP_BQIN))	/* bit mask with all aspect bits incl. quintiles/biquint. */
+#define ALL_ASP_NO30	(HARD_ASP_BITS | asp_bit(ASP_SEXT)|asp_bit(ASP_QCNX)|asp_bit(ASP_SMSQ)|asp_bit(ASP_SQSQ))
 #define STRONG_ASP_BITS	62	/* bit mask with strong aspect bits set */
 #define HARD_ASP_BITS	14	/* bit mask with hard aspect bits set */
 
@@ -419,7 +400,7 @@ struct  AspectType {
 		int  index; 	/* number of the found aspect */
 		centisec orb;
 	       }
-		Asp [MAXPLANETS] [MAXPLANETS];
+		Asp[MAXPLANETS][MAXPLANETS];
 	     };
 
 struct  houses {
@@ -429,10 +410,6 @@ struct  houses {
 	};
 
 # define HOUSES 	struct houses
-#endif	/* ifndef ASP_144 */
-/**********************************
-  functions exported originally from housasp.c 
-***********************************/
 
 extern int HouseNr(HOUSES *h, CSEC p);
   /*

@@ -11,10 +11,12 @@ WriteMakefile(
       (ABSTRACT_FROM  => 'lib/SwissEph.pm', # retrieve abstract from module
        AUTHOR         => 'Dieter <dieter@astro.ch>') : ()),
     #LIBS              => ['-lC:\sweph\bin\swedll32'], # e.g., '-lm'
-    LIBS              => ['-lswe'], # e.g., '-lm'
+    LIBS              => ['-L/usr/local/lib64/swe -lswe'], # e.g., '-lm'
+    #LIBS              => ['-lswe'], # e.g., '-lm'
     DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
     INC               => '-I.', # e.g., '-I. -I/usr/include/other'
 #    DISTVNAME         => 'perl_swisseph', # 
 	# Un-comment this if you add C files to link with later:
     # OBJECT            => '$(O_FILES)', # link all the C files too
 );
+

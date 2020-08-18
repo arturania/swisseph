@@ -1,5 +1,4 @@
 /************************************************************
-   $Header: /home/dieter/sweph/RCS/swenut2000a.h,v 1.74 2008/06/16 10:07:20 dieter Exp $
    definitions for nutation theory IAU 2000a
    derived from public sources
 
@@ -69,7 +68,7 @@
 #define NPL 687
 /* Luni-Solar argument multipliers
 L L' F D Om */
-static int16 nls[] = {
+static const int16 nls[] = {
 0, 0, 0, 0, 1,
 0, 0, 2, -2, 2,
 0, 0, 2, 0, 2,
@@ -752,7 +751,7 @@ static int16 nls[] = {
 
 /* Luni-Solar nutation coefficients, unit 1e-7 arcsec
  * longitude (sin, t*sin, cos), obliquity (cos, t*cos, sin) */
-static int32 cls[] = {
+static const int32 cls[] = {
 -172064161, -174666, 33386, 92052331, 9086, 15377,
 -13170906, -1675, -13696, 5730336, -3015, -4587,
 -2276413, -234, 2796, 978459, -485, 1374,
@@ -1433,10 +1432,10 @@ static int32 cls[] = {
 -3, 0, 0, 2, 0, 0,
 };
 
-#if NUT_IAU_2000A
+/*#if NUT_IAU_2000A*/
 /* Planetary argument multipliers
  * L L' F D Om Me Ve E Ma Ju Sa Ur Ne pre */
-static int16 npl[] = {
+static const int16 npl[] = {
 0, 0, 0, 0, 0, 0, 0, 8,-16, 4, 5, 0, 0, 0,
 0, 0, 0, 0, 0, 0, 0, -8, 16, -4, -5, 0, 0, 2,
 0, 0, 0, 0, 0, 0, 0, 8,-16, 4, 5, 0, 0, 2,
@@ -2128,7 +2127,7 @@ static int16 npl[] = {
 
 /* Planetary nutation coefficients, unit 1e-7 arcsec
  * longitude (sin, cos), obliquity (sin, cos) */
-static int16 icpl[] = {
+static const int16 icpl[] = {
 1440, 0, 0, 0,
 56, -117, -42, -40,
 125, -43, 0, -54,
@@ -2817,4 +2816,4 @@ static int16 icpl[] = {
 3, 0, 0, -1,
 3, 0, 0, -1,
 };
-#endif /* NUT_IAU_2000A */
+/*#endif  * NUT_IAU_2000A */

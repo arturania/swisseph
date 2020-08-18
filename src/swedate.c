@@ -1,5 +1,4 @@
 /*********************************************************
-  $Header: /home/dieter/sweph/RCS/swedate.c,v 1.75 2009/04/08 07:17:29 dieter Exp $
   version 15-feb-89 16:30
   
   swe_date_conversion()
@@ -63,7 +62,7 @@
 
 /*
   swe_date_conversion():
-  This function converts some date+time input {d,m,y,uttime}
+  This function converts some date+time input {y,m,d,uttime}
   into the Julian day number tjd.
   The function checks that the input is a legal combination
   of dates; for illegal dates like 32 January 1993 it returns ERR
@@ -86,10 +85,10 @@
 # include "swephexp.h"
 # include "sweph.h"
 
-static AS_BOOL init_leapseconds_done = FALSE;
+static TLS AS_BOOL init_leapseconds_done = FALSE;
 
 
-int FAR PASCAL_CONV swe_date_conversion(int y,
+int CALL_CONV swe_date_conversion(int y,
 		     int m,
 		     int d,		/* day, month, year */
 		     double uttime, 	/* UT in hours (decimal) */
@@ -110,7 +109,7 @@ int FAR PASCAL_CONV swe_date_conversion(int y,
   } else {
     return ERR;
   }
-}	/* end date_conversion */
+}
 
 /*************** swe_julday ********************************************
  * This function returns the absolute Julian day number (JD)
@@ -148,20 +147,17 @@ int FAR PASCAL_CONV swe_date_conversion(int y,
 
  Original author: Marc Pottenger, Los Angeles.
  with bug fix for year < -4711   15-aug-88 by Alois Treindl
- (The parameter sequence m,d,y still indicates the US origin,
-  be careful because the similar function date_conversion() uses
-  other parameter sequence and also Astrodienst relative juldate.)
  
  References: Oliver Montenbruck, Grundlagen der Ephemeridenrechnung,
              Verlag Sterne und Weltraum (1987), p.49 ff
  
  related functions: swe_revjul() reverse Julian day number: compute the
   			       calendar date from a given JD
-	            date_conversion() includes test for legal date values
+	            swe_date_conversion() includes test for legal date values
 		    and notifies errors like 32 January.
  ****************************************************************/
 
-double FAR PASCAL_CONV swe_julday(int year, int month, int day, double hour, int gregflag) 
+double CALL_CONV swe_julday(int year, int month, int day, double hour, int gregflag) 
 {
   double jd;
   double u,u0,u1,u2;
@@ -202,7 +198,7 @@ double FAR PASCAL_CONV swe_julday(int year, int month, int day, double hour, int
   Original author Mark Pottenger, Los Angeles.
   with bug fix for year < -4711 16-aug-88 Alois Treindl
 *************************************************************************/
-void FAR PASCAL_CONV swe_revjul (double jd, int gregflag,
+void CALL_CONV swe_revjul (double jd, int gregflag,
 	     int *jyear, int *jmon, int *jday, double *jut)
 {
   double u0,u1,u2,u3,u4;
@@ -236,7 +232,7 @@ void FAR PASCAL_CONV swe_revjul (double jd, int gregflag,
  * For conversion from local time to utc, use +d_timezone.
  * For conversion from utc to local time, use -d_timezone.
  */
-void FAR PASCAL_CONV swe_utc_time_zone(
+void CALL_CONV swe_utc_time_zone(
         int32 iyear, int32 imonth, int32 iday,
         int32 ihour, int32 imin, double dsec,
         double d_timezone,
@@ -276,9 +272,9 @@ void FAR PASCAL_CONV swe_utc_time_zone(
  */
 
 /* Leap seconds were inserted at the end of the following days:*/
-#define NLEAP_SECONDS 24
+#define NLEAP_SECONDS 27 // ignoring end mark '0'
 #define NLEAP_SECONDS_SPACE 100
-static int leap_seconds[NLEAP_SECONDS_SPACE] = {
+static TLS int leap_seconds[NLEAP_SECONDS_SPACE] = {
 19720630,
 19721231,
 19731231,
@@ -303,6 +299,9 @@ static int leap_seconds[NLEAP_SECONDS_SPACE] = {
 19981231,
 20051231,
 20081231,
+20120630,
+20150630,
+20161231,
 0  /* keep this 0 as end mark */
 };
 #define J1972 2441317.5
@@ -374,7 +373,7 @@ static int init_leapsec(void)
  *   the leap seconds table (or the Swiss Ephemeris version) is not updated
  *   for a long time.
 */
-int32 FAR PASCAL_CONV swe_utc_to_jd(int32 iyear, int32 imonth, int32 iday, int32 ihour, int32 imin, double dsec, int32 gregflag, double *dret, char *serr)
+int32 CALL_CONV swe_utc_to_jd(int32 iyear, int32 imonth, int32 iday, int32 ihour, int32 imin, double dsec, int32 gregflag, double *dret, char *serr)
 {
   double tjd_ut1, tjd_et, tjd_et_1972, dhour, d;
   int iyear2, imonth2, iday2;
@@ -403,7 +402,7 @@ int32 FAR PASCAL_CONV swe_utc_to_jd(int32 iyear, int32 imonth, int32 iday, int32
    */
   if (tjd_ut1 < J1972) {
     dret[1] = swe_julday(iyear, imonth, iday, dhour, gregflag);
-    dret[0] = dret[1] + swe_deltat(dret[1]);
+    dret[0] = dret[1] + swe_deltat_ex(dret[1], -1, NULL);
     return OK;
   }
   /* 
@@ -430,10 +429,10 @@ int32 FAR PASCAL_CONV swe_utc_to_jd(int32 iyear, int32 imonth, int32 iday, int32
    * input time as UT1, not as UTC. How do we find out? 
    * Check, if delta_t - nleap - 32.184 > 0.9
    */
-  d = swe_deltat(tjd_ut1) * 86400.0;
+  d = swe_deltat_ex(tjd_ut1, -1, NULL) * 86400.0;
   if (d - (double) nleap - 32.184 >= 1.0) {
     dret[1] = tjd_ut1 + dhour / 24.0;
-    dret[0] = dret[1] + swe_deltat(dret[1]);
+    dret[0] = dret[1] + swe_deltat_ex(dret[1], -1, NULL);
     return OK;
   }
   /* 
@@ -463,8 +462,9 @@ int32 FAR PASCAL_CONV swe_utc_to_jd(int32 iyear, int32 imonth, int32 iday, int32
   /* ET (TT) */
   tjd_et_1972 = J1972 + (32.184 + NLEAP_INIT) / 86400.0;
   tjd_et = tjd_et_1972 + d + ((double) (nleap - NLEAP_INIT)) / 86400.0;
-  d = swe_deltat(tjd_et);
-  tjd_ut1 = tjd_et - swe_deltat(tjd_et - d);
+  d = swe_deltat_ex(tjd_et, -1, NULL);
+  tjd_ut1 = tjd_et - swe_deltat_ex(tjd_et - d, -1, NULL);
+  tjd_ut1 = tjd_et - swe_deltat_ex(tjd_ut1, -1, NULL);
   dret[0] = tjd_et;
   dret[1] = tjd_ut1;
   return OK;
@@ -484,7 +484,7 @@ int32 FAR PASCAL_CONV swe_utc_to_jd(int32 iyear, int32 imonth, int32 iday, int32
  *   the leap seconds table (or the Swiss Ephemeris version) has not been
  *   updated for a long time.
  */
-void FAR PASCAL_CONV swe_jdet_to_utc(double tjd_et, int32 gregflag, int32 *iyear, int32 *imonth, int32 *iday, int32 *ihour, int32 *imin, double *dsec) 
+void CALL_CONV swe_jdet_to_utc(double tjd_et, int32 gregflag, int32 *iyear, int32 *imonth, int32 *iday, int32 *ihour, int32 *imin, double *dsec) 
 {
   int i;
   int second_60 = 0;
@@ -494,8 +494,9 @@ void FAR PASCAL_CONV swe_jdet_to_utc(double tjd_et, int32 gregflag, int32 *iyear
    * if tjd_et is before 1 jan 1972 UTC, return UT1
    */
   tjd_et_1972 = J1972 + (32.184 + NLEAP_INIT) / 86400.0; 
-  d = swe_deltat(tjd_et);
-  tjd_ut = tjd_et - swe_deltat(tjd_et - d);
+  d = swe_deltat_ex(tjd_et, -1, NULL);
+  tjd_ut = tjd_et - swe_deltat_ex(tjd_et - d, -1, NULL);
+  tjd_ut = tjd_et - swe_deltat_ex(tjd_ut, -1, NULL);
   if (tjd_et < tjd_et_1972) {
     swe_revjul(tjd_ut, gregflag, iyear, imonth, iday, &d);
     *ihour = (int32) d;
@@ -550,8 +551,8 @@ void FAR PASCAL_CONV swe_jdet_to_utc(double tjd_et, int32 gregflag, int32 *iyear
    * input time as UT1, not as UTC. How do we find out? 
    * Check, if delta_t - nleap - 32.184 > 0.9
    */
-  d = swe_deltat(tjd_et);
-  d = swe_deltat(tjd_et - d);
+  d = swe_deltat_ex(tjd_et, -1, NULL);
+  d = swe_deltat_ex(tjd_et - d, -1, NULL);
   if (d * 86400.0 - (double) (nleap + NLEAP_INIT) - 32.184 >= 1.0) {
     swe_revjul(tjd_et - d, SE_GREG_CAL, iyear, imonth, iday, &d);
     *ihour = (int32) d;
@@ -580,8 +581,9 @@ void FAR PASCAL_CONV swe_jdet_to_utc(double tjd_et, int32 gregflag, int32 *iyear
  *   the leap seconds table (or the Swiss Ephemeris version) has not been
  *   updated for a long time.
  */
-void FAR PASCAL_CONV swe_jdut1_to_utc(double tjd_ut, int32 gregflag, int32 *iyear, int32 *imonth, int32 *iday, int32 *ihour, int32 *imin, double *dsec) 
+void CALL_CONV swe_jdut1_to_utc(double tjd_ut, int32 gregflag, int32 *iyear, int32 *imonth, int32 *iday, int32 *ihour, int32 *imin, double *dsec) 
 {
-  double tjd_et = tjd_ut + swe_deltat(tjd_ut);
+  double tjd_et = tjd_ut + swe_deltat_ex(tjd_ut, -1, NULL);
   swe_jdet_to_utc(tjd_et, gregflag, iyear, imonth, iday, ihour, imin, dsec);
 }
+
