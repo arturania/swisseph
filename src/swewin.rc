@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -16,20 +16,18 @@
 // German (Germany) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
-#ifdef _WIN32
 LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-DATABX DIALOG DISCARDABLE  0, 0, 345, 321
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+DATABX DIALOGEX 0, 0, 345, 321
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Calculate Planets and Houses"
-FONT 8, "Courier"
+FONT 8, "Courier", 0, 0, 0x0
 BEGIN
     LTEXT           "Date (day month year)",LABEL_DATE,4,5,91,8
     EDITTEXT        EDIT_DAY,95,2,13,12
@@ -39,49 +37,40 @@ BEGIN
     EDITTEXT        EDIT_HOUR,95,18,13,12
     EDITTEXT        EDIT_MINUTE,114,18,13,12
     EDITTEXT        EDIT_SECOND,133,18,13,12
-    COMBOBOX        COMBO_ET_UT,161,17,24,56,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        COMBO_ET_UT,161,17,24,56,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "geo. longitude",LABEL_LONG,4,39,76,8
     EDITTEXT        EDIT_LONG_DEG,90,35,18,12
     EDITTEXT        EDIT_LONG_MIN,114,35,13,12
     EDITTEXT        EDIT_LONG_SEC,133,35,13,12
-    COMBOBOX        COMBO_E_W,161,34,24,55,CBS_DROPDOWNLIST | CBS_SORT | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        COMBO_E_W,161,34,24,55,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "geo. latitude",LABEL_LAT,4,56,76,8
     EDITTEXT        EDIT_LAT_DEG,95,52,13,12
     EDITTEXT        EDIT_LAT_MIN,114,52,13,12
     EDITTEXT        EDIT_LAT_SEC,133,52,13,12
-    COMBOBOX        COMBO_N_S,161,51,24,50,CBS_DROPDOWNLIST | CBS_SORT | 
-                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        COMBO_N_S,161,51,24,50,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        EDIT_ALT,195,52,30,12,ES_AUTOHSCROLL
-    COMBOBOX        COMBO_EPHE,195,1,89,120,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
-    COMBOBOX        COMBO_PLANSEL,195,16,89,67,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
-    COMBOBOX        COMBO_CENTER,195,33,89,67,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
-    COMBOBOX        COMBO_HSYS,275,50,63,78,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
-    EDITTEXT        EDIT_OUTPUT2,0,85,345,235,ES_MULTILINE | ES_READONLY | 
-                    WS_VSCROLL | WS_HSCROLL | NOT WS_TABSTOP
+    COMBOBOX        COMBO_EPHE,195,1,89,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        COMBO_PLANSEL,195,16,89,67,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        COMBO_CENTER,195,33,89,67,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        COMBO_HSYS,275,50,63,78,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        EDIT_OUTPUT2,0,85,345,235,ES_MULTILINE | ES_READONLY | WS_VSCROLL | WS_HSCROLL | NOT WS_TABSTOP
     DEFPUSHBUTTON   "Do it",PB_DOIT,303,8,35,14
     PUSHBUTTON      "Exit",PB_EXIT,303,25,35,14
-    LTEXT           "above",LABEL_ALT,234,48,21,8
-    LTEXT           "m",LABEL_METERS,226,56,8,8
-    LTEXT           "sea",LABEL_ALT2,234,58,38,8
+    LTEXT           "m above",LABEL_ALT,234,48,29,8
+    LTEXT           "sea",LABEL_ALT2,235,57,38,8
     LTEXT           "extra asteroids:",LABEL_ASTNO,4,73,71,8
     EDITTEXT        EDIT_ASTNO,90,70,248,12,ES_AUTOHSCROLL
 END
 
-ABOUTBX DIALOG DISCARDABLE  0, 0, 182, 90
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+ABOUTBX DIALOGEX 0, 0, 287, 90
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About this Program"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,67,70,50,14
-    CTEXT           "Swiss Ephemeris Windows Test",ABOUT_L1,29,15,125,8
-    CTEXT           "Astrodienst Zurich",ABOUT_L2,29,29,125,8
-    CTEXT           "Version 1.67.00, 31-March-2005",ABOUT_L3,30,43,125,8
+    DEFPUSHBUTTON   "OK",IDOK,123,69,50,14
+    CTEXT           "Swiss Ephemeris Windows Test",ABOUT_L1,82,16,125,8
+    CTEXT           "Astrodienst AG",ABOUT_L2,88,29,125,8
+    CTEXT           "Version:",ABOUT_L3,7,43,273,17
 END
 
 
@@ -91,7 +80,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO
 BEGIN
     "DATABX", DIALOG
     BEGIN
@@ -104,7 +93,7 @@ BEGIN
     "ABOUTBX", DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 175
+        RIGHTMARGIN, 280
         TOPMARGIN, 7
         BOTTOMMARGIN, 83
     END
@@ -118,18 +107,18 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -189,11 +178,27 @@ END
 // Menu
 //
 
-SWEPH_MENU MENU DISCARDABLE 
+SWEPH_MENU MENU
 BEGIN
     MENUITEM "&Exit",                       MENU_EXIT
     MENUITEM "&Calculate",                  MENU_CALC
     MENUITEM "&About",                      MENU_ABOUT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+ABOUTBX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+DATABX AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 #endif    // German (Germany) resources

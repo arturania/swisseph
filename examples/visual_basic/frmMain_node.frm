@@ -1,5 +1,4 @@
 VERSION 5.00
-Object = "{6B7E6392-850A-101B-AFC0-4210102A8DA7}#1.3#0"; "Comctl32.ocx"
 Begin VB.Form frmMain 
    Caption         =   "vbsweph"
    ClientHeight    =   8670

@@ -321,6 +321,8 @@ int32 CALL_CONV swe_calc(double tjd, int ipl, int32 iflag,
   struct save_positions *sd;
   double x[6], *xs, x0[24], x2[24];
   double dt;
+  if (serr != NULL) 
+    *serr = '\0';
 #ifdef TRACE
 #ifdef FORCE_IFLAG
   /*
@@ -343,8 +345,6 @@ int32 CALL_CONV swe_calc(double tjd, int ipl, int32 iflag,
   FILE *fp;
   char s[AS_MAXCH], *sp;
   memset(x, 0, sizeof(double) * 6);
-  if (serr != NULL) 
-    *serr = '\0';
   /* if the following file exists, flag is read from it and or'ed into iflag */
   if (!force_flag_checked) {
     if ((fp = fopen(fname_force_flg, BFILE_R_ACCESS)) != NULL) {
@@ -1021,7 +1021,7 @@ static int32 swecalc(double tjd, int ipl, int32 iflag, double *x, char *serr)
     /* internal planet number */
     if (ipl < SE_NPLANETS) 
       ipli = pnoext2int[ipl];
-    else if (ipl <= SE_AST_OFFSET + MPC_VESTA) {
+    else if (ipl <= SE_AST_OFFSET + MPC_VESTA && ipl > SE_AST_OFFSET) {
       ipli = SEI_CERES + ipl - SE_AST_OFFSET - 1;
       ipl = SE_CERES + ipl - SE_AST_OFFSET - 1;
 #if 0
@@ -3134,7 +3134,7 @@ int32 swi_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr)
       t0 += swe_deltat_ex(t0, iflag, serr);
     swi_precess(x, t0, 0, J2000_TO_J);
     /* to ecliptic t0 */
-    eps = swi_epsiln(t0, 0);
+    eps = swi_epsiln(t0, iflag);
     swi_coortrf(x, x, eps);
     /* to polar */
     swi_cartpol(x, x);
@@ -3153,7 +3153,7 @@ int32 swi_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr)
     t0 = sip->t0;
     if (sip->t0_is_UT)
       t0 += swe_deltat_ex(t0, iflag, serr);
-    eps = swi_epsiln(t0, 0);
+    eps = swi_epsiln(t0, iflag);
     // to polar equatorial relative to equinox t0
     swi_polcart(x, x);
     swi_coortrf(x, x, -eps);
@@ -3163,7 +3163,7 @@ int32 swi_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr)
     // precess to date
     swi_precess(x, tjd_et, 0, J2000_TO_J);
     // epsilon of date
-    eps = swi_epsiln(tjd_et, 0);
+    eps = swi_epsiln(tjd_et, iflag);
     // to polar
     swi_coortrf(x, x, eps);
     swi_cartpol(x, x);
@@ -7059,7 +7059,7 @@ char *CALL_CONV swe_get_planet_name(int ipl, char *s)
          * 2. asteroid name
          * The asteroid number may or may not be in brackets
          */
-        if (s[0] == '?' || isdigit((int) s[1])) {
+        if (ipl > SE_AST_OFFSET && (s[0] == '?' || isdigit((int) s[1]))) {
           int ipli = (int) (ipl - SE_AST_OFFSET), iplf = 0;
           FILE *fp;
           char si[AS_MAXCH], *sp, *sp2;
@@ -7257,7 +7257,7 @@ void swi_force_app_pos_etc()
     swed.pldat[i].xflgs = -1;
   for (i = 0; i < SEI_NNODE_ETC; i++)
     swed.nddat[i].xflgs = -1;
-  for (i = 0; i < SE_NPLANETS; i++) {
+  for (i = 0; i <= SE_NPLANETS; i++) { // "=" because save area for asteroids > SE_AST_OFFSET is at i == SE_NPLANETS
     swed.savedat[i].tsave = 0;
     swed.savedat[i].iflgsave = -1;
   }
