@@ -1,5 +1,4 @@
 /* #include "watc1632.h" replaced by directly encluding it below */
- 
 #ifdef __NT__
 #define GET_HINST( hwnd )		(HINSTANCE)GetWindowLong( hwnd, GWL_HINSTANCE );
 #define GET_WM_COMMAND_CMD(wp, lp)      HIWORD(wp)

@@ -1,5 +1,4 @@
 VERSION 5.00
-Object = "{6B7E6392-850A-101B-AFC0-4210102A8DA7}#1.3#0"; "Comctl32.ocx"
 Begin VB.Form frmMain 
    Caption         =   "vbsweph"
    ClientHeight    =   8670
@@ -171,43 +170,6 @@ Begin VB.Form frmMain
       Text            =   "1"
       Top             =   960
       Width           =   492
-   End
-   Begin ComctlLib.StatusBar sbStatusBar 
-      Align           =   2  'Align Bottom
-      Height          =   270
-      Left            =   0
-      TabIndex        =   0
-      Top             =   8400
-      Width           =   9120
-      _ExtentX        =   16087
-      _ExtentY        =   476
-      SimpleText      =   ""
-      _Version        =   327682
-      BeginProperty Panels {0713E89E-850A-101B-AFC0-4210102A8DA7} 
-         NumPanels       =   3
-         BeginProperty Panel1 {0713E89F-850A-101B-AFC0-4210102A8DA7} 
-            AutoSize        =   1
-            Object.Width           =   10451
-            Text            =   "Status"
-            TextSave        =   "Status"
-            Key             =   ""
-            Object.Tag             =   ""
-         EndProperty
-         BeginProperty Panel2 {0713E89F-850A-101B-AFC0-4210102A8DA7} 
-            Style           =   6
-            AutoSize        =   2
-            TextSave        =   "15.12.2003"
-            Key             =   ""
-            Object.Tag             =   ""
-         EndProperty
-         BeginProperty Panel3 {0713E89F-850A-101B-AFC0-4210102A8DA7} 
-            Style           =   5
-            AutoSize        =   2
-            TextSave        =   "15:12"
-            Key             =   ""
-            Object.Tag             =   ""
-         EndProperty
-      EndProperty
    End
    Begin VB.Label Label7 
       Caption         =   "fixed star"
@@ -1500,57 +1462,6 @@ Private Sub mnuViewToolbar_Click()
         mnuViewToolbar.Checked = True
     End If
 End Sub
-
-
-
-Private Sub tbToolBar_ButtonClick(ByVal Button As ComctlLib.Button)
-
-
-    Select Case Button.Key
-
-
-        Case "New"
-            mnuFileNew_Click
-        Case "New"
-            mnuFileNew_Click
-        Case "Open"
-            mnuFileOpen_Click
-        Case "Save"
-            mnuFileSave_Click
-        Case "Print"
-            mnuFilePrint_Click
-        Case "Cut"
-            'To Do
-            MsgBox "Cut Code goes here!"
-        Case "Copy"
-            'To Do
-            MsgBox "Copy Code goes here!"
-        Case "Paste"
-            'To Do
-            MsgBox "Paste Code goes here!"
-        Case "Bold"
-            'To Do
-            MsgBox "Bold Code goes here!"
-        Case "Italic"
-            'To Do
-            MsgBox "Italic Code goes here!"
-        Case "Underline"
-            'To Do
-            MsgBox "Underline Code goes here!"
-        Case "Left"
-            'To Do
-            MsgBox "Left Code goes here!"
-        Case "Center"
-            'To Do
-            MsgBox "Center Code goes here!"
-        Case "Right"
-            'To Do
-            MsgBox "Right Code goes here!"
-    End Select
-End Sub
-
-
-
 
 
 

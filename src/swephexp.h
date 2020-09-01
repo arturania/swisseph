@@ -124,6 +124,7 @@ extern "C" {
 
 #define SE_NPLANETS     23      
 
+#define SE_PLMOON_OFFSET   9000
 #define SE_AST_OFFSET   10000
 #define SE_VARUNA   (SE_AST_OFFSET + 20000)
 

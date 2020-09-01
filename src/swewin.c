@@ -1,6 +1,3 @@
-
-
-
 /*
  *%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  *%                                                                       
@@ -10,9 +7,63 @@
  * SWEWIN.C
  *
  * SWISSEPH test windows program,
- *
- */
+ * 
+ *  Authors: Dieter Koch and Alois Treindl, Astrodienst AG
+ **************************************************************/
 
+/* Copyright (C) 1997 - 2015 Astrodienst AG, Switzerland.  All rights reserved.
+  
+  License conditions
+  ------------------
+
+  This file is part of Swiss Ephemeris.
+
+  Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
+  or distributor accepts any responsibility for the consequences of using it,
+  or for whether it serves any particular purpose or works at all, unless he
+  or she says so in writing.  
+
+  Swiss Ephemeris is made available by its authors under a dual licensing
+  system. The software developer, who uses any part of Swiss Ephemeris
+  in his or her software, must choose between one of the two license models,
+  which are
+  a) GNU public license version 2 or later
+  b) Swiss Ephemeris Professional License
+
+  The choice must be made before the software developer distributes software
+  containing parts of Swiss Ephemeris to others, and before any public
+  service using the developed software is activated.
+
+  If the developer choses the GNU GPL software license, he or she must fulfill
+  the conditions of that license, which includes the obligation to place his
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+  If the developer choses the Swiss Ephemeris Professional license,
+  he must follow the instructions as found in http://www.astro.com/swisseph/ 
+  and purchase the Swiss Ephemeris Professional Edition from Astrodienst
+  and sign the corresponding license contract.
+
+  The License grants you the right to use, copy, modify and redistribute
+  Swiss Ephemeris, but only under certain conditions described in the License.
+  Among other things, the License requires that the copyright notices and
+  this notice be preserved on all copies.
+
+  Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
+
+  The authors of Swiss Ephemeris have no control or influence over any of
+  the derived works, i.e. over software or services created by other
+  programmers which use Swiss Ephemeris functions.
+
+  The names of the authors or of the copyright holder (Astrodienst) must not
+  be used for promoting any software, product or service which uses or contains
+  the Swiss Ephemeris. This copyright notice is the ONLY place where the
+  names of the authors can legally appear, except in cases where they have
+  given special permission in writing.
+
+  The trademarks 'Swiss Ephemeris' and 'Swiss Ephemeris inside' may be used
+  for promoting such software, products or services.
+*/
 
 #include <windows.h>
 #include <ctype.h>
@@ -22,8 +73,13 @@
 #include <io.h>
 #include <fcntl.h>
 #include <dos.h>
+#ifdef __MINGW32__
+#include <sys/types.h> 
+#include <sys/stat.h>
+#else
 #include <sys\types.h> 
 #include <sys\stat.h>
+#endif
 #include <direct.h>
 #include <time.h>
 #include <process.h>
@@ -39,6 +95,7 @@
 #include "swephexp.h"
 
 #define BUFLEN  8000
+#define MY_ODEGREE_STRING "°"
 
 static char *etut[]={"UT", "ET"};
 static char *lat_n_s[]={"N", "S"};
@@ -49,8 +106,8 @@ static char *ephe[]={"Swiss Ephemeris", "JPL Ephemeris DE406", "Moshier Ephemeri
 static char *plansel[] = {"main planets", "with asteroids", "with hyp. bodies"};
 #define NCENTERS	6
 static char *ctr[] = {"geocentric", "topocentric", "heliocentric", "barycentric","sidereal Fagan", "sidereal Lahiri"};
-#define NHSYS        8
-static char *hsysname[] = {"Placidus", "Campanus", "Regiomontanus", "Koch", "Equal", "Vehlow equal", "Horizon", "B=Alcabitus"};
+#define NHSYS        9
+static char *hsysname[] = {"Placidus", "Campanus", "Regiomontanus", "Koch", "Equal", "Vehlow equal", "Horizon", "B=Alcabitus", "I=Sunshine"};
 
 static char classname[32]="SwewinClass";
 static struct pd {
@@ -84,7 +141,6 @@ static char *dms(double x, long iflag);
 static void do_print(char *target, char *info);
 static int letter_to_ipl(int letter);
 static int make_ephemeris_path(long iflag, char *argv0);
-static int search_file(char *path, long iflag);
 static int atoulng(char *s, unsigned long *ulng);
 static int atoslng(char *s, long *slng);
 static int cut_str_any(char *s, char *cutlist, char *cpos[], int nmax);
@@ -105,7 +161,7 @@ extern char FAR *pgmptr;
 static char *zod_nam[] = {"ar", "ta", "ge", "cn", "le", "vi", 
                           "li", "sc", "sa", "cp", "aq", "pi"};
 
-int PASCAL WinMain( HANDLE this_inst, HANDLE prev_inst, LPSTR cmdline,
+int PASCAL WinMain( HINSTANCE this_inst, HINSTANCE prev_inst, LPSTR cmdline,
                     int cmdshow )
 /*******************************/
 {
@@ -171,7 +227,7 @@ LONG FAR PASCAL WindowProc( HWND window_handle, unsigned msg,
                                      UINT wparam, LONG lparam )
 /*************************************************************/
 {
-    FARPROC             proc;
+    DLGPROC             proc;
     HANDLE              inst_handle;
     WORD                cmd;
     /*
@@ -223,11 +279,17 @@ BOOL FAR PASCAL about_proc( HWND window_handle, unsigned msg,
                                 UINT wparam, LONG lparam )
 /********************************************************/
 {
+    char s[2 * AS_MAXCH];
+    char s1[AS_MAXCH];
+    char s2[AS_MAXCH];
     lparam = lparam;                    /* turn off warning */
     window_handle = window_handle;
     switch( msg ) {
     case WM_INITDIALOG:
-        
+	swe_version(s1);
+	swe_get_library_path(s2);
+	sprintf(s, "Version: %s\nPath %s", s1, s2);
+        SetDlgItemText( window_handle, ABOUT_L3, s);
         return( TRUE );
     case WM_CLOSE :
         EndDialog( window_handle, TRUE );
@@ -633,7 +695,7 @@ static int swisseph(char *buf)
     jul = "jul.";
   else
     jul = "";
-  sprintf(s, "%d.%d.%d %s %s    %#02d:%#02d:%#02d %s\n",
+  sprintf(s, "%d.%d.%d %s %s    %02d:%02d:%02d %s\n",
     jday, jmon, jyear, bc, jul,
     jhour, jmin, jsec, pd.etut);
   do_print(buf, s);
@@ -991,18 +1053,18 @@ static int swisseph(char *buf)
   sprintf(s, "\nHouse Cusps (%s)\n\n", pd.hsysname);
   do_print(buf, s);
   a = sidt + 0.5 / 3600;
-  sprintf(s, "sid. time : %4d:%#02d:%#02d  ",
+  sprintf(s, "sid. time : %4d:%02d:%02d  ",
         (int) a, (int) fmod(a * 60, 60), (int) fmod(a * 3600, 60));
   do_print(buf, s);
   a = armc + 0.5 / 3600;
-  sprintf(s, "armc      : %4d%c%#02d'%#02d\"\n",
-        (int) armc, ODEGREE_CHAR, (int) fmod(armc * 60, 60),
+  sprintf(s, "armc      : %4d%s%02d'%02d\"\n",
+        (int) armc, MY_ODEGREE_STRING, (int) fmod(armc * 60, 60),
         (int) fmod(a * 3600, 60));
   do_print(buf, s);
-  sprintf(s, "geo. lat. : %4d%c%#02d'%#02d\" ",
+  sprintf(s, "geo. lat. : %4d%c%02d'%02d\" ",
         pd.lat_deg, *pd.lat_n_s, pd.lat_min, pd.lat_sec);
   do_print(buf, s);
-  sprintf(s, "geo. long.: %4d%c%#02d'%#02d\"\n\n",
+  sprintf(s, "geo. long.: %4d%c%02d'%02d\"\n\n",
         pd.lon_deg, *pd.lon_e_w, pd.lon_min, pd.lon_sec);
   do_print(buf, s);
   swe_houses_ex(tjd_ut, iflag, lat, lon, hsys, cusp, ascmc);
@@ -1037,13 +1099,13 @@ static char *dms(double x, long iflag)
 {
   int izod;
   long k, kdeg, kmin, ksec;
-  char c = (unsigned int) ODEGREE_CHAR;
+  char *c = MY_ODEGREE_STRING;
   char *sp, s1[50];
   static char s[50];
   int sgn;
   *s = '\0';
   if (iflag & SEFLG_EQUATORIAL)
-    c = 'h';
+    strcpy(c, "h");
   if (x < 0) {
     x = -x;
     sgn = -1;
@@ -1060,7 +1122,7 @@ static char *dms(double x, long iflag)
     sprintf(s, "%2ld %s ", kdeg, zod_nam[izod]);
   } else {
     kdeg = (long) x;
-    sprintf(s, " %3ld%c", kdeg, c);
+    sprintf(s, " %3ld%s", kdeg, c);
   }
   x -= kdeg;
   x *= 60;

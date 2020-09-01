@@ -3,7 +3,7 @@
 # At the same time a brief introduction into asteroids
 # ====================================================
 # Dieter Koch
-# updated 9 Feb 2004
+# updated 8 Oct 2005
 #
 # 
 # Ephemerides of all of the asteroids mentioned below
@@ -186,12 +186,15 @@
 # Centaurs:
 # ---------
 
-2060 Chiron       # perihelion near Saturn, aphelion near Uranus
+2060 Chiron       # perihelion near Saturn, aphelion near Uranus;
+                  # also a member of the comets catalogue (95P Chiron)
+		  # because it has cometary activity
                   # educator of heros, specialist in healing and war arts
 5145 Pholus       # perihelion near Saturn, aphelion near Neptune
                   # seer of the gods, keeper of the wine of the Centaurs
 7066 Nessus       # perihelion near Saturn, aphelion in Pluto's mean distance
                   # ferryman, killed by Hercules, kills Hercules
+
 
 # Neptune Trojans:
 # ----------------
@@ -204,7 +207,8 @@
 # There are no Plutinos included in Swiss Ephemeris so far, but
 # PLUTO himself can be considered a Plutino type asteroid!
 
-28978 Ixion       # largest Plutino by Feb 2004 (besides Pluto himself): 1060 km
+28978 Ixion       # 1060 km diameter
+90482 Orcus       # 1700 km, largest Plutino by Oct 2005 (besides Pluto himself)
 
 # Cubewanos:
 # ----------
@@ -213,21 +217,21 @@
 # of the first-discovered Cubewano: 1992 QB1
 # to be named after creation deities 
 
-15760 1992 QB1    # first-discovered Cubewano
+15760 1992 QB1    # first-discovered Cubewano, 280 km diameter
 20000 Varuna      # 980 km
-50000 Quaoar      # largest Cubewano by Feb 2004: 1230 km
+50000 Quaoar      # largest Cubewano by Feb 2004: 1250 km
 
 # Scattered-Disk Objects:
 # ----------------------
 # Highly eccentric trans-Neptunian orbits
-# none named by Feb 2004
+90377 Sedna       # perihelion 76 = AU, aphelion = 913 AU, period = 11000 years
+                  # diameter = 1700 km
 
 # strange bodies
 # --------------------
 20461 Dioretsa	  # a retrograde asteroid at Period = 115 years (a=23.757)
                   # perihelion = 2.4 AU aphelion = 45 AU, incl = 160
-# 2003 VB12 (= Sedna) # period = 11500 years (a = 509)
-                  # perihelion = 76.067, aphelion = 942 
+		  # this is a rather comet-like orbit
 
 
 # Asteroids that challenge hypothetical planets astrology
@@ -254,7 +258,7 @@
 
 1181 Lilith       # not identical with Dark Moon 'Lilith'
                   # first evil wife of Adam
-3753 Cruithne     # often called the "second moon" of earth;
+3753 Cruithne     # also called a "second moon" of earth;
                   # actually not a moon, but an asteroid that 
                   # orbits around the sun in a certain resonance 
                   # with the earth.
