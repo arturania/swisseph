@@ -2,10 +2,12 @@
 
 *This is an unofficial repository of Swiss Ephemeris sources in all available programming languages.*
 
+<p align="center"><img src="/doc/sweph.png" align="middle" width="512px" height="256px"/></p>
+
 ## About the Swiss Ephemeris
 
 Swiss Ephemeris is a software toolbox for programmers of astrological
-software. It is of little use for a non-programmer
+software. It is of little use for a non-programmer.
 
 Swiss Ephemeris is built according to the highest standards of precision available
 in astronomical data. It is able to reproduce the ephemeris data in
