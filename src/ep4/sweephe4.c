@@ -678,4 +678,3 @@ static char *my_makepath(char *d, char *s)
 # endif
   return (d);
 }
-

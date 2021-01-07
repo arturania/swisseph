@@ -960,6 +960,41 @@ CODE:
 OUTPUT:
   RETVAL
 
+ # function calculates planetocentric positions
+ # input:  $tjd_ut, $ipl, $iplctr, $iflag
+ # output: $hp = {retval =>,   
+ #                serr =>,    * error string, on error only
+ #                xx =>,      * position array 
+ #               }
+HV *
+swe_calc_pctr(tjd_ut,ipl,iplctr,iflag)
+  double tjd_ut
+  int ipl
+  int iplctr
+  int iflag
+PREINIT:
+  int i, retval = 0;
+  char serr[255];
+  double xx[6];
+  AV* avxx = newAV();
+  SV* svxx;
+  HV* hp;
+CODE:
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  av_clear(avxx);
+  *serr = '\0';
+  retval = swe_calc_pctr(tjd_ut, ipl, iplctr, iflag, xx, serr);
+  for (i=0;i<6;i++) av_push(avxx,(newSVnv(xx[i])));
+  svxx = newRV_noinc((SV*) avxx);
+  if (*serr != '\0') {
+    (void)hv_store(hp, "serr", 4, newSVpvn(serr, strlen(serr)), 0);
+  }
+  (void)hv_store(hp, "retval", 6, newSViv(retval), 0);
+  (void)hv_store(hp, "xx", 2, newSVsv(svxx), 0);
+  RETVAL = hp; 
+OUTPUT:
+  RETVAL
+
  # fixstar
  # input:  $star, $tjd, $iflag
  # output: $hp = {retval =>,   
@@ -1382,6 +1417,32 @@ CODE:
   RETVAL = newSVpvn("", 255);
   strcpy(aynam, swe_get_ayanamsa_name(isidmode));
   sv_setpvn(RETVAL, aynam, strlen(aynam)); 
+OUTPUT:
+  RETVAL
+
+ # Function calculates ayanamsa, depending on ephemeris flag
+ # input:  $tjd_ut, $iflag
+ # output: $hp = {retval => 
+ #                daya =>,    * ayanamsa value
+ #                serr =>,    * warning string, unless empty
+ #               }
+HV *
+swe_get_current_file_data(ifno)
+  int ifno
+PREINIT:
+  double tfstart;
+  double tfend;
+  int denum;
+  char fnam[255];
+  HV* hp;
+CODE:
+  hp = (HV *)sv_2mortal((SV *)newHV());
+  strcpy(fnam, swe_get_current_file_data(ifno, &tfstart, &tfend, &denum)); 
+  (void)hv_store(hp, "tfstart", 7, newSVnv(tfstart), 0);
+  (void)hv_store(hp, "tfend", 5, newSVnv(tfend), 0);
+  (void)hv_store(hp, "denum", 5, newSViv(denum), 0);
+  (void)hv_store(hp, "fnam", 4, newSVpvn(fnam, strlen(fnam)), 0);
+  RETVAL = hp;
 OUTPUT:
   RETVAL
 
@@ -2770,4 +2831,3 @@ CODE:
   RETVAL = hp; 
 OUTPUT:
   RETVAL
-

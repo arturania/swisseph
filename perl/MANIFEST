@@ -79,6 +79,7 @@ fix_selinux
 /usr/local/lib64/swe/libswe.so.2.09
 /usr/local/lib64/swe/libswe.so.2.09.01
 /usr/local/lib64/swe/libswe.so.2.09.02
+/usr/local/lib64/swe/libswe.so.2.09.03
+/usr/local/lib64/swe/libswe.so.2.10
 META.yml                                 Module YAML meta-data (added by MakeMaker)
 META.json                                Module JSON meta-data (added by MakeMaker)
-

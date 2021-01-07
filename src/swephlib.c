@@ -3197,13 +3197,11 @@ int32 swi_guess_ephe_flag()
 
 int32 swi_get_tid_acc(double tjd_ut, int32 iflag, int32 denum, int32 *denumret, double *tid_acc, char *serr)
 {
-  //double xx[6], tjd_et;
   iflag &= SEFLG_EPHMASK;
   if (swed.is_tid_acc_manual) {
     *tid_acc = swed.tid_acc;
     return iflag;
   }
-//denum = 0;
   if (denum == 0) {
     if (iflag & SEFLG_MOSEPH) {
       *tid_acc = SE_TIDAL_DE404;
@@ -3243,7 +3241,6 @@ int32 swi_set_tid_acc(double tjd_ut, int32 iflag, int32 denum, char *serr)
 {
   int32 retc = iflag;
   int32 denumret;
-  //fprintf(stderr, "ifl=%d\n", iflag);
   /* manual tid_acc overrides automatic tid_acc */
   if (swed.is_tid_acc_manual)
     return retc;
@@ -3640,12 +3637,16 @@ void swi_gen_filename(double tjd, int ipli, char *fname)
     case SEI_PHOLUS:
       strcpy(fname, "seas");
       break;
-    default: 	/* asteroid */
-      sform = "ast%d%sse%05d.%s";
-      if (ipli - SE_AST_OFFSET > 99999) 
-	sform = "ast%d%ss%06d.%s";
-      sprintf(fname, sform, (ipli - SE_AST_OFFSET) / 1000, DIR_GLUE, ipli - SE_AST_OFFSET, SE_FILE_SUFFIX);
-      return;	/* asteroids: only one file 3000 bc - 3000 ad */
+    default: 	/* asteroid or planetary moon */
+      if (ipli > SE_PLMOON_OFFSET && ipli < SE_AST_OFFSET) {
+        sprintf(fname, "sat%ssepm%d.%s", DIR_GLUE, ipli, SE_FILE_SUFFIX);
+      } else {
+	sform = "ast%d%sse%05d.%s";
+	if (ipli - SE_AST_OFFSET > 99999) 
+	  sform = "ast%d%ss%06d.%s";
+	sprintf(fname, sform, (ipli - SE_AST_OFFSET) / 1000, DIR_GLUE, ipli - SE_AST_OFFSET, SE_FILE_SUFFIX);
+      }
+      return;	/* asteroids or planetary moons: only one file 3000 bc - 3000 ad */
       /* break; */
   }
   /* century of tjd */

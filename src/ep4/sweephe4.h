@@ -208,4 +208,3 @@ extern int eph4_posit (int jlong, AS_BOOL writeflag, char *errtext);
 #endif
 
 # endif	/* _EPHE_INCLUDED */
-

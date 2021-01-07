@@ -487,6 +487,8 @@ my @geopos = (8.33, 47.35,400);
 #my $ref = SwissEph::swe_houses_ex2(2436723.588888888, 0, 47.35, 8.72, "P");
 #my $ref = SwissEph::swe_house_pos($ref->{armc}, 47.35, 23.45, "P", 72.73, 0);
 #my $ref = SwissEph::swe_calc(2436723.588888888, 8, 256);
+#my $ref2 = SwissEph::swe_get_current_file_data(0);
+#for (sort keys(%$ref2)) {print STDERR "$_ = $ref2->{$_}\n";}
 #my $ref = SwissEph::swe_calc_ut(2436723.588888888, 8, 256);
 #my $ref = SwissEph::swe_fixstar("aldeb", 2436723.588888888, 0);
 #my $ref = SwissEph::swe_fixstar_ut("aldeb", 2436723.588888888, 0);
@@ -543,6 +545,10 @@ my @geopos = (8.33, 47.35,400);
 #for (sort keys(%$ref)) {print STDERR "$_ = $ref->{$_}\n";}
 #$ref = SwissEph::swe_orbit_max_min_true_distance(2436723.5, 3, 0);
 #for (sort keys(%$ref)) {print STDERR "$_ = $ref->{$_}\n";}
+#my $ref = SwissEph::swe_calc_pctr(2436723.588888888, 8, 5, 0);
+#my $pp = $ref->{xx};
+#for (sort keys(%$ref)) {print STDERR "$_ = $ref->{$_}\n";}
+#print STDERR "@$pp\n";
 
 #------------------------------------------------------------------------
 # Obliquity

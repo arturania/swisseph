@@ -308,4 +308,3 @@ int main(int argc, char **argv)
   swe_close();
   return(0);
 }	/* end main */
-
