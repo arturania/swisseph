@@ -339,4 +339,3 @@ typedef int32    centisec;       /* centiseconds used for angles and times */
 
 #endif /* _SWEODEF_INCLUDED */
 #endif /* _OURDEF_INCLUDED */
-

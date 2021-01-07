@@ -107,6 +107,10 @@ DllImport int32 CALL_CONV_IMP swe_calc(
         double tjd, int ipl, int32 iflag, 
         double *xx,
         char *serr);
+DllImport int32 CALL_CONV_IMP  swe_calc_pctr(
+        double tjd, int32 ipl, int32 iplctr, int32 iflag, 
+	double *xxret, 
+	char *serr);
 
 DllImport int32 CALL_CONV_IMP swe_calc_ut( 
         double tjd_ut, int32 ipl, int32 iflag, 
@@ -183,6 +187,7 @@ DllImport double  CALL_CONV_IMP swe_get_ayanamsa(double tjd_et);
 DllImport double  CALL_CONV_IMP swe_get_ayanamsa_ut(double tjd_ut);
 
 DllImport char * CALL_CONV_IMP swe_get_ayanamsa_name(int32 isidmode);
+DllImport char * CALL_CONV_IMP swe_get_current_file_data(int ifno, double *tfstart, double *tfend, int *denum);
 
 DllImport int  CALL_CONV_IMP swe_date_conversion(
         int y , int m , int d ,         /* year, month, day */

@@ -59,12 +59,14 @@ use warnings;
 
 require Exporter;
 
-our $VERSION = "2.09.02";
+our $VERSION = "2.10";
 
 our @ISA = qw(Exporter);
 
 our @SWE_FUNCTIONS = qw(
-	swe_azalt swe_azalt_rev swe_calc swe_calc_ut swe_calc_utx swe_calc_ut_prv swe_close 
+	swe_azalt swe_azalt_rev swe_calc swe_calc_ut 
+	swe_calc_pctr
+	swe_calc_utx swe_calc_ut_prv swe_close 
 	swe_cotrans swe_cotrans_sp swe_day_of_week swe_deg_midp 
 	swe_degnorm swe_deltat swe_deltat_ex swe_difdegn swe_difdeg2n swe_difrad2n
 	swe_fixstar swe_fixstar_mag swe_fixstar_ut 
@@ -72,6 +74,7 @@ our @SWE_FUNCTIONS = qw(
 	swe_gauquelin_sector
 	swe_get_ayanamsa_ex swe_get_ayanamsa_ex_ut
 	swe_get_ayanamsa swe_get_ayanamsa_ut swe_get_ayanamsa_name
+	swe_get_current_file_data
 	swe_get_library_path swe_get_orbital_elements swe_orbit_max_min_true_distance
 	swe_get_planet_name swe_get_tid_acc
 	swe_heliacal_ut swe_heliacal_pheno_ut swe_vis_limit_mag
@@ -118,6 +121,7 @@ our @SWE_CONSTANTS = qw(
 	    SEFLG_NOABERR SEFLG_EQUATORIAL SEFLG_XYZ SEFLG_RADIANS 
 	    SEFLG_BARYCTR SEFLG_TOPOCTR SEFLG_SIDEREAL SEFLG_ICRS
 	    SEFLG_ASTROMETRIC SEFLG_DEFAULTEPH
+	    SEFLG_CENTER_BODY
 	    SE_SIDBITS SE_SIDBIT_ECL_T0 SE_SIDBIT_SSY_PLANE SE_SIDBIT_USER_UT 
 	    SE_SIDM_FAGAN_BRADLEY SE_SIDM_LAHIRI SE_SIDM_DELUCE SE_SIDM_RAMAN 
 	    SE_SIDM_USHASHASHI SE_SIDM_KRISHNAMURTI SE_SIDM_DJWHAL_KHUL 
