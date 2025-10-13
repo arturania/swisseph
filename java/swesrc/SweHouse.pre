@@ -670,10 +670,11 @@ class SweHouse
     if (ihs == 'W')  /* whole sign houses: treat as 'E' and fix later */
       ihs2 = 'E';
     retc = swe_houses_armc(armc, lat, eps, ihs2, cusp, ascmc, aOffs);
-    for (i = 1; i <= ito; i++)
+    for (i = 1; i <= ito; i++) {
       cusp[i] = sl.swe_degnorm(cusp[i] - ay - nutl);
       if (ihs == 'W') /* whole sign houses */
         cusp[i] -= (cusp[i] % 30);
+    }
     for (i = 0; i < SweConst.SE_NASCMC; i++) {
       if (i == 2) /* armc */ {
         continue;
